@@ -1,3 +1,8 @@
+# things
+/build
+/client
+/.gradle
+
 ###### BATTLECODE ######
 
 /matches
