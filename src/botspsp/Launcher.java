@@ -1,4 +1,4 @@
-package test;
+package botspsp;
 
 import battlecode.common.*;
 
@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-public class Destabilizer {
+public class Launcher {
     // counts turn count
     static int turnCount = 0;
 
@@ -33,10 +33,10 @@ public class Destabilizer {
                 // code
                 throw new GameActionException(null, "temp");
             } catch (GameActionException e) {
-                System.out.println("GameActionException at Destabilizer");
+                System.out.println("GameActionException at Launcher");
                 e.printStackTrace();
             } catch (Exception e) {
-                System.out.println("Exception at Destabilizer");
+                System.out.println("Exception at Launcher");
                 e.printStackTrace();
             } finally {
                 Clock.yield();

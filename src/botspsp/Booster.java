@@ -1,4 +1,4 @@
-package test;
+package botspsp;
 
 import battlecode.common.*;
 
@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-public class Amplifier {
+public class Booster {
     // counts turn count
     static int turnCount = 0;
 
@@ -33,10 +33,10 @@ public class Amplifier {
                 // code
                 throw new GameActionException(null, "temp");
             } catch (GameActionException e) {
-                System.out.println("GameActionException at Amplifier");
+                System.out.println("GameActionException at Booster");
                 e.printStackTrace();
             } catch (Exception e) {
-                System.out.println("Exception at Amplifier");
+                System.out.println("Exception at Booster");
                 e.printStackTrace();
             } finally {
                 Clock.yield();

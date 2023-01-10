@@ -1,4 +1,4 @@
-package test;
+package botspsp;
 
 import battlecode.common.*;
 
