@@ -1,11 +1,8 @@
-# things
+###### BATTLECODE ######
+
 /build
 /client
 /client32
-/.gradle
-
-###### BATTLECODE ######
-
 /matches
 /client
 
