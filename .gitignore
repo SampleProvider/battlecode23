@@ -1,6 +1,7 @@
 # things
 /build
 /client
+/client32
 /.gradle
 
 ###### BATTLECODE ######
