@@ -13,18 +13,6 @@ public class Amplifier {
     // counts turn count
     static int turnCount = 0;
 
-    // all possible directions
-    static final Direction[] directions = {
-        Direction.NORTH,
-        Direction.NORTHEAST,
-        Direction.EAST,
-        Direction.SOUTHEAST,
-        Direction.SOUTH,
-        Direction.SOUTHWEST,
-        Direction.WEST,
-        Direction.NORTHWEST,
-    };
-
     @SuppressWarnings("unused")
     public static void run(RobotController rc) {
         rc.setIndicatorString("Initializing");
