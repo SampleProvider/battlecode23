@@ -201,7 +201,7 @@ public strictfp class RobotPlayer {
         }
     }
     static void BFS(RobotController rc) throws GameActionException {
-        MapInfo mapInfo = rc.senseNearbyMapInfos();
+        // MapInfo mapInfo = rc.senseNearbyMapInfos();
         int visionRadius = (int) Math.sqrt(rc.getType().visionRadiusSquared);
         int visionDiameter = visionRadius * 2 + 1;
         int[][] range = new int[visionDiameter][visionDiameter];
