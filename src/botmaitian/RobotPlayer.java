@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-public strictfp class RobotPlayer{
+public strictfp class RobotPlayer {
     static int turnCount = 0;
-    static final Random rng = new Random(6147);
+    static final Random rng = new Random(2023);
     static final Direction[] directions = {
         Direction.NORTH,
         Direction.NORTHEAST,
@@ -23,7 +23,7 @@ public strictfp class RobotPlayer{
         Direction.NORTHWEST,
     };
     @SuppressWarnings("unused")
-    public static void run(RobotController rc) throws GameActionException{
+    public static void run(RobotController rc) throws GameActionException {
 
         // Hello world! Standard output is very useful for debugging.
         // Everything you say here will be directly viewable in your terminal when you run a match!
@@ -80,6 +80,9 @@ public strictfp class RobotPlayer{
     static void runHeadquarters(RobotController rc) throws GameActionException {
         WellInfo[] wells = rc.senseNearbyWells();
         MapLocation me = rc.getLocation();
+        if(wells.length > 1){
+            System.out.println("aaa well detected " + wells.length);
+        }
         if(wells.length > 1 && rng.nextInt(3) == 1){
             WellInfo well_one = wells[1];
             Direction dir = me.directionTo(well_one.getMapLocation());
@@ -108,7 +111,7 @@ public strictfp class RobotPlayer{
             }
         }
     }
-    static void runCarrier(RobotController rc) throws GameActionException{
+    static void runCarrier(RobotController rc) throws GameActionException {
         if (rc.getAnchor() != null) {
             // If I have an anchor singularly focus on getting it to the first island I see
             int[] islands = rc.senseNearbyIslands();
@@ -172,7 +175,7 @@ public strictfp class RobotPlayer{
             rc.move(dir);
         }
     }
-    static void runLauncher(RobotController rc) throws GameActionException{
+    static void runLauncher(RobotController rc) throws GameActionException {
         // Try to attack someone
         int radius = rc.getType().actionRadiusSquared;
         Team opponent = rc.getTeam().opponent();
@@ -192,5 +195,9 @@ public strictfp class RobotPlayer{
         if (rc.canMove(dir)) {
             rc.move(dir);
         }
+    }
+    static void BFS(RobotController rc) throws GameActionException {
+        int visionRadius = ((int) Math.sqrt(rc.getType().visionRadiusSquared)) * 2 + 1;
+        int[][] shortestDistance = new int[visionRadius][visionRadius];
     }
 }
