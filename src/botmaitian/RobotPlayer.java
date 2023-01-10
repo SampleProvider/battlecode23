@@ -5,9 +5,11 @@ import battlecode.common.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.Queue;
 
 public strictfp class RobotPlayer {
     static int turnCount = 0;
@@ -22,6 +24,8 @@ public strictfp class RobotPlayer {
         Direction.WEST,
         Direction.NORTHWEST,
     };
+    // static MapInfo[] mapInfo;
+    static WellInfo[] wellInfo;
     @SuppressWarnings("unused")
     public static void run(RobotController rc) throws GameActionException {
 
@@ -78,13 +82,13 @@ public strictfp class RobotPlayer {
         // Your code should never reach here (unless it's intentional)! Self-destruction imminent...
     }
     static void runHeadquarters(RobotController rc) throws GameActionException {
-        WellInfo[] wells = rc.senseNearbyWells();
+        wellInfo = rc.senseNearbyWells();
         MapLocation me = rc.getLocation();
-        if(wells.length > 1){
-            System.out.println("aaa well detected " + wells.length);
+        if(wellInfo.length > 1){
+            System.out.println("aaa well detected " + wellInfo.length);
         }
-        if(wells.length > 1 && rng.nextInt(3) == 1){
-            WellInfo well_one = wells[1];
+        if(wellInfo.length > 1 && rng.nextInt(3) == 1){
+            WellInfo well_one = wellInfo[1];
             Direction dir = me.directionTo(well_one.getMapLocation());
             if (rc.canMove(dir)) 
                 rc.move(dir);
@@ -197,7 +201,30 @@ public strictfp class RobotPlayer {
         }
     }
     static void BFS(RobotController rc) throws GameActionException {
-        int visionRadius = ((int) Math.sqrt(rc.getType().visionRadiusSquared)) * 2 + 1;
-        int[][] shortestDistance = new int[visionRadius][visionRadius];
+        MapInfo mapInfo = rc.senseNearbyMapInfos();
+        int visionRadius = (int) Math.sqrt(rc.getType().visionRadiusSquared);
+        int visionDiameter = visionRadius * 2 + 1;
+        int[][] range = new int[visionDiameter][visionDiameter];
+        Queue<Integer> queue = new LinkedList<Integer>();
+        queue.add(visionRadius * visionDiameter + visionRadius);
+        while(queue.size() > 0){
+            int c = queue.poll();
+            int x = c % visionDiameter;
+            int y = (int) c / visionDiameter;
+            int direction = 0;
+            for(int dy = -1;dy <= 1;dy++){
+                for(int dx = -1;dx <= 1;dx++){
+                    if(dx == 0 && dy == 0){
+                        continue;
+                    }
+                    if(Math.pow(x + dx - visionRadius,2) + Math.pow(y + dy - visionRadius,2) > rc.getType().visionRadiusSquared){
+                        return;
+                    }
+                    if(range[x + dx][y + dy] == 0){
+                        range[x + dx][y + dy] = range[x][y] + 1;
+                    }
+                }
+            }
+        }
     }
 }
