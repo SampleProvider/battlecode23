@@ -1,4 +1,4 @@
-package SPAARK;
+package template;
 
 import battlecode.common.*;
 
@@ -9,29 +9,31 @@ public strictfp class RobotPlayer {
         rc.setIndicatorString("Initializing");
         switch (rc.getType()) {
             case HEADQUARTERS:
-                HeadQuarters.init(rc);
-                HeadQuarters.run(rc);
+                new HeadQuarters(rc);
                 break;
             case CARRIER:
-                Carrier.init(rc);
-                Carrier.run(rc);
+                new Carrier(rc);
                 break;
             case LAUNCHER:
-                Launcher.init(rc);
-                Launcher.run(rc);
+                new Launcher(rc);
                 break;
             case AMPLIFIER:
-                Amplifier.init(rc);
-                Amplifier.run(rc);
+                new Amplifier(rc);
                 break;
             case BOOSTER:
-                Booster.init(rc);
-                Booster.run(rc);
+                new Booster(rc);
                 break;
             case DESTABILIZER:
-                Destabilizer.init(rc);
-                Destabilizer.run(rc);
+                new Destabilizer(rc);
                 break;
         }
     }
 }
+/*
+Shared array:
+States           0: [UNUSED]
+HQ 1 location    1: 0-5 x location, 6-11 y location, 12 existence of HQ
+HQ 2 location    2: 0-5 x location, 6-11 y location, 12 existence of HQ
+HQ 2 location    3: 0-5 x location, 6-11 y location, 12 existence of HQ
+HQ 4 location    4: 0-5 x location, 6-11 y location, 12 existence of HQ
+*/
