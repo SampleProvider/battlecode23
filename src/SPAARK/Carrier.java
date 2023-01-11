@@ -5,7 +5,6 @@ import battlecode.common.*;
 public strictfp class Carrier {
     // counts turn count
     static int turnCount = 0;
-    static final Random rng = new Random(2023);
     static final Direction[] directions = {
         Direction.SOUTHWEST,
         Direction.SOUTH,

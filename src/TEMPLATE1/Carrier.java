@@ -1,4 +1,4 @@
-package TEMPLATE;
+package TEMPLATE1;
 
 import battlecode.common.*;
 
@@ -39,12 +39,11 @@ public class Carrier {
             try {
                 if (path.length == pathIndex) {
                     MapLocation me = rc.getLocation();
+                    if (rc.canCollectResource(me, 39)) {
+                        rc.collectResource(me, 39);
+                    }
                     mapInfo = rc.senseNearbyMapInfos();
-                    if (rc.getResourceAmount(prioritizedResourceType) == 0) {
-                        MapLocation wellLocation = new MapLocation(me.x, me.y);
-                        if (rc.canCollectResource(wellLocation, 39)) {
-                            rc.collectResource(wellLocation, 39);
-                        }
+                    if (rc.getResourceAmount(ResourceType.ADAMANTIUM) == 0 && rc.getResourceAmount(ResourceType.MANA) == 0 && rc.getResourceAmount(ResourceType.ELIXIR) == 0) {
                         wellInfo = rc.senseNearbyWells();
                         if (wellInfo.length > 0) {
                             WellInfo prioritizedWellInfo = wellInfo[0];
@@ -61,6 +60,7 @@ public class Carrier {
                                 }
                             }
                             path = BFS.run(rc, mapInfo, prioritizedWellInfo.getMapLocation());
+                            // System.out.println("running BFS!");
                         }
                         else {
                             path = new Direction[10];
@@ -77,9 +77,25 @@ public class Carrier {
                     }
                     pathIndex = 0;
                 }
-                if (rc.canMove(path[pathIndex])) {
-                    rc.move(path[pathIndex]);
-                    pathIndex += 1;
+                try {
+                    if (rc.canMove(path[pathIndex])) {
+                        rc.move(path[pathIndex]);
+                        pathIndex += 1;
+                    }
+                    else {
+                        path = new Direction[2];
+                        for (int i = 0;i < 2;i++) {
+                            path[i] = directions[rng.nextInt(directions.length)];
+                        }
+                        pathIndex = 0;
+                    }
+                }
+                catch (Exception e) {
+                    path = new Direction[10];
+                    for (int i = 0;i < 10;i++) {
+                        path[i] = directions[rng.nextInt(directions.length)];
+                    }
+                    pathIndex = 0;
                 }
                 if (rc.getResourceAmount(prioritizedResourceType) == 39) {
                     MapLocation me = rc.getLocation();

@@ -1,4 +1,4 @@
-package TEMPLATE;
+package TEMPLATE1;
 
 import battlecode.common.*;
 

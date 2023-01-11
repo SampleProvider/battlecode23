@@ -1,4 +1,4 @@
-package TEMPLATE;
+package TEMPLATE1;
 
 import battlecode.common.*;
 
@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-public class Booster {
+public class Launcher {
     // counts turn count
     static int turnCount = 0;
 
@@ -22,11 +22,11 @@ public class Booster {
                 throw new GameActionException(null, "temp");
             }
             catch (GameActionException e) {
-                System.out.println("GameActionException at Booster");
+                System.out.println("GameActionException at Launcher");
                 e.printStackTrace();
             }
             catch (Exception e) {
-                System.out.println("Exception at Booster");
+                System.out.println("Exception at Launcher");
                 e.printStackTrace();
             }
             finally {

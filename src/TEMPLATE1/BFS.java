@@ -1,7 +1,8 @@
-package TEMPLATE;
+package TEMPLATE1;
 
 import battlecode.common.*;
 
+import java.lang.StringBuilder;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -55,6 +56,14 @@ public class BFS {
                         range[x + dx][y + dy] = range[x][y] + 1;
                         queue.add(x + dx + visionDiameter * (y + dy));
                         if(x + dx == visionRadius && y + dy == visionRadius){
+                            // System.out.println("array");
+                            // for(int i = visionDiameter - 1;i >= 0;i--){
+                            //     StringBuilder a = new StringBuilder();
+                            //     for(int j = 0;j < visionDiameter;j++){
+                            //         a.append(range[i][j]);
+                            //     }
+                            //     System.out.println(a.toString());
+                            // }
                             return getPath(rc,dest,visionRadius,visionDiameter,range,currents);
                         }
                     }
@@ -68,6 +77,14 @@ public class BFS {
                             range[x + cx][y + cy] = range[x][y] + 1;
                             queue.add(x + cx + visionDiameter * (y + cy));
                             if(x + cx == visionRadius && y + cy == visionRadius){
+                                // System.out.println("array");
+                                // for(int i = visionDiameter - 1;i >= 0;i--){
+                                //     StringBuilder a = new StringBuilder();
+                                //     for(int j = 0;j < visionDiameter;j++){
+                                //         a.append(range[i][j]);
+                                //     }
+                                //     System.out.println(a.toString());
+                                // }
                                 return getPath(rc,dest,visionRadius,visionDiameter,range,currents);
                             }
                         }
@@ -93,7 +110,7 @@ public class BFS {
                     }
                     if(x + dx >= 0 && x + dx < visionDiameter && y + dy >= 0 && y + dy < visionDiameter){
                         if(range[x + dx][y + dy] == range[x][y] - 1){
-                            int direction = -dx - dy * 3 + 4;
+                            int direction = dx + dy * 3 + 4;
                             if(direction > 4){
                                 direction -= 1;
                             }
