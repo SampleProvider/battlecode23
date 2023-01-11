@@ -2,24 +2,19 @@ package TEMPLATE;
 
 import battlecode.common.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-
-public class Booster {
+public strictfp class Booster {
     // counts turn count
     static int turnCount = 0;
 
-    @SuppressWarnings("unused")
-    public static void run(RobotController rc) {
+    public static void init(RobotController rc) {
         rc.setIndicatorString("Initializing");
+    }
+    public static void run(RobotController rc) {
         while (true) {
             try {
                 // code
-                throw new GameActionException(null, "temp");
+                turnCount++;
+                throw new GameActionException(null, null);
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Booster");
                 e.printStackTrace();
