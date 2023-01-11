@@ -1,4 +1,4 @@
-package SPAARK;
+package template;
 
 import battlecode.common.*;
 
@@ -43,7 +43,7 @@ public strictfp class HeadQuarters {
             try {
                 // controller logic
                 turnCount++;
-                throw new GameActionException(null, null);
+                rc.readSharedArray(0);
             } catch (GameActionException e) {
                 System.out.println("GameActionException at HeadQuarters");
                 e.printStackTrace();

@@ -1,23 +1,23 @@
-package SPAARK;
+package template;
 
 import battlecode.common.*;
 
-public strictfp class Amplifier {
+public strictfp class Destabilizer {
     private RobotController rc;
 
     static int turnCount = 0;
 
-    public Amplifier(RobotController rc) {
+    public Destabilizer(RobotController rc) {
         try {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
             throw new GameActionException(null, null);
         } catch (GameActionException e) {
-            System.out.println("GameActionException at Amplifier constructor");
+            System.out.println("GameActionException at Destabilizer constructor");
             e.printStackTrace();
         }
         catch (Exception e) {
-            System.out.println("Exception at Amplifier constructor");
+            System.out.println("Exception at Destabilizer constructor");
             e.printStackTrace();
         }
         finally {
@@ -32,11 +32,11 @@ public strictfp class Amplifier {
                 turnCount++;
                 throw new GameActionException(null, null);
             } catch (GameActionException e) {
-                System.out.println("GameActionException at Amplifier");
+                System.out.println("GameActionException at Destabilizer");
                 e.printStackTrace();
             }
             catch (Exception e) {
-                System.out.println("Exception at Amplifier");
+                System.out.println("Exception at Destabilizer");
                 e.printStackTrace();
             }
             finally {
