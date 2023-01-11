@@ -3,13 +3,29 @@ package SPAARK;
 import battlecode.common.*;
 
 public strictfp class Booster {
-    // counts turn count
+    private RobotController rc;
+
     static int turnCount = 0;
 
-    public static void init(RobotController rc) {
-        rc.setIndicatorString("Initializing");
+    public Booster(RobotController rc) {
+        try {
+            this.rc = rc;
+            rc.setIndicatorString("Initializing");
+            throw new GameActionException(null, null);
+        } catch (GameActionException e) {
+            System.out.println("GameActionException at Booster constructor");
+            e.printStackTrace();
+        }
+        catch (Exception e) {
+            System.out.println("Exception at Booster constructor");
+            e.printStackTrace();
+        }
+        finally {
+            Clock.yield();
+        }
+        run();
     }
-    public static void run(RobotController rc) {
+    public void run() {
         while (true) {
             try {
                 // code

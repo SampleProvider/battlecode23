@@ -3,13 +3,18 @@ package SPAARK;
 import battlecode.common.*;
 
 public strictfp class HeadQuarters {
-    // counts turn count
-    static int turnCount = 0;
+    RobotController rc;
+    
+    private int turnCount = 0;
 
-    public static void init(RobotController rc) {
+    public HeadQuarters(RobotController rc) {
         try {
+            this.rc = rc;
             rc.setIndicatorString("Initializing");
             // setting headquarter locations
+            // bits 0-5 are x coordinate
+            // bits 6-11 are y coordinate
+            // bit 12 is presence marker
             MapLocation loc = rc.getLocation();
             if (rc.readSharedArray(1) >> 12 == 0) {
                 rc.writeSharedArray(1, 0b1000000000000 | (loc.y << 6) | loc.x);
@@ -23,19 +28,20 @@ public strictfp class HeadQuarters {
                 throw new Exception("Too many HeadQuarters!");
             }
         } catch (GameActionException e) {
-            System.out.println("GameActionException at HeadQuarters init");
+            System.out.println("GameActionException at HeadQuarters constructor");
             e.printStackTrace();
         } catch (Exception e) {
-            System.out.println("Exception at HeadQuarters init");
+            System.out.println("Exception at HeadQuarters constructor");
             e.printStackTrace();
         } finally {
             Clock.yield();
         }
+        run();
     }
-    public static void run(RobotController rc) {
+    private void run() {
         while (true) {
             try {
-                // code
+                // controller logic
                 turnCount++;
                 throw new GameActionException(null, null);
             } catch (GameActionException e) {

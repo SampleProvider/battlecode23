@@ -16,7 +16,7 @@ public class BFS {
         Direction.NORTH,
         Direction.NORTHEAST,
     };
-    @SuppressWarnings("unused")
+    
     public static Direction[] run(RobotController rc,MapInfo[] mapInfo,MapLocation dest) throws GameActionException {
         MapLocation me = rc.getLocation();
         int visionRadius = (int) Math.sqrt(rc.getType().visionRadiusSquared);

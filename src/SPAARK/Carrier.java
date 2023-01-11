@@ -3,9 +3,11 @@ package SPAARK;
 import battlecode.common.*;
 
 public strictfp class Carrier {
-    // counts turn count
-    static int turnCount = 0;
-    static final Direction[] directions = {
+    private RobotController rc;
+    
+    private int turnCount = 0;
+
+    private final Direction[] directions = {
         Direction.SOUTHWEST,
         Direction.SOUTH,
         Direction.SOUTHEAST,
@@ -16,18 +18,33 @@ public strictfp class Carrier {
         Direction.NORTHEAST,
     };
 
-    static ResourceType prioritizedResourceType = ResourceType.ADAMANTIUM;
+    private ResourceType prioritizedResourceType = ResourceType.ADAMANTIUM;
 
-    static MapInfo[] mapInfo;
-    static WellInfo[] wellInfo;
+    private MapInfo[] mapInfo;
+    private WellInfo[] wellInfo;
     
-    static Direction[] path = new Direction[0];
-    static int pathIndex = 0;
+    private Direction[] path = new Direction[0];
+    private int pathIndex = 0;
 
-    public static void init(RobotController rc) {
-        rc.setIndicatorString("Initializing");
+    public Carrier(RobotController rc) {
+        try {
+            this.rc = rc;
+            rc.setIndicatorString("Initializing");
+            throw new GameActionException(null, null);
+        } catch (GameActionException e) {
+            System.out.println("GameActionException at Carrier constructor");
+            e.printStackTrace();
+        }
+        catch (Exception e) {
+            System.out.println("Exception at Carrier constructor");
+            e.printStackTrace();
+        }
+        finally {
+            Clock.yield();
+        }
+        run();
     }
-    public static void run(RobotController rc) {
+    private void run() {
         while (true) {
             try {
                 // code
