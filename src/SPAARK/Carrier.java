@@ -1,8 +1,8 @@
-package TEMPLATE;
+package SPAARK;
 
 import battlecode.common.*;
 
-public strictfp class Booster {
+public strictfp class Carrier {
     // counts turn count
     static int turnCount = 0;
 
@@ -16,10 +16,10 @@ public strictfp class Booster {
                 turnCount++;
                 throw new GameActionException(null, null);
             } catch (GameActionException e) {
-                System.out.println("GameActionException at Booster");
+                System.out.println("GameActionException at Carrier");
                 e.printStackTrace();
             } catch (Exception e) {
-                System.out.println("Exception at Booster");
+                System.out.println("Exception at Carrier");
                 e.printStackTrace();
             } finally {
                 Clock.yield();

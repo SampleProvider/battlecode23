@@ -1,8 +1,8 @@
-package TEMPLATE;
+package SPAARK;
 
 import battlecode.common.*;
 
-public strictfp class Amplifier {
+public strictfp class Destabilizer {
     // counts turn count
     static int turnCount = 0;
 
@@ -16,10 +16,10 @@ public strictfp class Amplifier {
                 turnCount++;
                 throw new GameActionException(null, null);
             } catch (GameActionException e) {
-                System.out.println("GameActionException at Amplifier");
+                System.out.println("GameActionException at Destabilizer");
                 e.printStackTrace();
             } catch (Exception e) {
-                System.out.println("Exception at Amplifier");
+                System.out.println("Exception at Destabilizer");
                 e.printStackTrace();
             } finally {
                 Clock.yield();
