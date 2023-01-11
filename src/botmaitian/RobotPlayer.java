@@ -10,21 +10,22 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.Queue;
+import java.lang.StringBuilder;
 
 public strictfp class RobotPlayer {
     static int turnCount = 0;
     static final Random rng = new Random(2023);
     static final Direction[] directions = {
+        Direction.SOUTHWEST,
+        Direction.SOUTH,
+        Direction.SOUTHEAST,
+        Direction.WEST,
+        Direction.EAST,
+        Direction.NORTHWEST,
         Direction.NORTH,
         Direction.NORTHEAST,
-        Direction.EAST,
-        Direction.SOUTHEAST,
-        Direction.SOUTH,
-        Direction.SOUTHWEST,
-        Direction.WEST,
-        Direction.NORTHWEST,
     };
-    // static MapInfo[] mapInfo;
+    static MapInfo[] mapInfo;
     static WellInfo[] wellInfo;
     @SuppressWarnings("unused")
     public static void run(RobotController rc) throws GameActionException {
@@ -82,17 +83,13 @@ public strictfp class RobotPlayer {
         // Your code should never reach here (unless it's intentional)! Self-destruction imminent...
     }
     static void runHeadquarters(RobotController rc) throws GameActionException {
-        wellInfo = rc.senseNearbyWells();
         MapLocation me = rc.getLocation();
-        if(wellInfo.length > 1){
-            System.out.println("aaa well detected " + wellInfo.length);
-        }
-        if(wellInfo.length > 1 && rng.nextInt(3) == 1){
-            WellInfo well_one = wellInfo[1];
-            Direction dir = me.directionTo(well_one.getMapLocation());
-            if (rc.canMove(dir)) 
-                rc.move(dir);
-        }
+        // if(wellInfo.length > 1 && rng.nextInt(3) == 1){
+        //     WellInfo well_one = wellInfo[1];
+        //     Direction dir = me.directionTo(well_one.getMapLocation());
+        //     if (rc.canMove(dir)) 
+        //         rc.move(dir);
+        // }
         // Pick a direction to build in.
         Direction dir = directions[rng.nextInt(directions.length)];
         MapLocation newLoc = rc.getLocation().add(dir);
@@ -164,20 +161,20 @@ public strictfp class RobotPlayer {
                 }
             }
         }
-        
+        wellBFS(rc);
         // If we can see a well, move towards it
-        WellInfo[] wells = rc.senseNearbyWells();
-        if (wells.length > 1 && rng.nextInt(3) == 1){
-            WellInfo well_one = wells[1];
-            Direction dir = me.directionTo(well_one.getMapLocation());
-            if (rc.canMove(dir)) 
-                rc.move(dir);
-        }
+        // WellInfo[] wells = rc.senseNearbyWells();
+        // if (wells.length > 1 && rng.nextInt(3) == 1){
+        //     WellInfo well_one = wells[1];
+        //     Direction dir = me.directionTo(well_one.getMapLocation());
+        //     if (rc.canMove(dir)) 
+        //         rc.move(dir);
+        // }
         // Also try to move randomly.
-        Direction dir = directions[rng.nextInt(directions.length)];
-        if(rc.canMove(dir)){
-            rc.move(dir);
-        }
+        // Direction dir = directions[rng.nextInt(directions.length)];
+        // if(rc.canMove(dir)){
+        //     rc.move(dir);
+        // }
     }
     static void runLauncher(RobotController rc) throws GameActionException {
         // Try to attack someone
@@ -201,7 +198,8 @@ public strictfp class RobotPlayer {
         }
     }
     static void BFS(RobotController rc) throws GameActionException {
-        // MapInfo mapInfo = rc.senseNearbyMapInfos();
+        mapInfo = rc.senseNearbyMapInfos();
+        wellInfo = rc.senseNearbyWells();
         int visionRadius = (int) Math.sqrt(rc.getType().visionRadiusSquared);
         int visionDiameter = visionRadius * 2 + 1;
         int[][] range = new int[visionDiameter][visionDiameter];
@@ -211,7 +209,6 @@ public strictfp class RobotPlayer {
             int c = queue.poll();
             int x = c % visionDiameter;
             int y = (int) c / visionDiameter;
-            int direction = 0;
             for(int dy = -1;dy <= 1;dy++){
                 for(int dx = -1;dx <= 1;dx++){
                     if(dx == 0 && dy == 0){
@@ -222,8 +219,76 @@ public strictfp class RobotPlayer {
                     }
                     if(range[x + dx][y + dy] == 0){
                         range[x + dx][y + dy] = range[x][y] + 1;
+                        queue.add(x + dx + visionDiameter * (y + dy));
                     }
                 }
+            }
+        }
+        for(WellInfo well : wellInfo){
+            
+        }
+    }
+    static void wellBFS(RobotController rc) throws GameActionException {
+        mapInfo = rc.senseNearbyMapInfos();
+        wellInfo = rc.senseNearbyWells();
+        if(wellInfo.length > 0){
+            MapLocation me = rc.getLocation();
+            MapLocation dest = wellInfo[0].getMapLocation();
+            int visionRadius = (int) Math.sqrt(rc.getType().visionRadiusSquared);
+            int visionDiameter = visionRadius * 2 + 1;
+            int[][] range = new int[visionDiameter][visionDiameter];
+            // int[][] map = new int[visionDiameter][visionDiameter];
+            // for(MapInfo m : mapInfo){
+            //     MapLocation mapLocation = m.getMapLocation();
+            //     if(m.)
+            //     map[mapLocation.x - me.x][mapLocation.y - me.y]
+            // }
+            Queue<Integer> queue = new LinkedList<Integer>();
+            queue.add(dest.x - me.x + visionRadius + visionDiameter * (dest.y - me.y + visionRadius));
+            while(queue.size() > 0){
+                int c = queue.poll();
+                int x = c % visionDiameter;
+                int y = (int) c / visionDiameter;
+                for(int dy = -1;dy <= 1;dy++){
+                    for(int dx = -1;dx <= 1;dx++){
+                        if(dx == 0 && dy == 0){
+                            continue;
+                        }
+                        if(Math.pow(x + dx - visionRadius,2) + Math.pow(y + dy - visionRadius,2) > rc.getType().visionRadiusSquared){
+                            continue;
+                        }
+                        try{
+                            if(rc.sensePassability(new MapLocation(me.x + x + dx - visionRadius,me.y + y + dy - visionRadius)) == false){
+                                continue;
+                            }
+                        }
+                        catch(Exception error){
+                            continue;
+                        }
+                        if(range[x + dx][y + dy] == 0){
+                            range[x + dx][y + dy] = range[x][y] + 1;
+                            queue.add(x + dx + visionDiameter * (y + dy));
+                            if(x + dx == visionRadius && y + dy == visionRadius){
+                                int direction = -dx - dy * 3 + 4;
+                                if(direction > 4){
+                                    direction -= 1;
+                                }
+                                if(rc.canMove(directions[direction])){
+                                    rc.move(directions[direction]);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            System.out.println("array");
+            for(int i = visionDiameter - 1;i >= 0;i--){
+                StringBuilder a = new StringBuilder();
+                for(int j = 0;j < visionDiameter;j++){
+                    a.append(range[i][j]);
+                }
+                System.out.println(a.toString());
             }
         }
     }
