@@ -1,4 +1,4 @@
-package template;
+package SPAARK;
 
 import battlecode.common.*;
 
@@ -22,6 +22,7 @@ public strictfp class Carrier {
 
     private MapInfo[] mapInfo;
     private WellInfo[] wellInfo;
+    private MapLocation[] headquarters = new MapLocation[4];
     
     private Direction[] path = new Direction[0];
     private int pathIndex = 0;
@@ -30,7 +31,12 @@ public strictfp class Carrier {
         try {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
-            throw new GameActionException(null, null);
+            for (int i = 1; i <= 4; i++) {
+                int data = rc.readSharedArray(i);
+                if (data >> 12 == 1) {
+                    headquarters[i] = new MapLocation(data & 0b111111, (data >> 6) & 0b111111);
+                }
+            }
         } catch (GameActionException e) {
             System.out.println("GameActionException at Carrier constructor");
             e.printStackTrace();
@@ -49,12 +55,10 @@ public strictfp class Carrier {
             try {
                 // code
                 turnCount++;
-                throw new GameActionException(null, null);
-            } catch (GameActionException e) {
-                System.out.println("GameActionException at Carrier");
-                e.printStackTrace();
-            }
-            catch (Exception e) {
+            // } catch (GameActionException e) {
+            //     System.out.println("GameActionException at Carrier");
+            //     e.printStackTrace();
+            } catch (Exception e) {
                 System.out.println("Exception at Carrier");
                 e.printStackTrace();
             }

@@ -1,4 +1,4 @@
-package template;
+package SPAARK;
 
 import battlecode.common.*;
 
@@ -29,11 +29,3 @@ public strictfp class RobotPlayer {
         }
     }
 }
-/*
-Shared array:
-States           0: [UNUSED]
-HQ 1 location    1: 0-5 x location, 6-11 y location, 12 existence of HQ
-HQ 2 location    2: 0-5 x location, 6-11 y location, 12 existence of HQ
-HQ 2 location    3: 0-5 x location, 6-11 y location, 12 existence of HQ
-HQ 4 location    4: 0-5 x location, 6-11 y location, 12 existence of HQ
-*/

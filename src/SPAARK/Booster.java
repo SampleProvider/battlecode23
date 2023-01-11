@@ -1,4 +1,4 @@
-package template;
+package SPAARK;
 
 import battlecode.common.*;
 
@@ -11,12 +11,10 @@ public strictfp class Booster {
         try {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
-            throw new GameActionException(null, null);
-        } catch (GameActionException e) {
-            System.out.println("GameActionException at Booster constructor");
-            e.printStackTrace();
-        }
-        catch (Exception e) {
+        // } catch (GameActionException e) {
+        //     System.out.println("GameActionException at Booster constructor");
+        //     e.printStackTrace();
+        } catch (Exception e) {
             System.out.println("Exception at Booster constructor");
             e.printStackTrace();
         }
@@ -30,12 +28,10 @@ public strictfp class Booster {
             try {
                 // code
                 turnCount++;
-                throw new GameActionException(null, null);
-            } catch (GameActionException e) {
-                System.out.println("GameActionException at Booster");
-                e.printStackTrace();
-            }
-            catch (Exception e) {
+            // } catch (GameActionException e) {
+            //     System.out.println("GameActionException at Booster");
+            //     e.printStackTrace();
+            } catch (Exception e) {
                 System.out.println("Exception at Booster");
                 e.printStackTrace();
             }
