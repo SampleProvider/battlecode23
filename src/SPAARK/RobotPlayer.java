@@ -1,6 +1,5 @@
 package SPAARK;
 
-import TEMPLATE1.Destabilizer;
 import battlecode.common.*;
 
 public strictfp class RobotPlayer {
