@@ -11,12 +11,10 @@ public strictfp class Destabilizer {
         try {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
-            throw new GameActionException(null, null);
-        } catch (GameActionException e) {
-            System.out.println("GameActionException at Destabilizer constructor");
-            e.printStackTrace();
-        }
-        catch (Exception e) {
+        // } catch (GameActionException e) {
+        //     System.out.println("GameActionException at Destabilizer constructor");
+        //     e.printStackTrace();
+        } catch (Exception e) {
             System.out.println("Exception at Destabilizer constructor");
             e.printStackTrace();
         }
@@ -30,12 +28,10 @@ public strictfp class Destabilizer {
             try {
                 // code
                 turnCount++;
-                throw new GameActionException(null, null);
-            } catch (GameActionException e) {
-                System.out.println("GameActionException at Destabilizer");
-                e.printStackTrace();
-            }
-            catch (Exception e) {
+            // } catch (GameActionException e) {
+            //     System.out.println("GameActionException at Destabilizer");
+            //     e.printStackTrace();
+            } catch (Exception e) {
                 System.out.println("Exception at Destabilizer");
                 e.printStackTrace();
             }

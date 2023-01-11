@@ -43,10 +43,9 @@ public strictfp class HeadQuarters {
             try {
                 // controller logic
                 turnCount++;
-                throw new GameActionException(null, null);
-            } catch (GameActionException e) {
-                System.out.println("GameActionException at HeadQuarters");
-                e.printStackTrace();
+            // } catch (GameActionException e) {
+            //     System.out.println("GameActionException at HeadQuarters");
+            //     e.printStackTrace();
             } catch (Exception e) {
                 System.out.println("Exception at HeadQuarters");
                 e.printStackTrace();

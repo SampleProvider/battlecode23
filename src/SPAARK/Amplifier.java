@@ -11,12 +11,10 @@ public strictfp class Amplifier {
         try {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
-            throw new GameActionException(null, null);
-        } catch (GameActionException e) {
-            System.out.println("GameActionException at Amplifier constructor");
-            e.printStackTrace();
-        }
-        catch (Exception e) {
+        // } catch (GameActionException e) {
+        //     System.out.println("GameActionException at Amplifier constructor");
+        //     e.printStackTrace();
+        } catch (Exception e) {
             System.out.println("Exception at Amplifier constructor");
             e.printStackTrace();
         }
@@ -30,12 +28,10 @@ public strictfp class Amplifier {
             try {
                 // code
                 turnCount++;
-                throw new GameActionException(null, null);
-            } catch (GameActionException e) {
-                System.out.println("GameActionException at Amplifier");
-                e.printStackTrace();
-            }
-            catch (Exception e) {
+            // } catch (GameActionException e) {
+            //     System.out.println("GameActionException at Amplifier");
+            //     e.printStackTrace();
+            } catch (Exception e) {
                 System.out.println("Exception at Amplifier");
                 e.printStackTrace();
             }

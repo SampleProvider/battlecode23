@@ -37,10 +37,49 @@ public class Carrier {
         rc.setIndicatorString("Initializing");
         while (true) {
             try {
+                if (rc.getResourceAmount(ResourceType.ADAMANTIUM) + rc.getResourceAmount(ResourceType.MANA) + rc.getResourceAmount(ResourceType.ELIXIR) > 4) {
+                    MapLocation me = rc.getLocation();
+                    for (int dx = -1; dx <= 1; dx++) {
+                        for (int dy = -1; dy <= 1; dy++) {
+                            // so inefficient
+                            // check if headquarters
+                            MapLocation headQuarterLocation = new MapLocation(me.x + dx, me.y + dy);
+                            if (rc.canTransferResource(headQuarterLocation, ResourceType.ADAMANTIUM, rc.getResourceAmount(ResourceType.ADAMANTIUM))) {
+                                rc.setIndicatorString("Transferring, now have, AD:" + 
+                                    rc.getResourceAmount(ResourceType.ADAMANTIUM));
+                                rc.transferResource(headQuarterLocation, ResourceType.ADAMANTIUM, rc.getResourceAmount(ResourceType.ADAMANTIUM));
+                            }
+                            if (rc.canTransferResource(headQuarterLocation, ResourceType.MANA, rc.getResourceAmount(ResourceType.MANA))) {
+                                rc.setIndicatorString("Transferring, now have, MN:" + 
+                                    rc.getResourceAmount(ResourceType.MANA));
+                                rc.transferResource(headQuarterLocation, ResourceType.MANA, rc.getResourceAmount(ResourceType.MANA));
+                            }
+                            if (rc.canTransferResource(headQuarterLocation, ResourceType.ELIXIR, rc.getResourceAmount(ResourceType.ELIXIR))) {
+                                rc.setIndicatorString("Transferring, now have, EX:" + 
+                                    rc.getResourceAmount(ResourceType.ELIXIR));
+                                rc.transferResource(headQuarterLocation, ResourceType.ELIXIR, rc.getResourceAmount(ResourceType.ELIXIR));
+                            }
+                        }
+                    }
+                }
                 if (path.length == pathIndex) {
                     MapLocation me = rc.getLocation();
-                    if (rc.canCollectResource(me, 39)) {
-                        rc.collectResource(me, 39);
+                    // if (rc.canCollectResource(me, 39)) {
+                    //     rc.collectResource(me, 39);
+                    // }
+                    for (int dx = -1; dx <= 1; dx++) {
+                        for (int dy = -1; dy <= 1; dy++) {
+                            MapLocation wellLocation = new MapLocation(me.x + dx, me.y + dy);
+                            if (rc.canCollectResource(wellLocation, -1)) {
+                                // if (rng.nextBoolean()) {
+                                    rc.collectResource(wellLocation, -1);
+                                    rc.setIndicatorString("Collecting, now have, AD:" + 
+                                        rc.getResourceAmount(ResourceType.ADAMANTIUM) + 
+                                        " MN: " + rc.getResourceAmount(ResourceType.MANA) + 
+                                        " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
+                                // }
+                            }
+                        }
                     }
                     mapInfo = rc.senseNearbyMapInfos();
                     if (rc.getResourceAmount(ResourceType.ADAMANTIUM) == 0 && rc.getResourceAmount(ResourceType.MANA) == 0 && rc.getResourceAmount(ResourceType.ELIXIR) == 0) {
@@ -69,7 +108,7 @@ public class Carrier {
                             }
                         }
                     }
-                    else {
+                    else if (rc.getResourceAmount(ResourceType.ADAMANTIUM) + rc.getResourceAmount(ResourceType.MANA) + rc.getResourceAmount(ResourceType.ELIXIR) > 4) {
                         path = new Direction[10];
                         for (int i = 0;i < 10;i++) {
                             path[i] = directions[rng.nextInt(directions.length)];
@@ -90,23 +129,12 @@ public class Carrier {
                         pathIndex = 0;
                     }
                 }
-                catch (Exception e) {
-                    path = new Direction[10];
-                    for (int i = 0;i < 10;i++) {
-                        path[i] = directions[rng.nextInt(directions.length)];
-                    }
-                    pathIndex = 0;
-                }
-                if (rc.getResourceAmount(prioritizedResourceType) == 39) {
-                    MapLocation me = rc.getLocation();
-                    for (int dx = -1; dx <= 1; dx++) {
-                        for (int dy = -1; dy <= 1; dy++) {
-                            MapLocation headQuarterLocation = new MapLocation(me.x + dx, me.y + dy);
-                            if (rc.canTransferResource(headQuarterLocation, null, -1) && rc.sensePassability(headQuarterLocation)) {
-                                rc.transferResource(headQuarterLocation, null, -1);
-                            }
-                        }
-                    }
+                catch (GameActionException e) {
+                    // path = new Direction[10];
+                    // for (int i = 0;i < 10;i++) {
+                    //     path[i] = directions[rng.nextInt(directions.length)];
+                    // }
+                    // pathIndex = 0;
                 }
             }
             catch (GameActionException e) {
