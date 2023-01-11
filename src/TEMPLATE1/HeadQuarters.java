@@ -29,10 +29,10 @@ public class HeadQuarters {
         rc.setIndicatorString("Initializing");
         while (true) {
             try {
-                // Direction dir = directions[rng.nextInt(directions.length)];
-                // MapLocation newLoc = rc.getLocation().add(dir);
-                if (rc.canBuildRobot(RobotType.CARRIER, rc.getLocation().add(Direction.NORTH))) {
-                    rc.buildRobot(RobotType.CARRIER, rc.getLocation().add(Direction.NORTH));
+                Direction dir = directions[rng.nextInt(directions.length)];
+                MapLocation newLoc = rc.getLocation().add(dir);
+                if (rc.canBuildRobot(RobotType.CARRIER, newLoc)) {
+                    rc.buildRobot(RobotType.CARRIER, newLoc);
                 }
             } catch (GameActionException e) {
                 System.out.println("GameActionException at HeadQuarters");
