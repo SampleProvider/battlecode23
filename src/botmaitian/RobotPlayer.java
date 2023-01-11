@@ -257,14 +257,14 @@ public strictfp class RobotPlayer {
                         if(Math.pow(x + dx - visionRadius,2) + Math.pow(y + dy - visionRadius,2) > rc.getType().visionRadiusSquared){
                             continue;
                         }
-                        try{
+                        // try{
                             if(rc.sensePassability(new MapLocation(me.x + x + dx - visionRadius,me.y + y + dy - visionRadius)) == false){
                                 continue;
                             }
-                        }
-                        catch(Exception error){
-                            continue;
-                        }
+                        // }
+                        // catch(Exception error){
+                        //     continue;
+                        // }
                         if(range[x + dx][y + dy] == 0){
                             range[x + dx][y + dy] = range[x][y] + 1;
                             queue.add(x + dx + visionDiameter * (y + dy));
@@ -281,14 +281,6 @@ public strictfp class RobotPlayer {
                         }
                     }
                 }
-            }
-            System.out.println("array");
-            for(int i = visionDiameter - 1;i >= 0;i--){
-                StringBuilder a = new StringBuilder();
-                for(int j = 0;j < visionDiameter;j++){
-                    a.append(range[i][j]);
-                }
-                System.out.println(a.toString());
             }
         }
     }
