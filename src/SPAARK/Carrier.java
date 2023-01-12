@@ -29,7 +29,7 @@ public strictfp class Carrier {
 
     private MapInfo[] mapInfo;
     private WellInfo[] wellInfo;
-    private MapLocation[] headquarters = new MapLocation[4];
+    private MapLocation[] headquarters;
     private MapLocation closestHeadquarters;
 
     private int state = 0;
