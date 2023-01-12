@@ -3,6 +3,9 @@ package SPAARK;
 import battlecode.common.*;
 
 import java.util.Random;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public strictfp class Carrier {
     private RobotController rc;
@@ -79,24 +82,60 @@ public strictfp class Carrier {
                 elixirAmount = rc.getResourceAmount(ResourceType.ELIXIR);
                 if (state == 0) {
                     rc.setIndicatorString("Wandering...");
+                    if (rc.getAnchor() != null) {
+                        int[] islands = rc.senseNearbyIslands();
+                        Set<MapLocation> islandLocs = new HashSet<>();
+                        for (int id : islands) {
+                            MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
+                            islandLocs.addAll(Arrays.asList(thisIslandLocs));
+                        }
+                        if (islandLocs.size() > 0) {
+                            MapLocation islandLocation = islandLocs.iterator().next();
+                            rc.setIndicatorString("Moving my anchor towards " + islandLocation);
+                            while (!rc.getLocation().equals(islandLocation)) {
+                                Direction dir = rc.getLocation().directionTo(islandLocation);
+                                if (rc.canMove(dir)) {
+                                    rc.move(dir);
+                                }
+                            }
+                            if (rc.canPlaceAnchor()) {
+                                rc.setIndicatorString("Huzzah, placed anchor!");
+                                rc.placeAnchor();
+                            }
+                        }
+                        else {
+                            while (true) {
+                                Direction direction = directions[rng.nextInt(directions.length)];
+                                if (rc.canMove(direction)) {
+                                    rc.move(direction);
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     if (rc.canCollectResource(me, -1) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
                         rc.collectResource(me, -1);
                         state = 2;
                         continue;
                     }
-                    mapInfo = rc.senseNearbyMapInfos();
-                    if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
-                        closestHeadquarters = headquarters[0];
-                        for (MapLocation hq : headquarters) {
-                            if (hq != null) {
-                                if (hq.distanceSquaredTo(me) > rc.getType().visionRadiusSquared) {
-                                    continue;
-                                }
-                                if (closestHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
-                                    closestHeadquarters = hq;
-                                }
+                    closestHeadquarters = headquarters[0];
+                    for (MapLocation hq : headquarters) {
+                        if (hq != null) {
+                            if (hq.distanceSquaredTo(me) > rc.getType().visionRadiusSquared) {
+                                continue;
+                            }
+                            if (closestHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
+                                closestHeadquarters = hq;
                             }
                         }
+                    }
+                    if (rc.canTakeAnchor(closestHeadquarters, Anchor.STANDARD)) {
+                        rc.takeAnchor(closestHeadquarters, Anchor.STANDARD);
+                        System.out.println("Taken Anchor!");
+                        continue;
+                    }
+                    mapInfo = rc.senseNearbyMapInfos();
+                    if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
                         if (closestHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
                             if (rc.canTransferResource(closestHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount)) {
                                 rc.transferResource(closestHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount);
@@ -160,6 +199,40 @@ public strictfp class Carrier {
                 }
                 else if (state == 1) {
                     rc.setIndicatorString("Pathfinding...");
+                    if (rc.getAnchor() != null) {
+                        int[] islands = rc.senseNearbyIslands();
+                        Set<MapLocation> islandLocs = new HashSet<>();
+                        for (int id : islands) {
+                            if (rc.senseTeamOccupyingIsland(id) != rc.getTeam()) {
+                                MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
+                                islandLocs.addAll(Arrays.asList(thisIslandLocs));
+                            }
+                        }
+                        if (islandLocs.size() > 0) {
+                            MapLocation islandLocation = islandLocs.iterator().next();
+                            rc.setIndicatorString("Moving my anchor towards " + islandLocation);
+                            while (!rc.getLocation().equals(islandLocation)) {
+                                Direction dir = rc.getLocation().directionTo(islandLocation);
+                                if (rc.canMove(dir)) {
+                                    rc.move(dir);
+                                }
+                            }
+                            if (rc.canPlaceAnchor()) {
+                                rc.setIndicatorString("Huzzah, placed anchor!");
+                                rc.placeAnchor();
+                            }
+                        }
+                        else {
+                            while (true) {
+                                Direction direction = directions[rng.nextInt(directions.length)];
+                                if (rc.canMove(direction)) {
+                                    rc.move(direction);
+                                    break;
+                                }
+                            }
+                            continue;
+                        }
+                    }
                     if (rc.canCollectResource(me, 2) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
                         rc.collectResource(me, 2);
                         state = 2;

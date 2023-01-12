@@ -9,6 +9,7 @@ public strictfp class HeadQuarters {
     
     private int turnCount = 0;
     private int carriers = -100;
+    private int carrierCooldown = 0;
     private boolean producedAnchor = false;
     
     static final Random rng = new Random(2023);
@@ -64,11 +65,14 @@ public strictfp class HeadQuarters {
                 if (rc.canBuildAnchor(Anchor.STANDARD) && turnCount >= 300) {
                     rc.buildAnchor(Anchor.STANDARD);
                     System.out.println("Anchor Produced!");
+                    producedAnchor = true;
+                    carrierCooldown = 0;
                 }
-                if (turnCount < 300 || producedAnchor == true) {
+                if (carrierCooldown <= 3 || turnCount < 300) {
                     if (rc.canBuildRobot(RobotType.CARRIER, newLoc) && carriers <= 0) {
                         rc.buildRobot(RobotType.CARRIER, newLoc);
                         carriers += 10;
+                        carrierCooldown += 1;
                         // if (turnCount >= 300) {
                         //     carriers += 20;
                         // }
