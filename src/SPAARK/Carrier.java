@@ -120,6 +120,11 @@ public strictfp class Carrier {
                                 continue;
                             }
                         }
+                        Direction direction = me.directionTo(closestHeadquarters);
+                        if (rc.canMove(direction)) {
+                            rc.move(direction);
+                            continue;
+                        }
                     }
                     else{
                         wellInfo = rc.senseNearbyWells();

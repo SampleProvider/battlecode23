@@ -7,8 +7,9 @@ import java.util.Random;
 public strictfp class HeadQuarters {
     RobotController rc;
     
-    private int turnCount = -100;
-    private int carriers = 0;
+    private int turnCount = 0;
+    private int carriers = -100;
+    private boolean producedAnchor = false;
     
     static final Random rng = new Random(2023);
 
@@ -60,13 +61,23 @@ public strictfp class HeadQuarters {
                 turnCount++;
                 Direction dir = directions[rng.nextInt(directions.length)];
                 MapLocation newLoc = rc.getLocation().add(dir);
-                if (rc.canBuildRobot(RobotType.CARRIER, newLoc) && carriers <= 0) {
-                    rc.buildRobot(RobotType.CARRIER, newLoc);
-                    carriers += 10;
+                if (rc.canBuildAnchor(Anchor.STANDARD) && turnCount >= 300) {
+                    rc.buildAnchor(Anchor.STANDARD);
+                    System.out.println("Anchor Produced!");
                 }
-                else if (rc.canBuildRobot(RobotType.LAUNCHER, newLoc)) {
-                    rc.buildRobot(RobotType.LAUNCHER, newLoc);
+                if (turnCount < 300 || producedAnchor == true) {
+                    if (rc.canBuildRobot(RobotType.CARRIER, newLoc) && carriers <= 0) {
+                        rc.buildRobot(RobotType.CARRIER, newLoc);
+                        carriers += 10;
+                        // if (turnCount >= 300) {
+                        //     carriers += 20;
+                        // }
+                    }
+                    else if (rc.canBuildRobot(RobotType.LAUNCHER, newLoc)) {
+                        rc.buildRobot(RobotType.LAUNCHER, newLoc);
+                    }
                 }
+                carriers -= 1;
             } catch (GameActionException e) {
                 System.out.println("GameActionException at HeadQuarters");
                 e.printStackTrace();
