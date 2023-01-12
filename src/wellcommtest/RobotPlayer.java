@@ -1,4 +1,4 @@
-package SPAARK;
+package wellcommtest;
 
 import battlecode.common.*;
 
