@@ -47,11 +47,14 @@ public strictfp class Carrier {
         try {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
+            int hqCount = 0;
             for (int i = 1; i <= 4; i++) {
-                int data = rc.readSharedArray(i);
-                if (data >> 12 == 1) {
-                    headquarters[i - 1] = new MapLocation(data & 0b111111, (data >> 6) & 0b111111);
-                }
+                if (rc.readSharedArray(i) >> 12 == 1) hqCount++;
+            }
+            headquarters = new MapLocation[hqCount];
+            for (int i = 0; i < hqCount; i++) {
+                int data = rc.readSharedArray(i+1);
+                headquarters[i] = new MapLocation(data & 0b111111, (data >> 6) & 0b111111);
             }
         } catch (GameActionException e) {
             System.out.println("GameActionException at Carrier constructor");
