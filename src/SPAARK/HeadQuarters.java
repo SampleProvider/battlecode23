@@ -2,10 +2,25 @@ package SPAARK;
 
 import battlecode.common.*;
 
+import java.util.Random;
+
 public strictfp class HeadQuarters {
     RobotController rc;
     
     private int turnCount = 0;
+    
+    static final Random rng = new Random(2023);
+
+    static final Direction[] directions = {
+        Direction.SOUTHWEST,
+        Direction.SOUTH,
+        Direction.SOUTHEAST,
+        Direction.WEST,
+        Direction.EAST,
+        Direction.NORTHWEST,
+        Direction.NORTH,
+        Direction.NORTHEAST,
+    };
 
     public HeadQuarters(RobotController rc) {
         try {
@@ -39,13 +54,21 @@ public strictfp class HeadQuarters {
         run();
     }
     private void run() {
+        // int e1 = 0;
         while (true) {
             try {
-                // controller logic
                 turnCount++;
-            // } catch (GameActionException e) {
-            //     System.out.println("GameActionException at HeadQuarters");
-            //     e.printStackTrace();
+                Direction dir = directions[rng.nextInt(directions.length)];
+                MapLocation newLoc = rc.getLocation().add(dir);
+                if (rc.canBuildRobot(RobotType.CARRIER, newLoc)) {
+                    rc.buildRobot(RobotType.CARRIER, newLoc);
+                }
+                else if (rc.canBuildRobot(RobotType.LAUNCHER, newLoc)) {
+                    rc.buildRobot(RobotType.LAUNCHER, newLoc);
+                }
+            } catch (GameActionException e) {
+                System.out.println("GameActionException at HeadQuarters");
+                e.printStackTrace();
             } catch (Exception e) {
                 System.out.println("Exception at HeadQuarters");
                 e.printStackTrace();

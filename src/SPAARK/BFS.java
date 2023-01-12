@@ -2,6 +2,7 @@ package SPAARK;
 
 import battlecode.common.*;
 
+import java.lang.StringBuilder;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -16,21 +17,24 @@ public class BFS {
         Direction.NORTH,
         Direction.NORTHEAST,
     };
+
+    static Queue<Integer> queue = new LinkedList<Integer>();
     
     public static Direction[] run(RobotController rc,MapInfo[] mapInfo,MapLocation dest) throws GameActionException {
         MapLocation me = rc.getLocation();
         int visionRadius = (int) Math.sqrt(rc.getType().visionRadiusSquared);
         int visionDiameter = visionRadius * 2 + 1;
+        int destX = dest.x - me.x + visionRadius;
+        int destY = dest.y - me.y + visionRadius;
         int[][] range = new int[visionDiameter][visionDiameter];
-        // MapLocation[] a = rc.getAllLocationsWithinRadiusSquared();
+        range[destX][destY] = 1;
         Direction[][] currents = new Direction[visionDiameter][visionDiameter];
         for(MapInfo m : mapInfo){
             MapLocation mapLocation = m.getMapLocation();
             currents[mapLocation.x - me.x + visionRadius][mapLocation.y - me.y + visionRadius] = m.getCurrentDirection();
         }
-        Queue<Integer> queue = new LinkedList<Integer>();
-        queue.add(dest.x - me.x + visionRadius + visionDiameter * (dest.y - me.y + visionRadius));
-        range[dest.x - me.x + visionRadius][dest.y - me.y + visionRadius] = 1;
+        queue.clear();
+        queue.add(destX + visionDiameter * destY);
         while(queue.size() > 0){
             int c = queue.poll();
             int x = c % visionDiameter;
@@ -55,7 +59,7 @@ public class BFS {
                         range[x + dx][y + dy] = range[x][y] + 1;
                         queue.add(x + dx + visionDiameter * (y + dy));
                         if(x + dx == visionRadius && y + dy == visionRadius){
-                            return getPath(rc,dest,visionRadius,visionDiameter,range,currents);
+                            return getPath(rc,visionRadius,visionDiameter,range,currents);
                         }
                     }
                     if(currents[x + dx][y + dy] != Direction.CENTER){
@@ -68,7 +72,7 @@ public class BFS {
                             range[x + cx][y + cy] = range[x][y] + 1;
                             queue.add(x + cx + visionDiameter * (y + cy));
                             if(x + cx == visionRadius && y + cy == visionRadius){
-                                return getPath(rc,dest,visionRadius,visionDiameter,range,currents);
+                                return getPath(rc,visionRadius,visionDiameter,range,currents);
                             }
                         }
                     }
@@ -77,10 +81,18 @@ public class BFS {
         }
         return new Direction[0];
     }
-    private static Direction[] getPath(RobotController rc,MapLocation dest,int visionRadius,int visionDiameter,int[][] range,Direction[][] currents) {
+    private static Direction[] getPath(RobotController rc,int visionRadius,int visionDiameter,int[][] range,Direction[][] currents) {
+        // System.out.println("array");
+        // for(int i = visionDiameter - 1;i >= 0;i--){
+        //     StringBuilder a = new StringBuilder();
+        //     for(int j = 0;j < visionDiameter;j++){
+        //         a.append(range[i][j]);
+        //     }
+        //     System.out.println(a.toString());
+        // }
         Direction[] path = new Direction[range[visionRadius][visionRadius] - 1];
         int pathIndex = 0;
-        Queue<Integer> queue = new LinkedList<Integer>();
+        queue.clear();
         queue.add(visionRadius + visionDiameter * visionRadius);
         while(queue.size() > 0){
             int c = queue.poll();
@@ -93,7 +105,7 @@ public class BFS {
                     }
                     if(x + dx >= 0 && x + dx < visionDiameter && y + dy >= 0 && y + dy < visionDiameter){
                         if(range[x + dx][y + dy] == range[x][y] - 1){
-                            int direction = -dx - dy * 3 + 4;
+                            int direction = dx + dy * 3 + 4;
                             if(direction > 4){
                                 direction -= 1;
                             }
