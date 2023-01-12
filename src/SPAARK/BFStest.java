@@ -6,7 +6,7 @@ import java.lang.StringBuilder;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class BFS {
+public class BFStest {
     static final Direction[] BFSDirections = {
         Direction.SOUTHWEST,
         Direction.SOUTH,
@@ -22,8 +22,7 @@ public class BFS {
 
     static int visionRadius = 4;
     static int visionDiameter = visionRadius * 2 + 1;
-    
-    static int[][] range = new int[visionDiameter][visionDiameter];
+
     static Direction[][] currents = new Direction[visionDiameter][visionDiameter];
     
     public static Direction[] run(RobotController rc,MapInfo[] mapInfo,MapLocation dest) throws GameActionException {
@@ -31,11 +30,6 @@ public class BFS {
         int destX = dest.x - me.x + visionRadius;
         int destY = dest.y - me.y + visionRadius;
         int[][] range = new int[visionDiameter][visionDiameter];
-        // for(int i = 0;i < visionDiameter;i++){
-        //     for(int j = 0;j < visionDiameter;j++){
-        //         range[i][j] = 0;
-        //     }
-        // }
         range[destX][destY] = 1;
         for(MapInfo m : mapInfo){
             MapLocation mapLocation = m.getMapLocation();
@@ -67,7 +61,7 @@ public class BFS {
                         range[x + dx][y + dy] = range[x][y] + 1;
                         queue.add(x + dx + visionDiameter * (y + dy));
                         if(x + dx == visionRadius && y + dy == visionRadius){
-                            return getPath(rc);
+                            return getPath(rc,range);
                         }
                     }
                     if(currents[x + dx][y + dy] != Direction.CENTER){
@@ -80,7 +74,7 @@ public class BFS {
                             range[x + cx][y + cy] = range[x][y] + 1;
                             queue.add(x + cx + visionDiameter * (y + cy));
                             if(x + cx == visionRadius && y + cy == visionRadius){
-                                return getPath(rc);
+                                return getPath(rc,range);
                             }
                         }
                     }
@@ -89,7 +83,7 @@ public class BFS {
         }
         return new Direction[0];
     }
-    private static Direction[] getPath(RobotController rc) {
+    private static Direction[] getPath(RobotController rc,int[][] range) {
         // System.out.println("array");
         // for(int i = visionDiameter - 1;i >= 0;i--){
         //     StringBuilder a = new StringBuilder();
