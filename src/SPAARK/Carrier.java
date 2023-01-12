@@ -79,7 +79,7 @@ public strictfp class Carrier {
                 elixirAmount = rc.getResourceAmount(ResourceType.ELIXIR);
                 if (state == 0) {
                     rc.setIndicatorString("Wandering...");
-                    if (rc.canCollectResource(me, -1)) {
+                    if (rc.canCollectResource(me, -1) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
                         rc.collectResource(me, -1);
                         state = 2;
                         continue;
@@ -113,12 +113,8 @@ public strictfp class Carrier {
                                 state = 3;
                                 continue;
                             }
-                            path = BFS.run(rc, mapInfo, closestHeadquarters);
+                            path = BFStest.run(rc, mapInfo, closestHeadquarters);
                             if (path.length > 0) {
-                                System.out.println("HQ PATH: ");
-                                for(Direction d : path){
-                                    System.out.print(d);
-                                }
                                 rc.setIndicatorString("Wandering... (Next up: Pathfinding to HQ)");
                                 state = 1;
                                 continue;
@@ -141,9 +137,8 @@ public strictfp class Carrier {
                                     }
                                 }
                             }
-                            path = BFS.run(rc, mapInfo, prioritizedWellInfo.getMapLocation());
+                            path = BFStest.run(rc, mapInfo, prioritizedWellInfo.getMapLocation());
                             if (path.length > 0) {
-                                System.out.println(path);
                                 rc.setIndicatorString("Wandering... (Next up: Pathfinding to Well)");
                                 state = 1;
                                 continue;
@@ -160,7 +155,7 @@ public strictfp class Carrier {
                 }
                 else if (state == 1) {
                     rc.setIndicatorString("Pathfinding...");
-                    if (rc.canCollectResource(me, 2)) {
+                    if (rc.canCollectResource(me, 2) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
                         rc.collectResource(me, 2);
                         state = 2;
                         continue;
@@ -235,7 +230,7 @@ public strictfp class Carrier {
                 }
                 else if (state == 2) {
                     rc.setIndicatorString("Collecting resources...");
-                    if (rc.canCollectResource(me, -1)) {
+                    if (rc.canCollectResource(me, -1) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
                         rc.collectResource(me, -1);
                     }
                     else {
