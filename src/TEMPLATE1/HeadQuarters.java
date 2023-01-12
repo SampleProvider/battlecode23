@@ -34,6 +34,9 @@ public class HeadQuarters {
                 if (rc.canBuildRobot(RobotType.CARRIER, newLoc)) {
                     rc.buildRobot(RobotType.CARRIER, newLoc);
                 }
+                else if (rc.canBuildRobot(RobotType.LAUNCHER, newLoc)) {
+                    rc.buildRobot(RobotType.LAUNCHER, newLoc);
+                }
             } catch (GameActionException e) {
                 System.out.println("GameActionException at HeadQuarters");
                 e.printStackTrace();
