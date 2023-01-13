@@ -47,11 +47,22 @@ public strictfp class GameState {
         if (rc.canWriteSharedArray(0, 0)) {
             try {
                 int resType = well.getResourceType().resourceID;
-                for (int i = 0; i < 8; i++) {
-                    if (!hasLocation(rc.readSharedArray(i+5))) {
-                        rc.writeSharedArray(i+5, ((well.isUpgraded() ? 1 : 0) << 15) | (resType << 13) | intifyLocation(well.getMapLocation()));
-                        return true;
+                if (resType == 2) {
+                    for (int i = 5; i <= 9; i++) {
+                        if (!hasLocation(rc.readSharedArray(i))) {
+                            rc.writeSharedArray(i, ((well.isUpgraded() ? 1 : 0) << 15) | (resType << 13) | intifyLocation(well.getMapLocation()));
+                            return true;
+                        }
                     }
+                } else if (resType == 1) {
+                    for (int i = 10; i <= 13; i++) {
+                        if (!hasLocation(rc.readSharedArray(i))) {
+                            rc.writeSharedArray(i, ((well.isUpgraded() ? 1 : 0) << 15) | (resType << 13) | intifyLocation(well.getMapLocation()));
+                            return true;
+                        }
+                    }
+                } else {
+                    throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Unexpected resource type " + well.getResourceType());
                 }
                 return false;
             } catch (GameActionException e) {
