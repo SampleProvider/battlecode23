@@ -68,7 +68,7 @@ public strictfp class HeadQuarters {
                     producedAnchor = true;
                     carrierCooldown = 0;
                 }
-                if (carrierCooldown <= 3 || turnCount < 300) {
+                if (carrierCooldown <= 4 || turnCount < 300) {
                     if (rc.canBuildRobot(RobotType.CARRIER, newLoc) && carriers <= 0) {
                         rc.buildRobot(RobotType.CARRIER, newLoc);
                         carriers += 10;
