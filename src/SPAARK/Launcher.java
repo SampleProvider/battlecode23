@@ -11,9 +11,6 @@ public strictfp class Launcher {
     private int turnCount = 0;
 
     private static final Random rng = new Random(2023);
-    private boolean isAttacking;
-    private static int carrierCounter = 0;
-
     private static final Direction[] directions = {
         Direction.SOUTHWEST,
         Direction.SOUTH,
@@ -25,12 +22,13 @@ public strictfp class Launcher {
         Direction.NORTHEAST,
     };
 
+    private static int amplifierID = -1;
+    private static int launcherID = -1;
+
     public Launcher(RobotController rc) {
         try {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
-            carrierCounter++;
-            isAttacking = carrierCounter % 2 == 0;
         // } catch (GameActionException e) {
         //     System.out.println("GameActionException at Carrier constructor");
         //     e.printStackTrace();
@@ -47,6 +45,16 @@ public strictfp class Launcher {
         while (true) {
             try {
                 turnCount++;
+                me = rc.getLocation();
+
+                if (amplifierID == 0) {
+                    if (rc.readSharedArray(15) >> 11 != 0)
+                    
+                }
+                else {
+
+                }
+
                 int radius = rc.getType().actionRadiusSquared;
                 Team opponent = rc.getTeam().opponent();
                 RobotInfo[] enemies = rc.senseNearbyRobots(radius, opponent);
@@ -58,11 +66,6 @@ public strictfp class Launcher {
                         rc.attack(toAttack);
                     }
                 }
-
-                MapLocation m8 = GameState.parseLocation(rc.readSharedArray(8));
-                MapLocation m9 = GameState.parseLocation(rc.readSharedArray(9));
-                MapLocation m10 = GameState.parseLocation(rc.readSharedArray(10));
-                MapLocation m11 = GameState.parseLocation(rc.readSharedArray(11));
 
                 Direction direction = directions[rng.nextInt(directions.length)];
                 if (rc.canMove(direction)) {

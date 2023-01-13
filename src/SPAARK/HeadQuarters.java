@@ -12,17 +12,19 @@ public strictfp class HeadQuarters {
     private int carrierCooldown = 0;
     private boolean producedAnchor = false;
 
+    private int[] amplifierState = new int[]{0,0,0,0};
+
     static final Random rng = new Random(2023);
 
     static final Direction[] directions = {
-            Direction.SOUTHWEST,
-            Direction.SOUTH,
-            Direction.SOUTHEAST,
-            Direction.WEST,
-            Direction.EAST,
-            Direction.NORTHWEST,
-            Direction.NORTH,
-            Direction.NORTHEAST,
+        Direction.SOUTHWEST,
+        Direction.SOUTH,
+        Direction.SOUTHEAST,
+        Direction.WEST,
+        Direction.EAST,
+        Direction.NORTHWEST,
+        Direction.NORTH,
+        Direction.NORTHEAST,
     };
 
     public HeadQuarters(RobotController rc) {
@@ -79,6 +81,12 @@ public strictfp class HeadQuarters {
                     }
                 }
                 carriers -= 1;
+                for (int a = 0;a < 4;a++) {
+                    if (((rc.readSharedArray(14 + a * 2) >> 15) & 1) == amplifierState[a]) {
+                        rc.writeSharedArray(14 + a * 2,0);
+                        rc.writeSharedArray(15 + a * 2,0);
+                    }
+                }
             } catch (GameActionException e) {
                 System.out.println("GameActionException at HeadQuarters");
                 e.printStackTrace();

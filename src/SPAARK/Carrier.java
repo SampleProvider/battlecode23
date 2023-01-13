@@ -15,17 +15,17 @@ public strictfp class Carrier {
 
     private final Random rng = new Random(2023);
     private final Direction[] directions = {
-            Direction.SOUTHWEST,
-            Direction.SOUTH,
-            Direction.SOUTHEAST,
-            Direction.WEST,
-            Direction.EAST,
-            Direction.NORTHWEST,
-            Direction.NORTH,
-            Direction.NORTHEAST,
+        Direction.SOUTHWEST,
+        Direction.SOUTH,
+        Direction.SOUTHEAST,
+        Direction.WEST,
+        Direction.EAST,
+        Direction.NORTHWEST,
+        Direction.NORTH,
+        Direction.NORTHEAST,
     };
 
-    private ResourceType prioritizedResourceType = ResourceType.ADAMANTIUM;
+    private ResourceType prioritizedResourceType = ResourceType.ELIXIR;
     private int adamantiumAmount = 0;
     private int manaAmount = 0;
     private int elixirAmount = 0;
@@ -107,6 +107,7 @@ public strictfp class Carrier {
                             }
                         } else {
                             moveRandomly();
+                            continue;
                         }
                     }
                     updateClosestHeadquarters();
@@ -163,8 +164,10 @@ public strictfp class Carrier {
                                     continue;
                                 }
                                 if (rc.sensePassability(adjSpot) && rc.senseRobotAtLocation(adjSpot) == null) {
-                                    adjPrioritizedWellInfoLocation = adjSpot;
                                     emptySpots += 1;
+                                    if (adjSpot.distanceSquaredTo(me) < adjPrioritizedWellInfoLocation.distanceSquaredTo(me)) {
+                                        adjPrioritizedWellInfoLocation = adjSpot;
+                                    }
                                 }
                             }
                             if (emptySpots >= 3) {
@@ -285,7 +288,7 @@ public strictfp class Carrier {
             }
         }
     }
-
+    
     private void attemptCollection() throws GameActionException {
         if (rc.canCollectResource(me, -1) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
             rc.collectResource(me, -1);
@@ -315,9 +318,9 @@ public strictfp class Carrier {
         closestHeadquarters = headquarters[0];
         for (MapLocation hq : headquarters) {
             if (hq != null) {
-                if (hq.distanceSquaredTo(me) > rc.getType().visionRadiusSquared) {
-                    continue;
-                }
+                // if (hq.distanceSquaredTo(me) > rc.getType().visionRadiusSquared) {
+                //     continue;
+                // }
                 if (closestHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
                     closestHeadquarters = hq;
                 }
