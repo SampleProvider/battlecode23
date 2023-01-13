@@ -13,14 +13,14 @@ public strictfp class HeadQuarters {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
             MapLocation loc = rc.getLocation();
-            if (!gameState.hasLocation(rc.readSharedArray(1))) {
-                rc.writeSharedArray(1, gameState.intifyLocation(loc));
-            } else if (!gameState.hasLocation(rc.readSharedArray(2))) {
-                rc.writeSharedArray(2, gameState.intifyLocation(loc));
-            } else if (!gameState.hasLocation(rc.readSharedArray(3))) {
-                rc.writeSharedArray(3, gameState.intifyLocation(loc));
-            } else if (!gameState.hasLocation(rc.readSharedArray(4))) {
-                rc.writeSharedArray(4, gameState.intifyLocation(loc));
+            if (!GameState.hasLocation(rc.readSharedArray(1))) {
+                rc.writeSharedArray(1, GameState.intifyLocation(loc));
+            } else if (!GameState.hasLocation(rc.readSharedArray(2))) {
+                rc.writeSharedArray(2, GameState.intifyLocation(loc));
+            } else if (!GameState.hasLocation(rc.readSharedArray(3))) {
+                rc.writeSharedArray(3, GameState.intifyLocation(loc));
+            } else if (!GameState.hasLocation(rc.readSharedArray(4))) {
+                rc.writeSharedArray(4, GameState.intifyLocation(loc));
             } else {
                 throw new Exception("Too many HeadQuarters!");
             }
