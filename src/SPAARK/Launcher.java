@@ -30,6 +30,9 @@ public strictfp class Launcher {
             rc.setIndicatorString("Initializing");
             carrierCounter++;
             isAttacking = carrierCounter % 2 == 0;
+        } catch (GameActionException e) {
+            System.out.println("GameActionException at Launcher constructor");
+            e.printStackTrace();
         } catch (Exception e) {
             System.out.println("Exception at Launcher constructor");
             e.printStackTrace();
