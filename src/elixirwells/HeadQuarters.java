@@ -1,4 +1,4 @@
-package SPAARK;
+package elixirwells;
 
 import battlecode.common.*;
 
@@ -6,11 +6,13 @@ import java.util.Random;
 
 public strictfp class HeadQuarters {
     RobotController rc;
+    MapLocation me;
 
     private int turnCount = 0;
     private int carriers = -100;
     private int carrierCooldown = 0;
     private boolean producedAnchor = false;
+    private boolean isPrimaryHQ = false;
 
     static final Random rng = new Random(2023);
 
@@ -33,6 +35,7 @@ public strictfp class HeadQuarters {
             int locInt = GameState.intifyLocation(rc.getLocation());
             if (!GameState.hasLocation(rc.readSharedArray(1))) {
                 rc.writeSharedArray(1, locInt);
+                isPrimaryHQ = true;
             } else if (!GameState.hasLocation(rc.readSharedArray(2))) {
                 rc.writeSharedArray(2, locInt);
             } else if (!GameState.hasLocation(rc.readSharedArray(3))) {

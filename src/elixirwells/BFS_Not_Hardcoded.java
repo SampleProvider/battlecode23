@@ -1,4 +1,4 @@
-package SPAARK;
+package elixirwells;
 
 import battlecode.common.*;
 
