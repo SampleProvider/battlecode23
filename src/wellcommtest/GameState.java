@@ -11,14 +11,8 @@ public strictfp class GameState {
     public static final int ELIXIR_HQ = 3;
     public static final int CONVERSION_WELL_ID = 4;
 
-    private final ResourceType[] resourceTypes = new ResourceType[4];
-    private final int[] currentState = new int[5];
-
-    public GameState() {
-        for (ResourceType r : ResourceType.values()) {
-            resourceTypes[r.resourceID] = r;
-        }
-    }
+    private static final ResourceType[] resourceTypes = new ResourceType[] {ResourceType.NO_RESOURCE, ResourceType.ADAMANTIUM, ResourceType.MANA, ResourceType.ELIXIR};
+    private static final int[] currentState = new int[5];
 
     /*
      * Bits 0-5     x coordinate
@@ -28,22 +22,22 @@ public strictfp class GameState {
      * Bit 15       upgraded well
      */
 
-    public boolean hasLocation(int n) {
+    public static boolean hasLocation(int n) {
         return (n >> 12 & 0b1) == 1;
     }
-    public MapLocation parseLocation(int n) {
+    public static MapLocation parseLocation(int n) {
         return new MapLocation(n & 0b111111, (n >> 6) & 0b111111);
     }
-    public int intifyLocation(MapLocation loc) {
+    public static int intifyLocation(MapLocation loc) {
         return 0b1000000000000 | (loc.y << 6) | loc.x;
     }
-    public ResourceType getWellType(int n) {
+    public static ResourceType getWellType(int n) {
         return resourceTypes[n >> 13 & 0b11];
     }
-    public boolean isUpgradedWell(int n) {
+    public static boolean isUpgradedWell(int n) {
         return n >> 15 == 1;
     }
-    public boolean storeWell(RobotController rc, WellInfo well) {
+    public static boolean storeWell(RobotController rc, WellInfo well) {
         if (rc.canWriteSharedArray(0, 0)) {
             try {
                 int resType = well.getResourceType().resourceID;
@@ -73,7 +67,7 @@ public strictfp class GameState {
         return false;
     }
 
-    public int[] parseGameState(int n) {
+    public static int[] parseGameState(int n) {
         currentState[PRIORITIZED_RESOURCE] = n & 0b11; // bits 0-1
         currentState[CONVERT_WELL] = n >> 2 & 0b1; // bit 2
         currentState[UPGRADE_WELLS] = n >> 2 & 0b1; // bit 2
@@ -81,16 +75,16 @@ public strictfp class GameState {
         currentState[CONVERSION_WELL_ID] = n >> 6 & 0b11; // bits 6-7
         return currentState;
     }
-    public ResourceType prioritizedResource() {
+    public static ResourceType prioritizedResource() {
         return resourceTypes[currentState[PRIORITIZED_RESOURCE]];
     }
-    public boolean convertWell() {
+    public static boolean convertWell() {
         return currentState[CONVERT_WELL] == 1;
     }
-    public int conversionWellId() {
+    public static int conversionWellId() {
         return currentState[CONVERSION_WELL_ID];
     }
-    public boolean upgradeWells() {
+    public static boolean upgradeWells() {
         return currentState[UPGRADE_WELLS] == 1;
     }
 }
