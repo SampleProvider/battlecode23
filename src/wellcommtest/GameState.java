@@ -39,16 +39,19 @@ public strictfp class GameState {
         if (rc.canWriteSharedArray(0, 0)) {
             try {
                 int resType = well.getResourceType().resourceID;
+                MapLocation loc = well.getMapLocation();
                 if (resType == 2) {
                     for (int i = 5; i <= 9; i++) {
-                        if (!hasLocation(rc.readSharedArray(i))) {
+                        int arrayWell = rc.readSharedArray(i);
+                        if (!hasLocation(arrayWell) || parseLocation(arrayWell).equals(loc)) {
                             rc.writeSharedArray(i, ((well.isUpgraded() ? 1 : 0) << 15) | (resType << 13) | intifyLocation(well.getMapLocation()));
                             return true;
                         }
                     }
                 } else if (resType == 1) {
                     for (int i = 10; i <= 13; i++) {
-                        if (!hasLocation(rc.readSharedArray(i))) {
+                        int arrayWell = rc.readSharedArray(i);
+                        if (!hasLocation(arrayWell) || parseLocation(arrayWell).equals(loc)) {
                             rc.writeSharedArray(i, ((well.isUpgraded() ? 1 : 0) << 15) | (resType << 13) | intifyLocation(well.getMapLocation()));
                             return true;
                         }
