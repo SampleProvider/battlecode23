@@ -204,4 +204,4 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 # Mac folder stuff
-.DS_STORE
+*.DS_STORE
