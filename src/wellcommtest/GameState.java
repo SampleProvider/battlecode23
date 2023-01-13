@@ -1,7 +1,5 @@
 package wellcommtest;
 
-import java.util.HashMap;
-
 import battlecode.common.*;
 
 public strictfp class GameState {

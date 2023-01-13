@@ -1,3 +1,6 @@
+# useless apple stuff
+*.DS_STORE
+
 ###### BATTLECODE ######
 
 /build
