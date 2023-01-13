@@ -17,8 +17,7 @@ public strictfp class Destabilizer {
         } catch (Exception e) {
             System.out.println("Exception at Destabilizer constructor");
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             Clock.yield();
         }
         run();
@@ -34,8 +33,7 @@ public strictfp class Destabilizer {
             } catch (Exception e) {
                 System.out.println("Exception at Destabilizer");
                 e.printStackTrace();
-            }
-            finally {
+            } finally {
                 Clock.yield();
             }
         }

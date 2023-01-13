@@ -17,8 +17,7 @@ public strictfp class Booster {
         } catch (Exception e) {
             System.out.println("Exception at Booster constructor");
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             Clock.yield();
         }
         run();
@@ -34,8 +33,7 @@ public strictfp class Booster {
             } catch (Exception e) {
                 System.out.println("Exception at Booster");
                 e.printStackTrace();
-            }
-            finally {
+            } finally {
                 Clock.yield();
             }
         }

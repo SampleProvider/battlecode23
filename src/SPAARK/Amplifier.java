@@ -13,11 +13,13 @@ public strictfp class Amplifier {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
             rc.writeSharedArray(14, 0b1111111111111111); //Indicates no target, should be only one signal amplifier at a time (for now)
+        // } catch (GameActionException e) {
+        //     System.out.println("GameActionException at Carrier constructor");
+        //     e.printStackTrace();
         } catch (Exception e) {
             System.out.println("Exception at Amplifier constructor");
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             Clock.yield();
         }
         run();
@@ -51,8 +53,7 @@ public strictfp class Amplifier {
             } catch (Exception e) {
                 System.out.println("Exception at Amplifier");
                 e.printStackTrace();
-            }
-            finally {
+            } finally {
                 Clock.yield();
             }
         }

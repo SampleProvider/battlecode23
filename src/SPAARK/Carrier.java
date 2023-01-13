@@ -65,12 +65,10 @@ public strictfp class Carrier {
         } catch (GameActionException e) {
             System.out.println("GameActionException at Carrier constructor");
             e.printStackTrace();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Exception at Carrier constructor");
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             Clock.yield();
         }
         run();
@@ -275,11 +273,10 @@ public strictfp class Carrier {
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Carrier");
                 e.printStackTrace();
-            // } catch (Exception e) {
-            //     System.out.println("Exception at Carrier");
-            //     e.printStackTrace();
-            }
-            finally {
+            } catch (Exception e) {
+                System.out.println("Exception at Carrier");
+                e.printStackTrace();
+            } finally {
                 Clock.yield();
             }
         }
