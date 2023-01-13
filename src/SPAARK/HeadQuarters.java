@@ -6,23 +6,23 @@ import java.util.Random;
 
 public strictfp class HeadQuarters {
     RobotController rc;
-    
+
     private int turnCount = 0;
     private int carriers = -100;
     private int carrierCooldown = 0;
     private boolean producedAnchor = false;
-    
+
     static final Random rng = new Random(2023);
 
     static final Direction[] directions = {
-        Direction.SOUTHWEST,
-        Direction.SOUTH,
-        Direction.SOUTHEAST,
-        Direction.WEST,
-        Direction.EAST,
-        Direction.NORTHWEST,
-        Direction.NORTH,
-        Direction.NORTHEAST,
+            Direction.SOUTHWEST,
+            Direction.SOUTH,
+            Direction.SOUTHEAST,
+            Direction.WEST,
+            Direction.EAST,
+            Direction.NORTHWEST,
+            Direction.NORTH,
+            Direction.NORTHEAST,
     };
 
     public HeadQuarters(RobotController rc) {
@@ -30,20 +30,17 @@ public strictfp class HeadQuarters {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
             // setting headquarter locations
-            // bits 0-5 are x coordinate
-            // bits 6-11 are y coordinate
-            // bit 12 is presence marker
-            MapLocation loc = rc.getLocation();
-            if (rc.readSharedArray(1) >> 12 == 0) {
-                rc.writeSharedArray(1, 0b1000000000000 | (loc.y << 6) | loc.x);
-            } else if (rc.readSharedArray(2) >> 12 == 0) {
-                rc.writeSharedArray(2, 0b1000000000000 | (loc.y << 6) | loc.x);
-            } else if (rc.readSharedArray(3) >> 12 == 0) {
-                rc.writeSharedArray(3, 0b1000000000000 | (loc.y << 6) | loc.x);
-            } else if (rc.readSharedArray(4) >> 12 == 0) {
-                rc.writeSharedArray(4, 0b1000000000000 | (loc.y << 6) | loc.x);
+            int locInt = GameState.intifyLocation(rc.getLocation());
+            if (!GameState.hasLocation(rc.readSharedArray(1))) {
+                rc.writeSharedArray(1, locInt);
+            } else if (!GameState.hasLocation(rc.readSharedArray(2))) {
+                rc.writeSharedArray(2, locInt);
+            } else if (!GameState.hasLocation(rc.readSharedArray(3))) {
+                rc.writeSharedArray(3, locInt);
+            } else if (!GameState.hasLocation(rc.readSharedArray(4))) {
+                rc.writeSharedArray(4, locInt);
             } else {
-                throw new Exception("Too many HeadQuarters!");
+                throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many HeadQuarters!");
             }
         } catch (GameActionException e) {
             System.out.println("GameActionException at HeadQuarters constructor");
@@ -56,6 +53,7 @@ public strictfp class HeadQuarters {
         }
         run();
     }
+
     private void run() {
         while (true) {
             try {
@@ -74,10 +72,9 @@ public strictfp class HeadQuarters {
                         carriers += 10;
                         carrierCooldown += 1;
                         // if (turnCount >= 300) {
-                        //     carriers += 20;
+                        // carriers += 20;
                         // }
-                    }
-                    else if (rc.canBuildRobot(RobotType.LAUNCHER, newLoc)) {
+                    } else if (rc.canBuildRobot(RobotType.LAUNCHER, newLoc)) {
                         rc.buildRobot(RobotType.LAUNCHER, newLoc);
                     }
                 }

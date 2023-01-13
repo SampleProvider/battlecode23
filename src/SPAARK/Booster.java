@@ -4,8 +4,9 @@ import battlecode.common.*;
 
 public strictfp class Booster {
     private RobotController rc;
+    private MapLocation me;
 
-    static int turnCount = 0;
+    private static int turnCount = 0;
 
     public Booster(RobotController rc) {
         try {
@@ -22,6 +23,7 @@ public strictfp class Booster {
         }
         run();
     }
+    
     public void run() {
         while (true) {
             try {

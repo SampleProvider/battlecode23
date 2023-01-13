@@ -5,15 +5,16 @@ import battlecode.common.*;
 import java.util.Random;
 
 public strictfp class Launcher {
-    RobotController rc;
+    private RobotController rc;
+    private MapLocation me;
 
     private int turnCount = 0;
 
-    static final Random rng = new Random(2023);
+    private static final Random rng = new Random(2023);
     private boolean isAttacking;
-    static int carrierCounter = 0;
+    private static int carrierCounter = 0;
 
-    static final Direction[] directions = {
+    private static final Direction[] directions = {
         Direction.SOUTHWEST,
         Direction.SOUTH,
         Direction.SOUTHEAST,
@@ -41,6 +42,7 @@ public strictfp class Launcher {
         }
         run();
     }
+    
     private void run() {
         while (true) {
             try {
@@ -57,16 +59,10 @@ public strictfp class Launcher {
                     }
                 }
 
-                int locationID8 = rc.readSharedArray(8);
-                int locationID9 = rc.readSharedArray(9);
-                int locationID10 = rc.readSharedArray(10);
-                int locationID11 = rc.readSharedArray(11);
-
-                MapLocation m8 = new MapLocation(locationID8 & 0b111111, (locationID8 >> 6) & 0b111111);
-                MapLocation m9 = new MapLocation(locationID9 & 0b111111, (locationID9 >> 6) & 0b111111);
-                MapLocation m10 = new MapLocation(locationID10 & 0b111111, (locationID10 >> 6) & 0b111111);
-                MapLocation m11 = new MapLocation(locationID11 & 0b111111, (locationID11 >> 6) & 0b111111);
-
+                MapLocation m8 = GameState.parseLocation(rc.readSharedArray(8));
+                MapLocation m9 = GameState.parseLocation(rc.readSharedArray(9));
+                MapLocation m10 = GameState.parseLocation(rc.readSharedArray(10));
+                MapLocation m11 = GameState.parseLocation(rc.readSharedArray(11));
 
                 Direction direction = directions[rng.nextInt(directions.length)];
                 if (rc.canMove(direction)) {

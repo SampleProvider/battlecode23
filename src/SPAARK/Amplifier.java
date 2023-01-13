@@ -4,8 +4,10 @@ import battlecode.common.*;
 
 public strictfp class Amplifier {
     private RobotController rc;
+    private MapLocation me;
 
-    static int turnCount = 0;
+    private int turnCount = 0;
+    
     private int ID = 0;
 
     public Amplifier(RobotController rc) {
@@ -24,6 +26,7 @@ public strictfp class Amplifier {
         }
         run();
     }
+    
     public void run() {
         while (true) {
             try {
@@ -43,13 +46,16 @@ public strictfp class Amplifier {
 
                 if (toWrite != null) {
                     //Write before running expensive BFS
-                    rc.writeSharedArray(14,  0b1000000000000 | (toWrite.y << 6) | toWrite.x);
+                    rc.writeSharedArray(14,  GameState.intifyLocation(toWrite));
                 }
 
                 Direction[] pathToCarrier = BFS_Not_Hardcoded.run(rc, rc.senseNearbyMapInfos(), carrierLocation);
                 for (Direction d : pathToCarrier) {
                     rc.move(d);
                 }
+            } catch (GameActionException e) {
+                System.out.println("GameActionException at Carrier constructor");
+                e.printStackTrace();
             } catch (Exception e) {
                 System.out.println("Exception at Amplifier");
                 e.printStackTrace();
