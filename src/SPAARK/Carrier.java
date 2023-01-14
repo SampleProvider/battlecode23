@@ -40,13 +40,18 @@ public strictfp class Carrier {
     private WellInfo[] seenWells = new WellInfo[4];
     private int seenWellIndex = 0;
 
+    private MapLocation enemyLocation;
+
     private boolean clockwiseRotation = true;
+
+    private int lastHealth = 0;
 
     private int state = 0;
     // state
     // 0 is wander
     // 1 is pathfinding to well
     // 2 is collecting
+    // 3 is retreat
 
     public Carrier(RobotController rc) {
         try {
@@ -61,6 +66,7 @@ public strictfp class Carrier {
             for (int i = 0; i < hqCount; i++) {
                 headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + 1));
             }
+            lastHealth = rc.getHealth();
         } catch (GameActionException e) {
             System.out.println("GameActionException at Carrier constructor");
             e.printStackTrace();
@@ -84,6 +90,13 @@ public strictfp class Carrier {
                 adamantiumAmount = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 manaAmount = rc.getResourceAmount(ResourceType.MANA);
                 elixirAmount = rc.getResourceAmount(ResourceType.ELIXIR);
+
+                if (rc.getHealth() != lastHealth) {
+                    state = 3;
+                    enemyLocation = me;
+                }
+                lastHealth = rc.getHealth();
+
                 if (state == 0) {
                     rc.setIndicatorString("Wandering...");
                     if (rc.getAnchor() != null) {
@@ -198,6 +211,13 @@ public strictfp class Carrier {
                         Motion.circleAroundTarget(rc, me, priortizedWell);
                     } else {
                         state = 0;
+                    }
+                } else if (state == 3) {
+                    rc.setIndicatorString("Retreating...");
+                    updatePriortizedHeadquarters();
+                    Motion.bug(rc, priortizedHeadquarters);
+                    if (priortizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
+                        attemptTransfer();
                     }
                 }
             } catch (GameActionException e) {

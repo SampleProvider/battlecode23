@@ -193,6 +193,9 @@ public class Motion {
             int adjacentRobots = 0;
             MapLocation prioritizedRobotInfoLocation = null;
             for (RobotInfo w : robotInfo) {
+                if (w.getType() != robotType) {
+                    continue;
+                }
                 if (me.isAdjacentTo(w.getLocation())) {
                     adjacentRobots += 1;
                     continue;

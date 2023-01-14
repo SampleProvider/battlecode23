@@ -45,16 +45,16 @@ public strictfp class Amplifier {
             }
             int locInt = GlobalArray.intifyLocation(rc.getLocation());
             if (!GlobalArray.hasLocation(rc.readSharedArray(14))) {
-                rc.writeSharedArray(14, GlobalArray.toggleBit(GlobalArray.setBit(locInt,14,1),15));
+                rc.writeSharedArray(14, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, rc.getRoundNum() % 2));
                 amplifierID = 14;
             } else if (!GlobalArray.hasLocation(rc.readSharedArray(15))) {
-                rc.writeSharedArray(15, GlobalArray.toggleBit(GlobalArray.setBit(locInt,14,1),15));
+                rc.writeSharedArray(15, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, rc.getRoundNum() % 2));
                 amplifierID = 15;
             } else if (!GlobalArray.hasLocation(rc.readSharedArray(16))) {
-                rc.writeSharedArray(16, GlobalArray.toggleBit(GlobalArray.setBit(locInt,14,1),15));
+                rc.writeSharedArray(16, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, rc.getRoundNum() % 2));
                 amplifierID = 16;
             } else if (!GlobalArray.hasLocation(rc.readSharedArray(17))) {
-                rc.writeSharedArray(17, GlobalArray.toggleBit(GlobalArray.setBit(locInt,14,1),15));
+                rc.writeSharedArray(17, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, rc.getRoundNum() % 2));
                 amplifierID = 17;
             } else {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
@@ -107,12 +107,12 @@ public strictfp class Amplifier {
                         }
                     }
                     Motion.spreadRandomly(rc, me, prioritizedRobotInfoLocation);
-                    rc.writeSharedArray(amplifierID, GlobalArray.toggleBit((amplifierArray & 0b1100000000000000) + GlobalArray.intifyLocation(prioritizedRobotInfoLocation),15));
+                    rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) + GlobalArray.intifyLocation(prioritizedRobotInfoLocation), 15, rc.getRoundNum() % 2));
                 }
                 else {
                     Motion.spreadCenter(rc, me);
                     me = rc.getLocation();
-                    rc.writeSharedArray(amplifierID, GlobalArray.toggleBit((amplifierArray & 0b1100000000000000) + GlobalArray.intifyLocation(me),15));
+                    rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) + GlobalArray.intifyLocation(me), 15, rc.getRoundNum() % 2));
                 }
                 // Motion.moveRandomly(rc);
                 rc.setIndicatorString("Amplifier " + amplifierID);

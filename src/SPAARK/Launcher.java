@@ -31,7 +31,7 @@ public strictfp class Launcher {
     private MapLocation priortizedOpponentHeadquarters;
 
     private RobotType prioritizedRobotType = RobotType.CARRIER;
-    private int amplifierSensingRange = 100;
+    private int amplifierSensingRange = 50;
     private int amplifierCircleRange = 10;
 
     private int headquarterCircleRange = 100;
@@ -138,7 +138,7 @@ public strictfp class Launcher {
                         }
                         // Motion.spreadRandomly(rc, me, priortizedHeadquarters, true);
                         rc.setIndicatorString("swarming");
-                        Motion.swarm(rc, me, RobotType.LAUNCHER);
+                        Motion.swarm(rc, me, RobotType.CARRIER);
                         // Motion.spreadCenter(rc, me);
                         attemptAttack();
                     }
