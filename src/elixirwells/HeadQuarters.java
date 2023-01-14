@@ -119,8 +119,16 @@ public strictfp class HeadQuarters {
     private void setTargetElixirWell() throws Exception {
         try {
             setTargetElixirWell = true;
-            WellInfo[] wells = GlobalArray.getKnownWells(rc);
+            MapLocation[] wells = GlobalArray.getKnownWellLocations(rc);
             MapLocation[] headQuarters = GlobalArray.getKnownHeadQuarterLocations(rc);
+            int lowestDist = Integer.MAX_VALUE;
+            int wellIndex = -1;
+            int hqIndex = -1;
+            for (int i = 0; i < headQuarters.length; i++) {
+                for (int j = 0; j < wells.length; j++) {
+                    
+                }
+            }
         } catch (GameActionException e) {
             System.out.println("GameActionException setting target elixir well");
             e.printStackTrace();
