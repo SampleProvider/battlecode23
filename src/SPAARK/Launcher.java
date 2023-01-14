@@ -22,11 +22,16 @@ public strictfp class Launcher {
         Direction.NORTHEAST,
     };
 
+    private MapLocation[] headquarters;
+    private MapLocation closestHeadquarters;
+
     private RobotType prioritizedRobotType = RobotType.CARRIER;
     private int amplifierRange = 200;
 
     private int amplifierID = -1;
     private int launcherID = -1;
+
+    private MapLocation priortizedAmplifierLocation;
 
     private static int[][] launcherPositions = new int[][]{
         {-1, 2},
@@ -53,9 +58,18 @@ public strictfp class Launcher {
         try {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
-        // } catch (GameActionException e) {
-        //     System.out.println("GameActionException at Carrier constructor");
-        //     e.printStackTrace();
+            int hqCount = 0;
+            for (int i = 1; i <= 4; i++) {
+                if (GlobalArray.hasLocation(rc.readSharedArray(i)))
+                    hqCount++;
+            }
+            headquarters = new MapLocation[hqCount];
+            for (int i = 0; i < hqCount; i++) {
+                headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + 1));
+            }
+        } catch (GameActionException e) {
+            System.out.println("GameActionException at Carrier constructor");
+            e.printStackTrace();
         } catch (Exception e) {
             System.out.println("Exception at Launcher constructor");
             e.printStackTrace();
@@ -71,66 +85,75 @@ public strictfp class Launcher {
                 turnCount++;
                 me = rc.getLocation();
                 if (state == 0) {
-                    if (amplifierID == 0) {
-                        MapLocation priortizedAmplifierLocation = null;
-                        for (int a = 0;a < 4;a++) {
-                            if (rc.readSharedArray(14 + a * 2) >> 11 != 0 && rc.readSharedArray(15 + a * 2) >> 11 != 12) {
-                                MapLocation amplifierLocation = GlobalArray.parseLocation(rc.readSharedArray(14 + a * 2));
-                                if (amplifierLocation.distanceSquaredTo(me) < amplifierRange) {
-                                    if (priortizedAmplifierLocation == null) {
-                                        priortizedAmplifierLocation = amplifierLocation;
-                                        amplifierID = 14 + a * 2;
-                                    }
-                                    else if (amplifierLocation.distanceSquaredTo(me) < priortizedAmplifierLocation.distanceSquaredTo(me)) {
-                                        priortizedAmplifierLocation = amplifierLocation;
-                                        amplifierID = 14 + a * 2;
-                                    }
+                    priortizedAmplifierLocation = null;
+                    for (int a = 0;a < 4;a++) {
+                        if (rc.readSharedArray(14 + a * 2) >> 11 != 0 && rc.readSharedArray(15 + a * 2) >> 11 != 12) {
+                            MapLocation amplifierLocation = GlobalArray.parseLocation(rc.readSharedArray(14 + a * 2));
+                            if (amplifierLocation.distanceSquaredTo(me) < amplifierRange) {
+                                if (priortizedAmplifierLocation == null) {
+                                    priortizedAmplifierLocation = amplifierLocation;
+                                    amplifierID = 14 + a * 2;
+                                }
+                                else if (amplifierLocation.distanceSquaredTo(me) < priortizedAmplifierLocation.distanceSquaredTo(me)) {
+                                    priortizedAmplifierLocation = amplifierLocation;
+                                    amplifierID = 14 + a * 2;
                                 }
                             }
                         }
-                        if (priortizedAmplifierLocation != null) {
-                            while (true) {
-                                me = rc.getLocation();
-                                int arrayIndex1 = rc.readSharedArray(15 + amplifierID * 2);
-                                int arrayIndex2 = rc.readSharedArray(15 + amplifierID * 2);
-                                if (arrayIndex1 >> 11 == 0 || arrayIndex2 >> 11 == 12) {
-                                    break;
-                                }
-                                Direction direction = me.directionTo(priortizedAmplifierLocation.translate(launcherPositions[arrayIndex2 >> 11][0], launcherPositions[arrayIndex2 >> 11][1]));
-                                if (rc.canMove(direction)) {
-                                    rc.move(direction);
-                                }
-                                if (me.equals(priortizedAmplifierLocation.translate(launcherPositions[arrayIndex2 >> 11][0], launcherPositions[arrayIndex2 >> 11][1]))) {
-                                    launcherID = arrayIndex2 >> 11;
-                                    arrayIndex2 = arrayIndex2 & 0b0000111111111111 + (launcherID + 1) << 12;
-                                    rc.writeSharedArray(15 + amplifierID * 2,GlobalArray.toggleBit(arrayIndex2,launcherID));
-                                    state = 1;
-                                    break;
-                                }
-                                Clock.yield();
-                            }
-                        }
+                    }
+                    if (priortizedAmplifierLocation != null) {
+                        state = 1;
+                        continue;
                     }
                     else {
-
+                        closestHeadquarters = headquarters[0];
+                        for (MapLocation hq : headquarters) {
+                            if (hq != null) {
+                                // if (hq.distanceSquaredTo(me) > rc.getType().visionRadiusSquared) {
+                                //     continue;
+                                // }
+                                if (closestHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
+                                    closestHeadquarters = hq;
+                                }
+                            }
+                        }
+                        Motion.spreadRandomly(rc, me, closestHeadquarters);
+                        attemptAttack();
                     }
                 }
-
-                int radius = rc.getType().actionRadiusSquared;
-                Team opponent = rc.getTeam().opponent();
-                RobotInfo[] enemies = rc.senseNearbyRobots(radius, opponent);
-                if (enemies.length > 0) {
-                    MapLocation toAttack = enemies[0].location;
-                    // MapLocation toAttack = rc.getLocation().add(Direction.EAST);
-                    if (rc.canAttack(toAttack)) {
-                        rc.setIndicatorString("Attacking");
-                        rc.attack(toAttack);
+                else if (state == 1) {
+                    int arrayIndex1 = rc.readSharedArray(amplifierID);
+                    int arrayIndex2 = rc.readSharedArray(amplifierID + 1);
+                    if (arrayIndex1 >> 11 == 0 || arrayIndex2 >> 11 == 12) {
+                        state = 0;
+                        continue;
+                    }
+                    Direction direction = me.directionTo(priortizedAmplifierLocation.translate(launcherPositions[arrayIndex2 >> 11][0], launcherPositions[arrayIndex2 >> 11][1]));
+                    if (rc.canMove(direction)) {
+                        rc.move(direction);
+                    }
+                    attemptAttack();
+                    if (me.equals(priortizedAmplifierLocation.translate(launcherPositions[arrayIndex2 >> 11][0], launcherPositions[arrayIndex2 >> 11][1]))) {
+                        launcherID = arrayIndex2 >> 11;
+                        arrayIndex2 = arrayIndex2 & 0b0000111111111111 + (launcherID + 1) << 12;
+                        rc.writeSharedArray(amplifierID + 1,GlobalArray.toggleBit(arrayIndex2,launcherID));
+                        state = 2;
+                        continue;
                     }
                 }
-
-                Direction direction = directions[rng.nextInt(directions.length)];
-                if (rc.canMove(direction)) {
-                    rc.move(direction);
+                else if (state == 2) {
+                    int arrayIndex1 = rc.readSharedArray(amplifierID);
+                    int arrayIndex2 = rc.readSharedArray(amplifierID + 1);
+                    if (arrayIndex1 >> 11 == 0 || arrayIndex2 >> 11 == 12) {
+                        state = 0;
+                        continue;
+                    }
+                    Direction direction = me.directionTo(priortizedAmplifierLocation.translate(launcherPositions[arrayIndex2 >> 11][0], launcherPositions[arrayIndex2 >> 11][1]));
+                    if (rc.canMove(direction)) {
+                        rc.move(direction);
+                    }
+                    attemptAttack();
+                    rc.writeSharedArray(amplifierID + 1,GlobalArray.toggleBit(arrayIndex2,launcherID));
                 }
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Launcher");
