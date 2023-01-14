@@ -148,7 +148,7 @@ public strictfp class Launcher {
         RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
         if (robotInfo.length > 0) {
             RobotInfo prioritizedRobotInfo = robotInfo[0];
-            MapLocation prioritizedRobotInfoLocation = robotInfo[0].getMapLocation();
+            MapLocation prioritizedRobotInfoLocation = robotInfo[0].getLocation();
             for (RobotInfo w : robotInfo) {
                 if (prioritizedRobotInfo.getType() == prioritizedRobotType) {
                     if (w.getType() == prioritizedRobotType
@@ -165,11 +165,9 @@ public strictfp class Launcher {
                     }
                 }
             }
-            MapLocation toAttack = robotInfo[0].location;
-            // MapLocation toAttack = rc.getLocation().add(Direction.EAST);
-            if (rc.canAttack(toAttack)) {
+            if (rc.canAttack(prioritizedRobotInfoLocation)) {
                 rc.setIndicatorString("Attacking");
-                rc.attack(toAttack);
+                rc.attack(prioritizedRobotInfoLocation);
             }
         }
     }
