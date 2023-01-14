@@ -60,12 +60,12 @@ public strictfp class Launcher {
             rc.setIndicatorString("Initializing");
             int hqCount = 0;
             for (int i = 1; i <= 4; i++) {
-                if (GameState.hasLocation(rc.readSharedArray(i)))
+                if (GlobalArray.hasLocation(rc.readSharedArray(i)))
                     hqCount++;
             }
             headquarters = new MapLocation[hqCount];
             for (int i = 0; i < hqCount; i++) {
-                headquarters[i] = GameState.parseLocation(rc.readSharedArray(i + 1));
+                headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + 1));
             }
         } catch (GameActionException e) {
             System.out.println("GameActionException at Carrier constructor");
@@ -88,7 +88,7 @@ public strictfp class Launcher {
                     priortizedAmplifierLocation = null;
                     for (int a = 0;a < 4;a++) {
                         if (rc.readSharedArray(14 + a * 2) >> 11 != 0 && rc.readSharedArray(15 + a * 2) >> 11 != 12) {
-                            MapLocation amplifierLocation = GameState.parseLocation(rc.readSharedArray(14 + a * 2));
+                            MapLocation amplifierLocation = GlobalArray.parseLocation(rc.readSharedArray(14 + a * 2));
                             if (amplifierLocation.distanceSquaredTo(me) < amplifierRange) {
                                 if (priortizedAmplifierLocation == null) {
                                     priortizedAmplifierLocation = amplifierLocation;
@@ -136,7 +136,7 @@ public strictfp class Launcher {
                     if (me.equals(priortizedAmplifierLocation.translate(launcherPositions[arrayIndex2 >> 11][0], launcherPositions[arrayIndex2 >> 11][1]))) {
                         launcherID = arrayIndex2 >> 11;
                         arrayIndex2 = arrayIndex2 & 0b0000111111111111 + (launcherID + 1) << 12;
-                        rc.writeSharedArray(amplifierID + 1,GameState.toggleBit(arrayIndex2,launcherID));
+                        rc.writeSharedArray(amplifierID + 1,GlobalArray.toggleBit(arrayIndex2,launcherID));
                         state = 2;
                         continue;
                     }
@@ -153,7 +153,7 @@ public strictfp class Launcher {
                         rc.move(direction);
                     }
                     attemptAttack();
-                    rc.writeSharedArray(amplifierID + 1,GameState.toggleBit(arrayIndex2,launcherID));
+                    rc.writeSharedArray(amplifierID + 1,GlobalArray.toggleBit(arrayIndex2,launcherID));
                 }
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Launcher");
