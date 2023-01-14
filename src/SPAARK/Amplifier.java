@@ -5,9 +5,9 @@ import battlecode.common.*;
 import java.util.Random;
 
 public strictfp class Amplifier {
-    private RobotController rc;
-    private MapLocation me;
-    GlobalArray gArray = new GlobalArray();
+    protected RobotController rc;
+    protected MapLocation me;
+    private GlobalArray globalArray = new GlobalArray();
 
     private int turnCount = 0;
 
@@ -25,12 +25,10 @@ public strictfp class Amplifier {
 
     private MapLocation[] headquarters;
     private MapLocation priortizedHeadquarters;
-
     private RobotType prioritizedRobotType = RobotType.LAUNCHER;
     
-    private int amplifierID = 0;
-
     private int amplifierArray;
+    protected int amplifierID = 0;
 
     public Amplifier(RobotController rc) {
         try {

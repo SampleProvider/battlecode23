@@ -5,9 +5,9 @@ import battlecode.common.*;
 import java.util.Random;
 
 public strictfp class HeadQuarters {
-    RobotController rc;
-    MapLocation me;
-    GlobalArray globalArray = new GlobalArray();
+    protected RobotController rc;
+    protected MapLocation me;
+    private GlobalArray globalArray = new GlobalArray();
 
     private int turnCount = 0;
     private int carriers = -100;
@@ -15,8 +15,8 @@ public strictfp class HeadQuarters {
     private boolean isPrimaryHQ = false;
     private boolean setTargetElixirWell = false;
 
-    private static int[] amplifierToggleState = new int[]{0,0,0,0};
-    private static boolean[] amplifierAliveState = new boolean[]{false, false, false, false};
+    private static int[] amplifierToggleState = new int[4];
+    private static boolean[] amplifierAliveState = new boolean[4];
 
     static final Random rng = new Random(2023);
 
