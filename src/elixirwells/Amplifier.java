@@ -3,8 +3,9 @@ package elixirwells;
 import battlecode.common.*;
 
 public strictfp class Amplifier {
-    private RobotController rc;
-    private MapLocation me;
+    protected RobotController rc;
+    protected MapLocation me;
+    private GlobalArray globalArray = new GlobalArray();
 
     private int turnCount = 0;
     

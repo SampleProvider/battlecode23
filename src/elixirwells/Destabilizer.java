@@ -3,8 +3,9 @@ package elixirwells;
 import battlecode.common.*;
 
 public strictfp class Destabilizer {
-    private RobotController rc;
-    private MapLocation me;
+    protected RobotController rc;
+    protected MapLocation me;
+    private GlobalArray globalArray = new GlobalArray();
 
     private static int turnCount = 0;
 

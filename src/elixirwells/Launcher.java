@@ -5,8 +5,9 @@ import battlecode.common.*;
 import java.util.Random;
 
 public strictfp class Launcher {
-    private RobotController rc;
-    private MapLocation me;
+    protected RobotController rc;
+    protected MapLocation me;
+    private GlobalArray globalArray = new GlobalArray();
 
     private int turnCount = 0;
 

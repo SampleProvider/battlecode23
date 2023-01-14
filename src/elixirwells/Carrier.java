@@ -8,9 +8,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public strictfp class Carrier {
-    private RobotController rc;
-    private MapLocation me;
-    GlobalArray gArray = new GlobalArray();
+    protected RobotController rc;
+    protected MapLocation me;
+    private GlobalArray globalArray = new GlobalArray();
 
     private int turnCount = 0;
 
