@@ -123,9 +123,11 @@ public strictfp class GlobalArray {
         return changedState;
     }
     public void setUpgradeWells(boolean set) {
+        changedState = true;
         currentState[UPGRADE_WELLS] = set ? 1 : 0;
     }
     public void setTargetElixirWellHQPair(int wellIndex, int hqIndex) {
+        changedState = true;
         currentState[CONVERSION_WELL_ID] = wellIndex;
         currentState[ELIXIR_HQ_ID] = hqIndex;
     }

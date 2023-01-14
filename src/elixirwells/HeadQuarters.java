@@ -92,9 +92,6 @@ public strictfp class HeadQuarters {
                     if (carrierCount > 20 && turnCount > 50 && !setTargetElixirWell) {
                         setTargetElixirWell();
                     }
-                    // prioritized resource
-                    // todo
-                    // set game state
                     if (globalArray.changedState()) rc.writeSharedArray(0, globalArray.getGameStateNumber());
                 }
             } catch (GameActionException e) {

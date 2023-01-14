@@ -7,6 +7,7 @@ import java.util.Random;
 public strictfp class Amplifier {
     private RobotController rc;
     private MapLocation me;
+    GlobalArray gArray = new GlobalArray();
 
     private int turnCount = 0;
 

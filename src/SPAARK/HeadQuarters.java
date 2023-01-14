@@ -6,13 +6,14 @@ import java.util.Random;
 
 public strictfp class HeadQuarters {
     RobotController rc;
+    MapLocation me;
+    GlobalArray globalArray = new GlobalArray();
 
     private int turnCount = 0;
     private int carriers = -100;
     private int carrierCooldown = 0;
-    private boolean producedAnchor = false;
-
     private boolean isPrimaryHQ = false;
+    private boolean setTargetElixirWell = false;
 
     private static int[] amplifierToggleState = new int[]{0,0,0,0};
     private static boolean[] amplifierAliveState = new boolean[]{false, false, false, false};
@@ -64,10 +65,10 @@ public strictfp class HeadQuarters {
         while (true) {
             try {
                 turnCount++;
+                me = rc.getLocation();
                 if (rc.canBuildAnchor(Anchor.STANDARD) && turnCount >= 300) {
                     rc.buildAnchor(Anchor.STANDARD);
                     System.out.println("Anchor Produced!");
-                    producedAnchor = true;
                     carrierCooldown = 0;
                 }
                 // if (turnCount == 1) {
@@ -108,6 +109,7 @@ public strictfp class HeadQuarters {
                 }
                 carriers -= 1;
                 if (isPrimaryHQ) {
+                    // check amplifier states
                     for (int a = 0;a < 4;a++) {
                         if (((rc.readSharedArray(14 + a) >> 15) & 1) == amplifierToggleState[a] || (rc.readSharedArray(14 + a) >> 14) % 2 == 0) {
                             rc.writeSharedArray(14 + a,0);
@@ -118,6 +120,11 @@ public strictfp class HeadQuarters {
                             amplifierAliveState[a] = true;
                         }
                     }
+                    // set target elixir well
+                    if (carriers > 20 && turnCount > 50 && !setTargetElixirWell) {
+                        setTargetElixirWell();
+                    }
+                    if (globalArray.changedState()) rc.writeSharedArray(0, globalArray.getGameStateNumber());
                 }
             } catch (GameActionException e) {
                 System.out.println("GameActionException at HeadQuarters");
@@ -128,6 +135,33 @@ public strictfp class HeadQuarters {
             } finally {
                 Clock.yield();
             }
+        }
+    }
+
+    private void setTargetElixirWell() throws Exception {
+        try {
+            setTargetElixirWell = true;
+            MapLocation[] wells = GlobalArray.getKnownWellLocations(rc);
+            MapLocation[] headQuarters = GlobalArray.getKnownHeadQuarterLocations(rc);
+            int lowestDist = Integer.MAX_VALUE;
+            int wellIndex = -1;
+            int hqIndex = -1;
+            for (int i = 0; i < headQuarters.length; i++) {
+                for (int j = 0; j < wells.length; j++) {
+                    int dist = headQuarters[i].distanceSquaredTo(wells[j]);
+                    if (dist < lowestDist) {
+                        lowestDist = dist;
+                        hqIndex = i;
+                        wellIndex = j;
+                    }
+                }
+            }
+            if (wellIndex > -1) {
+                globalArray.setTargetElixirWellHQPair(wellIndex, hqIndex);
+            }
+        } catch (GameActionException e) {
+            System.out.println("GameActionException setting target elixir well");
+            e.printStackTrace();
         }
     }
 }

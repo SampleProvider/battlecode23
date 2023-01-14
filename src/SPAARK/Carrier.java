@@ -10,6 +10,7 @@ import java.util.Set;
 public strictfp class Carrier {
     private RobotController rc;
     private MapLocation me;
+    GlobalArray gArray = new GlobalArray();
 
     private int turnCount = 0;
 
