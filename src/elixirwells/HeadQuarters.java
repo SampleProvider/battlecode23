@@ -9,8 +9,6 @@ public strictfp class HeadQuarters {
     MapLocation me;
     GlobalArray globalArray = new GlobalArray();
 
-    private int gArrIndex = 4;
-
     private int turnCount = 0;
     private int carrierCount = 0;
     private int launcherCount = 0;
@@ -40,17 +38,13 @@ public strictfp class HeadQuarters {
             int locInt = GlobalArray.intifyLocation(rc.getLocation());
             if (!GlobalArray.hasLocation(rc.readSharedArray(1))) {
                 rc.writeSharedArray(1, locInt);
-                gArrIndex = 1;
                 isPrimaryHQ = true;
             } else if (!GlobalArray.hasLocation(rc.readSharedArray(2))) {
                 rc.writeSharedArray(2, locInt);
-                gArrIndex = 2;
             } else if (!GlobalArray.hasLocation(rc.readSharedArray(3))) {
                 rc.writeSharedArray(3, locInt);
-                gArrIndex = 3;
             } else if (!GlobalArray.hasLocation(rc.readSharedArray(4))) {
                 rc.writeSharedArray(4, locInt);
-                gArrIndex = 4;
             } else {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many HeadQuarters!");
             }
