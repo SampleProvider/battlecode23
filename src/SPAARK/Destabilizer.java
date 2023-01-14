@@ -5,6 +5,7 @@ import battlecode.common.*;
 public strictfp class Destabilizer {
     private RobotController rc;
     private MapLocation me;
+    GlobalArray gArray = new GlobalArray();
 
     private static int turnCount = 0;
 

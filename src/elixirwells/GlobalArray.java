@@ -22,6 +22,7 @@ public strictfp class GlobalArray {
      * Bit 15       upgraded well
      */
 
+    // general location/data parsing
     public static boolean hasLocation(int n) {
         return (n >> 12 & 0b1) == 1;
     }
@@ -96,7 +97,8 @@ public strictfp class GlobalArray {
      * bits 6-9     id of well to convert to elixir
      */
 
-    public int[] parseGameState(int n) {
+    // read game state
+     public int[] parseGameState(int n) {
         currentState[CONVERT_WELL] = n & 0b1; // bit 0
         currentState[UPGRADE_WELLS] = n >> 1 & 0b1; // bit 1
         currentState[ELIXIR_HQ_ID] = n >> 2 & 0b11; // bits 2-3
@@ -113,6 +115,7 @@ public strictfp class GlobalArray {
         return currentState[UPGRADE_WELLS] == 1;
     }
 
+    // write game state
     public int getGameStateNumber() {
         return currentState[CONVERT_WELL] | currentState[UPGRADE_WELLS] << 1 | currentState[ELIXIR_HQ_ID] << 2 | currentState[CONVERSION_WELL_ID] << 4;
     }
@@ -120,10 +123,25 @@ public strictfp class GlobalArray {
         return changedState;
     }
     public void setUpgradeWells(boolean set) {
+        changedState = true;
         currentState[UPGRADE_WELLS] = set ? 1 : 0;
     }
     public void setTargetElixirWellHQPair(int wellIndex, int hqIndex) {
+        changedState = true;
         currentState[CONVERSION_WELL_ID] = wellIndex;
         currentState[ELIXIR_HQ_ID] = hqIndex;
+    }
+
+    // bit operations
+    public static int toggleBit(int n, int pos) {
+        return n ^ (1 << pos);
+    }
+    public static int setBit(int n, int pos, int m) {
+        if (m == 0) {
+            return n & ~(1 << pos);
+        }
+        else {
+            return n | 1 << pos;
+        }
     }
 }
