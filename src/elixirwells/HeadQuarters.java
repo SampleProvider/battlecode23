@@ -22,9 +22,6 @@ public strictfp class HeadQuarters {
     protected int lastAdamantium = 0;
     protected int lastMana = 0;
 
-    private static int[] amplifierToggleState = new int[4];
-    private static boolean[] amplifierAliveState = new boolean[4];
-
     static final Random rng = new Random(2023);
 
     static final Direction[] directions = {
