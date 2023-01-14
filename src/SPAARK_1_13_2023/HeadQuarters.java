@@ -1,4 +1,4 @@
-package SPAARK;
+package SPAARK_1_13_2023;
 
 import battlecode.common.*;
 
@@ -12,10 +12,7 @@ public strictfp class HeadQuarters {
     private int carrierCooldown = 0;
     private boolean producedAnchor = false;
 
-    private boolean isPrimaryHQ = false;
-
-    private static int[] amplifierToggleState = new int[]{0,0,0,0};
-    private static boolean[] amplifierAliveState = new boolean[]{false, false, false, false};
+    private int[] amplifierState = new int[]{0,0,0,0};
 
     static final Random rng = new Random(2023);
 
@@ -38,7 +35,6 @@ public strictfp class HeadQuarters {
             int locInt = GlobalArray.intifyLocation(rc.getLocation());
             if (!GlobalArray.hasLocation(rc.readSharedArray(1))) {
                 rc.writeSharedArray(1, locInt);
-                isPrimaryHQ = true;
             } else if (!GlobalArray.hasLocation(rc.readSharedArray(2))) {
                 rc.writeSharedArray(2, locInt);
             } else if (!GlobalArray.hasLocation(rc.readSharedArray(3))) {
@@ -64,35 +60,15 @@ public strictfp class HeadQuarters {
         while (true) {
             try {
                 turnCount++;
-                if (rc.canBuildAnchor(Anchor.STANDARD) && turnCount >= 300) {
+                Direction dir = directions[rng.nextInt(directions.length)];
+                MapLocation newLoc = rc.getLocation().add(dir);
+                if (turnCount >= 250 && rc.canBuildAnchor(Anchor.STANDARD)) {
                     rc.buildAnchor(Anchor.STANDARD);
-                    System.out.println("Anchor Produced!");
+                    System.out.println("Standard Anchor Produced!");
                     producedAnchor = true;
                     carrierCooldown = 0;
                 }
-                // if (turnCount == 1) {
-                //     rc.buildRobot(RobotType.CARRIER, newLoc);
-                // }
-                // if (turnCount == 2) {
-                //     rc.buildRobot(RobotType.LAUNCHER, newLoc);
-                // }
-                Direction dir = directions[rng.nextInt(directions.length)];
-                MapLocation newLoc = rc.getLocation().add(dir);
-                if (rc.senseRobotAtLocation(newLoc) != null) {
-                    dir = directions[rng.nextInt(directions.length)];
-                    newLoc = rc.getLocation().add(dir);
-                }
-                if (rc.senseRobotAtLocation(newLoc) != null) {
-                    dir = directions[rng.nextInt(directions.length)];
-                    newLoc = rc.getLocation().add(dir);
-                }
                 if (carrierCooldown <= 4 || turnCount < 300) {
-                    boolean canProduceAmplifier = false;
-                    for (boolean a : amplifierAliveState) {
-                        if (a == false) {
-                            canProduceAmplifier = true;
-                        }
-                    }
                     if (rc.canBuildRobot(RobotType.CARRIER, newLoc) && carriers <= 0) {
                         rc.buildRobot(RobotType.CARRIER, newLoc);
                         carriers += 10;
@@ -100,23 +76,17 @@ public strictfp class HeadQuarters {
                         // if (turnCount >= 300) {
                         // carriers += 20;
                         // }
-                    } else if (rc.canBuildRobot(RobotType.AMPLIFIER, newLoc) && rng.nextInt(20) == 1 && canProduceAmplifier) {
-                        rc.buildRobot(RobotType.AMPLIFIER, newLoc);
+                    // } else if (rc.canBuildRobot(RobotType.AMPLIFIER, newLoc) && rng.nextInt() < 10) {
+                    //     rc.buildRobot(RobotType.AMPLIFIER, newLoc);
                     } else if (rc.canBuildRobot(RobotType.LAUNCHER, newLoc)) {
                         rc.buildRobot(RobotType.LAUNCHER, newLoc);
                     }
                 }
                 carriers -= 1;
-                if (isPrimaryHQ) {
-                    for (int a = 0;a < 4;a++) {
-                        if (((rc.readSharedArray(14 + a) >> 15) & 1) == amplifierToggleState[a] || (rc.readSharedArray(14 + a) >> 14) % 2 == 0) {
-                            rc.writeSharedArray(14 + a,0);
-                            amplifierAliveState[a] = false;
-                        }
-                        else {
-                            amplifierToggleState[a] = (rc.readSharedArray(14 + a) >> 15) & 1;
-                            amplifierAliveState[a] = true;
-                        }
+                for (int a = 0;a < 4;a++) {
+                    if (((rc.readSharedArray(14 + a * 2) >> 15) & 1) == amplifierState[a]) {
+                        rc.writeSharedArray(14 + a * 2,0);
+                        rc.writeSharedArray(15 + a * 2,0);
                     }
                 }
             } catch (GameActionException e) {
