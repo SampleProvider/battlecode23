@@ -16,7 +16,6 @@ public strictfp class GlobalArray {
     private static final int adequateAdamantiumThreshold = 24;
     
     private final int[] currentState = new int[5];
-    private boolean changedState = false;
 
     /*
      * Bits 0-5     x coordinate
@@ -103,7 +102,7 @@ public strictfp class GlobalArray {
     public static boolean adequateResources(int n) {
         return ((n >> 13) & 0b1) == 1;
     }
-    
+
     /*
      * Bits 0-1     prioritized resource
      * Bit 2        convert well
@@ -138,21 +137,15 @@ public strictfp class GlobalArray {
     public int getGameStateNumber() {
         return (currentState[PRIORITIZED_RESOURCE]) | (currentState[CONVERT_WELL] << 2) | (currentState[UPGRADE_WELLS] << 3) | (currentState[ELIXIR_HQ_ID] << 4) |( currentState[CONVERSION_WELL_ID] << 6);
     }
-    public boolean changedState() {
-        return changedState;
-    }
     public void setPrioritizedResource(ResourceType resource) {
         currentState[PRIORITIZED_RESOURCE] = resource.resourceID;
-        changedState = true;
     }
     public void setUpgradeWells(boolean set) {
         currentState[UPGRADE_WELLS] = set ? 1 : 0;
-        changedState = true;
     }
     public void setTargetElixirWellHQPair(int wellIndex, int hqIndex) {
         currentState[CONVERSION_WELL_ID] = wellIndex;
         currentState[ELIXIR_HQ_ID] = hqIndex;
-        changedState = true;
     }
 
     // bit operations

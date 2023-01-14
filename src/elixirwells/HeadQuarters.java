@@ -90,27 +90,39 @@ public strictfp class HeadQuarters {
                 // store
                 GlobalArray.storeHeadquarters(this);
                 if (isPrimaryHQ) {
-                    // set upgrade wells if resources adequate
                     if (hqCount == 0) {
                         for (int i = 1; i <= 4; i++) {
                             if (GlobalArray.hasLocation(rc.readSharedArray(i))) hqCount++;
                         }
                     }
+                    // set prioritized resource
+                    // set upgrade wells if resources adequate
                     boolean upgradeWells = true;
+                    int totalRatio = 0;
                     for (int i = 1; i <= hqCount+1; i++) {
-                        if (!GlobalArray.adequateResources(rc.readSharedArray(i))) {
+                        int arrayHQ = rc.readSharedArray(i);
+                        if (!GlobalArray.adequateResources(arrayHQ)) {
                             upgradeWells = false;
                         }
+                        totalRatio += GlobalArray.resourceRatio(arrayHQ);
                     }
-                    if (globalArray.upgradeWells() != upgradeWells) {
-                        globalArray.setUpgradeWells(upgradeWells);
+                    // upgrade wells
+                    globalArray.setUpgradeWells(upgradeWells);
+                    // prioritized resources
+                    int deviation = totalRatio - (2 * hqCount);
+                    if (Math.abs(deviation) <= 1) {
+                        globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE);
+                    } else if (deviation < 0) {
+                        globalArray.setPrioritizedResource(ResourceType.MANA);
+                    } else {
+                        globalArray.setPrioritizedResource(ResourceType.ADAMANTIUM);
                     }
                     // set target elixir well
                     if (turnCount > 200 && !setTargetElixirWell) {
                         setTargetElixirWell();
                     }
                     // save game state
-                    if (globalArray.changedState()) rc.writeSharedArray(0, globalArray.getGameStateNumber());
+                    rc.writeSharedArray(0, globalArray.getGameStateNumber());
                 }
                 lastAdamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 lastMana = rc.getResourceAmount(ResourceType.MANA);
@@ -145,6 +157,7 @@ public strictfp class HeadQuarters {
                 }
             }
             if (wellIndex > -1) {
+                rc.setIndicatorString("SET ELIXIR-HQ TARGET PAIR: " + wells[wellIndex].toString() + " " + headQuarters[hqIndex].toString());
                 System.out.println("SET ELIXIR-HQ TARGET PAIR: " + wells[wellIndex].toString() + " " + headQuarters[hqIndex].toString());
                 globalArray.setTargetElixirWellHQPair(wellIndex, hqIndex);
             }
