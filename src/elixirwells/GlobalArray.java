@@ -3,7 +3,6 @@ package elixirwells;
 import java.util.Arrays;
 
 import battlecode.common.*;
-import battlecode.world.Inventory;
 
 public strictfp class GlobalArray {
     public static final int PRIORITIZED_RESOURCE = 0;
@@ -66,18 +65,16 @@ public strictfp class GlobalArray {
         }
         return false;
     }
-    public static WellInfo[] getKnownWells(RobotController rc) throws GameActionException {
-        WellInfo[] wells = new WellInfo[8];
-        int wellCount = 0;
-        int j = 0;
+    public static MapLocation[] getKnownWellLocations(RobotController rc) throws GameActionException {
+        MapLocation[] wells = new MapLocation[8];
         for (int i = 0; i < 8; i++) {
             int arrayWell = rc.readSharedArray(i+5);
             if (hasLocation(arrayWell)) {
-                wellCount++;
-                wells[j++] = new WellInfo(parseLocation(arrayWell), wellType(arrayWell), new Inventory(), isUpgradedWell(arrayWell));
+                wells[i] = parseLocation(arrayWell);
+                // wells[j++] = new WellInfo(parseLocation(arrayWell), wellType(arrayWell), null, isUpgradedWell(arrayWell));
             }
         }
-        return Arrays.copyOf(wells, wellCount);
+        return wells;
     }
     public static int intifyHeadQuarters(RobotController rc) throws GameActionException {
         if (rc.getType() != RobotType.HEADQUARTERS) throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Cannot intify " + rc.getType() + " as HeadQuarters");
