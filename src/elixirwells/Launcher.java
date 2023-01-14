@@ -59,10 +59,10 @@ public strictfp class Launcher {
                     }
                 }
 
-                MapLocation m8 = GameState.parseLocation(rc.readSharedArray(8));
-                MapLocation m9 = GameState.parseLocation(rc.readSharedArray(9));
-                MapLocation m10 = GameState.parseLocation(rc.readSharedArray(10));
-                MapLocation m11 = GameState.parseLocation(rc.readSharedArray(11));
+                MapLocation m8 = GlobalArray.parseLocation(rc.readSharedArray(8));
+                MapLocation m9 = GlobalArray.parseLocation(rc.readSharedArray(9));
+                MapLocation m10 = GlobalArray.parseLocation(rc.readSharedArray(10));
+                MapLocation m11 = GlobalArray.parseLocation(rc.readSharedArray(11));
 
                 Direction direction = directions[rng.nextInt(directions.length)];
                 if (rc.canMove(direction)) {

@@ -34,18 +34,18 @@ public strictfp class Amplifier {
         try {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
-            int locInt = GameState.intifyLocation(rc.getLocation());
-            if (!GameState.hasLocation(rc.readSharedArray(14))) {
-                rc.writeSharedArray(14, GameState.toggleBit(locInt,15));
+            int locInt = GlobalArray.intifyLocation(rc.getLocation());
+            if (!GlobalArray.hasLocation(rc.readSharedArray(14))) {
+                rc.writeSharedArray(14, GlobalArray.toggleBit(locInt,15));
                 amplifierID = 14;
-            } else if (!GameState.hasLocation(rc.readSharedArray(16))) {
-                rc.writeSharedArray(15, GameState.toggleBit(locInt,15));
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(16))) {
+                rc.writeSharedArray(15, GlobalArray.toggleBit(locInt,15));
                 amplifierID = 16;
-            } else if (!GameState.hasLocation(rc.readSharedArray(18))) {
-                rc.writeSharedArray(16, GameState.toggleBit(locInt,15));
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(18))) {
+                rc.writeSharedArray(16, GlobalArray.toggleBit(locInt,15));
                 amplifierID = 18;
-            } else if (!GameState.hasLocation(rc.readSharedArray(20))) {
-                rc.writeSharedArray(17, GameState.toggleBit(locInt,15));
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(20))) {
+                rc.writeSharedArray(17, GlobalArray.toggleBit(locInt,15));
                 amplifierID = 20;
             } else {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
@@ -101,19 +101,19 @@ public strictfp class Amplifier {
                                 }
                             }
                         }
-                        arrayIndex1 = arrayIndex1 & 0b1111000000000000 + GameState.intifyLocation(prioritizedRobotInfoLocation);
-                        arrayIndex1 = GameState.setBit(arrayIndex1, 15, 1);
+                        arrayIndex1 = arrayIndex1 & 0b1111000000000000 + GlobalArray.intifyLocation(prioritizedRobotInfoLocation);
+                        arrayIndex1 = GlobalArray.setBit(arrayIndex1, 15, 1);
                     }
                     else {
-                        arrayIndex1 = arrayIndex1 & 0b1111000000000000 + GameState.intifyLocation(me);
-                        arrayIndex1 = GameState.setBit(arrayIndex1, 15, 0);
+                        arrayIndex1 = arrayIndex1 & 0b1111000000000000 + GlobalArray.intifyLocation(me);
+                        arrayIndex1 = GlobalArray.setBit(arrayIndex1, 15, 0);
                     }
                     Motion.moveRandomly(rc);
                 }
                 else if (turnCount < 10) {
                     Motion.moveRandomly(rc);
                 }
-                rc.writeSharedArray(amplifierID, GameState.toggleBit(arrayIndex1,15));
+                rc.writeSharedArray(amplifierID, GlobalArray.toggleBit(arrayIndex1,15));
                 rc.writeSharedArray(amplifierID + 1, arrayIndex2);
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Carrier constructor");

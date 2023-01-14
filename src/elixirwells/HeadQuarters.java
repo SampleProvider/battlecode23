@@ -32,15 +32,15 @@ public strictfp class HeadQuarters {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
             // setting headquarter locations
-            int locInt = GameState.intifyLocation(rc.getLocation());
-            if (!GameState.hasLocation(rc.readSharedArray(1))) {
+            int locInt = GlobalArray.intifyLocation(rc.getLocation());
+            if (!GlobalArray.hasLocation(rc.readSharedArray(1))) {
                 rc.writeSharedArray(1, locInt);
                 isPrimaryHQ = true;
-            } else if (!GameState.hasLocation(rc.readSharedArray(2))) {
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(2))) {
                 rc.writeSharedArray(2, locInt);
-            } else if (!GameState.hasLocation(rc.readSharedArray(3))) {
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(3))) {
                 rc.writeSharedArray(3, locInt);
-            } else if (!GameState.hasLocation(rc.readSharedArray(4))) {
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(4))) {
                 rc.writeSharedArray(4, locInt);
             } else {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many HeadQuarters!");
