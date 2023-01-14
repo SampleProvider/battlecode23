@@ -125,6 +125,7 @@ public strictfp class HeadQuarters {
                 }
             }
             if (wellIndex > -1) {
+                System.out.println("SET ELIXIR-HQ TARGET PAIR: " + wells[wellIndex].toString() + " " + headQuarters[hqIndex].toString());
                 globalArray.setTargetElixirWellHQPair(wellIndex, hqIndex);
             }
         } catch (GameActionException e) {
