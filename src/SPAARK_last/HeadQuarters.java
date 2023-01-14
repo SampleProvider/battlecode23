@@ -1,4 +1,4 @@
-package SPAARK;
+package SPAARK_last;
 
 import battlecode.common.*;
 
@@ -14,6 +14,9 @@ public strictfp class HeadQuarters {
     private int carrierCooldown = 0;
     private boolean isPrimaryHQ = false;
     private boolean setTargetElixirWell = false;
+
+    private static int[] amplifierToggleState = new int[]{0,0,0,0};
+    private static boolean[] amplifierAliveState = new boolean[]{false, false, false, false};
 
     static final Random rng = new Random(2023);
 
@@ -73,22 +76,25 @@ public strictfp class HeadQuarters {
                 if (isPrimaryHQ) {
                     // check amplifier states
                     for (int a = 0;a < 4;a++) {
-                        if ((rc.readSharedArray(14 + a) >> 14) % 2 == 1) {
-                            if ((rc.readSharedArray(14 + a) >> 15) == rc.getRoundNum() % 2) {
-                                rc.writeSharedArray(14 + a,0);
-                            }
+                        if (((rc.readSharedArray(14 + a) >> 15) & 1) == amplifierToggleState[a] || (rc.readSharedArray(14 + a) >> 14) % 2 == 0) {
+                            rc.writeSharedArray(14 + a,0);
+                            amplifierAliveState[a] = false;
+                        }
+                        else {
+                            amplifierToggleState[a] = (rc.readSharedArray(14 + a) >> 15) & 1;
+                            amplifierAliveState[a] = true;
                         }
                     }
                     // set target elixir well
                     if (carriers > 20 && turnCount > 50 && !setTargetElixirWell) {
-                        setTargetElixirWell();
+                        // setTargetElixirWell();
                     }
                     if (globalArray.changedState()) rc.writeSharedArray(0, globalArray.getGameStateNumber());
                 }
                 if (carrierCooldown <= 4 || turnCount < 300) {
                     boolean canProduceAmplifier = false;
-                    for (int a = 0;a < 4;a++) {
-                        if ((rc.readSharedArray(14 + a) >> 14) % 2 == 0) {
+                    for (boolean a : amplifierAliveState) {
+                        if (a == false) {
                             canProduceAmplifier = true;
                         }
                     }
@@ -99,7 +105,7 @@ public strictfp class HeadQuarters {
                         // if (turnCount >= 300) {
                         // carriers += 20;
                         // }
-                    } else if (rc.canBuildRobot(RobotType.AMPLIFIER, newLoc) && turnCount > 75 && canProduceAmplifier) {
+                    } else if (rc.canBuildRobot(RobotType.AMPLIFIER, newLoc) && rng.nextInt(20) == 1 && canProduceAmplifier) {
                         rc.buildRobot(RobotType.AMPLIFIER, newLoc);
                     } else if (rc.canBuildRobot(RobotType.LAUNCHER, newLoc)) {
                         rc.buildRobot(RobotType.LAUNCHER, newLoc);
