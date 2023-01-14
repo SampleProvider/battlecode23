@@ -36,16 +36,16 @@ public strictfp class Amplifier {
             rc.setIndicatorString("Initializing");
             int locInt = GameState.intifyLocation(rc.getLocation());
             if (!GameState.hasLocation(rc.readSharedArray(14))) {
-                rc.writeSharedArray(14, Bit.toggleBit(locInt,15));
+                rc.writeSharedArray(14, GameState.toggleBit(locInt,15));
                 amplifierID = 14;
             } else if (!GameState.hasLocation(rc.readSharedArray(16))) {
-                rc.writeSharedArray(15, Bit.toggleBit(locInt,15));
+                rc.writeSharedArray(15, GameState.toggleBit(locInt,15));
                 amplifierID = 16;
             } else if (!GameState.hasLocation(rc.readSharedArray(18))) {
-                rc.writeSharedArray(16, Bit.toggleBit(locInt,15));
+                rc.writeSharedArray(16, GameState.toggleBit(locInt,15));
                 amplifierID = 18;
             } else if (!GameState.hasLocation(rc.readSharedArray(20))) {
-                rc.writeSharedArray(17, Bit.toggleBit(locInt,15));
+                rc.writeSharedArray(17, GameState.toggleBit(locInt,15));
                 amplifierID = 20;
             } else {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
@@ -102,15 +102,18 @@ public strictfp class Amplifier {
                             }
                         }
                         arrayIndex1 = arrayIndex1 & 0b1111000000000000 + GameState.intifyLocation(prioritizedRobotInfoLocation);
-                        arrayIndex1 = Bit.setBit(arrayIndex1, 15, 1);
+                        arrayIndex1 = GameState.setBit(arrayIndex1, 15, 1);
                     }
                     else {
                         arrayIndex1 = arrayIndex1 & 0b1111000000000000 + GameState.intifyLocation(me);
-                        arrayIndex1 = Bit.setBit(arrayIndex1, 15, 0);
+                        arrayIndex1 = GameState.setBit(arrayIndex1, 15, 0);
                     }
                     moveRandomly();
                 }
-                rc.writeSharedArray(amplifierID, Bit.toggleBit(arrayIndex1,15));
+                else if (turnCount < 10) {
+                    moveRandomly();
+                }
+                rc.writeSharedArray(amplifierID, GameState.toggleBit(arrayIndex1,15));
                 rc.writeSharedArray(amplifierID + 1, arrayIndex2);
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Carrier constructor");
@@ -127,13 +130,13 @@ public strictfp class Amplifier {
     private void moveRandomly() throws GameActionException {
         while (true) {
             Direction direction = directions[rng.nextInt(directions.length)];
-            for (int x = -2;x <= 2;x++) {
-                for (int y = -2;y <= 2;y++) {
-                    if (!rc.sensePassability(me.add(direction).translate(x,y))) {
-                        continue;
-                    }
-                }
-            }
+            // for (int x = -2;x <= 2;x++) {
+            //     for (int y = -2;y <= 2;y++) {
+            //         if (!rc.sensePassability(me.add(direction).translate(x,y))) {
+            //             continue;
+            //         }
+            //     }
+            // }
             if (rc.canMove(direction)) {
                 rc.move(direction);
                 break;

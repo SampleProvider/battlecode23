@@ -100,6 +100,7 @@ public strictfp class Carrier {
                                 if (rc.canMove(dir)) {
                                     rc.move(dir);
                                 }
+                                Clock.yield();
                             }
                             if (rc.canPlaceAnchor()) {
                                 rc.setIndicatorString("Huzzah, placed anchor!");
