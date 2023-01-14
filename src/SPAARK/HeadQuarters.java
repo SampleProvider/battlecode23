@@ -72,7 +72,7 @@ public strictfp class HeadQuarters {
                     carrierCooldown = 0;
                 }
                 Direction dir = directions[rng.nextInt(directions.length)];
-                MapLocation newLoc = rc.getLocation().add(dir);
+                MapLocation newLoc = rc.getLocation().add(dir).add(dir);
                 if (isPrimaryHQ) {
                     // check amplifier states
                     for (int a = 0;a < 4;a++) {
