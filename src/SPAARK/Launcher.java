@@ -99,19 +99,7 @@ public strictfp class Launcher {
                 turnCount++;
                 me = rc.getLocation();
                 if (state == 0) {
-                    RobotInfo[] opponentRobots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
-                    priortizedOpponentHeadquarters = null;
-                    for (RobotInfo r : opponentRobots) {
-                        if (r.getType() == RobotType.HEADQUARTERS) {
-                            if (priortizedOpponentHeadquarters == null) {
-                                priortizedOpponentHeadquarters = r.getLocation();
-                                continue;
-                            }
-                            if (priortizedOpponentHeadquarters.distanceSquaredTo(me) > r.getLocation().distanceSquaredTo(me)) {
-                                priortizedOpponentHeadquarters = r.getLocation();
-                            }
-                        }
-                    }
+                    updatePriortizedOpponentHeadquarters();
                     if (priortizedOpponentHeadquarters != null) {
                         state = 2;
                         continue;
@@ -163,6 +151,12 @@ public strictfp class Launcher {
                     rc.setIndicatorString(amplifierID + " " + amplifierArray);
                     if (amplifierArray >> 14 == 0) {
                         state = 0;
+                        continue;
+                    }
+                    updatePriortizedOpponentHeadquarters();
+                    if (priortizedOpponentHeadquarters != null) {
+                        attemptAttack();
+                        state = 2;
                         continue;
                     }
                     priortizedAmplifierLocation = GlobalArray.parseLocation(amplifierArray);
@@ -268,6 +262,21 @@ public strictfp class Launcher {
             if (rc.canAttack(prioritizedRobotInfoLocation)) {
                 rc.setIndicatorString("Attacking");
                 rc.attack(prioritizedRobotInfoLocation);
+            }
+        }
+    }
+    private void updatePriortizedOpponentHeadquarters() throws GameActionException {
+        RobotInfo[] opponentRobots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+        priortizedOpponentHeadquarters = null;
+        for (RobotInfo r : opponentRobots) {
+            if (r.getType() == RobotType.HEADQUARTERS) {
+                if (priortizedOpponentHeadquarters == null) {
+                    priortizedOpponentHeadquarters = r.getLocation();
+                    continue;
+                }
+                if (priortizedOpponentHeadquarters.distanceSquaredTo(me) > r.getLocation().distanceSquaredTo(me)) {
+                    priortizedOpponentHeadquarters = r.getLocation();
+                }
             }
         }
     }

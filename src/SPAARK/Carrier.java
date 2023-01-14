@@ -99,7 +99,7 @@ public strictfp class Carrier {
                             MapLocation islandLocation = islandLocs.iterator().next();
                             rc.setIndicatorString("Moving my anchor towards " + islandLocation);
                             while (!rc.getLocation().equals(islandLocation)) {
-                                Motion.bug(rc, islandLocation);
+                                clockwiseRotation = Motion.bug(rc, islandLocation, clockwiseRotation);
                                 Clock.yield();
                             }
                             if (rc.canPlaceAnchor()) {
