@@ -86,6 +86,18 @@ public strictfp class HeadQuarters {
                     dir = directions[rng.nextInt(directions.length)];
                     newLoc = rc.getLocation().add(dir);
                 }
+                if (isPrimaryHQ) {
+                    for (int a = 0;a < 4;a++) {
+                        if (((rc.readSharedArray(14 + a) >> 15) & 1) == amplifierToggleState[a] || (rc.readSharedArray(14 + a) >> 14) % 2 == 0) {
+                            rc.writeSharedArray(14 + a,0);
+                            amplifierAliveState[a] = false;
+                        }
+                        else {
+                            amplifierToggleState[a] = (rc.readSharedArray(14 + a) >> 15) & 1;
+                            amplifierAliveState[a] = true;
+                        }
+                    }
+                }
                 if (carrierCooldown <= 4 || turnCount < 300) {
                     boolean canProduceAmplifier = false;
                     for (boolean a : amplifierAliveState) {
@@ -107,18 +119,6 @@ public strictfp class HeadQuarters {
                     }
                 }
                 carriers -= 1;
-                if (isPrimaryHQ) {
-                    for (int a = 0;a < 4;a++) {
-                        if (((rc.readSharedArray(14 + a) >> 15) & 1) == amplifierToggleState[a] || (rc.readSharedArray(14 + a) >> 14) % 2 == 0) {
-                            rc.writeSharedArray(14 + a,0);
-                            amplifierAliveState[a] = false;
-                        }
-                        else {
-                            amplifierToggleState[a] = (rc.readSharedArray(14 + a) >> 15) & 1;
-                            amplifierAliveState[a] = true;
-                        }
-                    }
-                }
             } catch (GameActionException e) {
                 System.out.println("GameActionException at HeadQuarters");
                 e.printStackTrace();

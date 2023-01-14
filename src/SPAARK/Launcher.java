@@ -98,56 +98,6 @@ public strictfp class Launcher {
                 turnCount++;
                 me = rc.getLocation();
                 if (state == 0) {
-                    // int[] wells = GlobalArray.getAllWells(rc);
-                    // MapLocation prioritizedWellInfoLocation = null;
-                    // for (int w : wells) {
-                    //     if (GlobalArray.hasLocation(w)) {
-                    //         MapLocation parsedLocation = GlobalArray.parseLocation(w);
-                    //         if (prioritizedWellInfoLocation == null) {
-                    //             prioritizedWellInfoLocation = parsedLocation;
-                    //         }
-                    //         else if (prioritizedWellInfoLocation.distanceSquaredTo(me) > parsedLocation
-                    //             .distanceSquaredTo(me) && parsedLocation.distanceSquaredTo(me) > 9) {
-                    //             prioritizedWellInfoLocation = parsedLocation;
-                    //         }
-                    //     }
-                    // }
-                    // if (prioritizedWellInfoLocation != null) {
-                    //     mapInfo = rc.senseNearbyMapInfos();
-                    //     if (prioritizedWellInfoLocation.distanceSquaredTo(me) < 16) {
-                    //         Motion.circleAroundTarget(rc, me, prioritizedWellInfoLocation);
-                    //     }
-                    //     else {
-                    //         Motion.bug(rc, mapInfo, prioritizedWellInfoLocation);
-                    //     }
-                    // }
-                    // else {
-                    // int[] islands = rc.senseNearbyIslands();
-                    // Set<MapLocation> islandLocs = new HashSet<>();
-                    // for (int id : islands) {
-                    //     MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
-                    //     islandLocs.addAll(Arrays.asList(thisIslandLocs));
-                    // }
-                    // clockwiseRotation = Motion.circleAroundTarget(rc, me, priortizedHeadquarters, 100, clockwiseRotation);
-                    // if (islandLocs.size() > 0) {
-                    //     MapLocation islandLocation = islandLocs.iterator().next();
-                    //     mapInfo = rc.senseNearbyMapInfos();
-                    //     if (rng.nextBoolean()) {
-                    //         Motion.bug(rc, mapInfo, islandLocation);
-                    //     }
-                    //     else {
-                    //         Motion.moveRandomly(rc);
-                    //     }
-                    // } else {
-                    //     if (rng.nextBoolean()) {
-                    //         Motion.circleAroundTarget(rc, me, priortizedHeadquarters, 100);
-                    //     }
-                    //     else {
-                    //         Motion.circleAroundTarget(rc, me, priortizedHeadquarters, 100);
-                    //         // Motion.moveRandomly(rc);
-                    //     }
-                    // }
-                    // }
                     RobotInfo[] opponentRobots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                     priortizedOpponentHeadquarters = null;
                     for (RobotInfo r : opponentRobots) {
@@ -264,17 +214,17 @@ public strictfp class Launcher {
                         // else {
                         //     Motion.moveRandomly(rc);
                         // }
-                        // boolean oldClockwiseRotation = clockwiseRotation;
-                        // clockwiseRotation = Motion.circleAroundTarget(rc, me, priortizedHeadquarters, headquarterCircleRange, clockwiseRotation);
-                        // if (oldClockwiseRotation != clockwiseRotation) {
-                        //     headquarterCircleStuck += 1;
-                        //     if (headquarterCircleStuck == 5) {
-                        //         state = 0;
-                        //     }
-                        // }
-                        // else {
-                        //     headquarterCircleStuck = 0;
-                        // }
+                        boolean oldClockwiseRotation = clockwiseRotation;
+                        clockwiseRotation = Motion.circleAroundTarget(rc, me, priortizedHeadquarters, headquarterCircleRange, clockwiseRotation);
+                        if (oldClockwiseRotation != clockwiseRotation) {
+                            headquarterCircleStuck += 1;
+                            if (headquarterCircleStuck == 10) {
+                                state = 0;
+                            }
+                        }
+                        else {
+                            headquarterCircleStuck = 0;
+                        }
                     }
                     else {
                         clockwiseRotation = Motion.bug(rc, priortizedHeadquarters, clockwiseRotation);

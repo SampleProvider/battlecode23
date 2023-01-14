@@ -76,6 +76,9 @@ public strictfp class Carrier {
         while (true) {
             try {
                 turnCount++;
+                if (turnCount > 300) {
+                    prioritizedResourceType = ResourceType.MANA;
+                }
                 me = rc.getLocation();
                 adamantiumAmount = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 manaAmount = rc.getResourceAmount(ResourceType.MANA);
@@ -107,7 +110,7 @@ public strictfp class Carrier {
                             continue;
                         }
                     }
-                    updatepriortizedHeadquarters();
+                    updatePriortizedHeadquarters();
                     if (rc.canTakeAnchor(priortizedHeadquarters, Anchor.STANDARD)) {
                         rc.takeAnchor(priortizedHeadquarters, Anchor.STANDARD);
                         System.out.println("Taken Anchor!");
@@ -232,7 +235,7 @@ public strictfp class Carrier {
         return transferSuccess;
     }
 
-    private void updatepriortizedHeadquarters() throws GameActionException {
+    private void updatePriortizedHeadquarters() throws GameActionException {
         priortizedHeadquarters = headquarters[0];
         for (MapLocation hq : headquarters) {
             if (hq != null) {

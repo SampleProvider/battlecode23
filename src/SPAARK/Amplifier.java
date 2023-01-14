@@ -78,33 +78,6 @@ public strictfp class Amplifier {
             try {
                 turnCount++;
                 amplifierArray = rc.readSharedArray(amplifierID);
-                // RobotInfo[] opponentRobots = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
-                // if (opponentRobots.length > 0) {
-                //     RobotInfo prioritizedRobotInfo = opponentRobots[0];
-                //     MapLocation prioritizedRobotInfoLocation = opponentRobots[0].getLocation();
-                //     for (RobotInfo r : opponentRobots) {
-                //         if (prioritizedRobotInfo.getType() == prioritizedRobotType) {
-                //             if (r.getType() == prioritizedRobotType
-                //                     && prioritizedRobotInfo.getLocation().distanceSquaredTo(me) > r
-                //                             .getLocation().distanceSquaredTo(me)) {
-                //                 prioritizedRobotInfo = r;
-                //                 prioritizedRobotInfoLocation = r.getLocation();
-                //             }
-                //         } else {
-                //             if (prioritizedRobotInfo.getLocation().distanceSquaredTo(me) > r.getLocation()
-                //                     .distanceSquaredTo(me)) {
-                //                 prioritizedRobotInfo = r;
-                //                 prioritizedRobotInfoLocation = r.getLocation();
-                //             }
-                //         }
-                //     }
-                //     arrayIndex1 = arrayIndex1 & 0b1111000000000000 + GlobalArray.intifyLocation(prioritizedRobotInfoLocation);
-                //     arrayIndex1 = GlobalArray.setBit(arrayIndex1, 15, 1);
-                // }
-                // else {
-                //     arrayIndex1 = arrayIndex1 & 0b1111000000000000 + GlobalArray.intifyLocation(me);
-                //     arrayIndex1 = GlobalArray.setBit(arrayIndex1, 15, 0);
-                // }
                 me = rc.getLocation();
                 priortizedHeadquarters = headquarters[0];
                 for (MapLocation hq : headquarters) {
@@ -134,6 +107,7 @@ public strictfp class Amplifier {
                             }
                         }
                     }
+                    Motion.spreadRandomly(rc, me, prioritizedRobotInfoLocation);
                     rc.writeSharedArray(amplifierID, GlobalArray.toggleBit((amplifierArray & 0b1100000000000000) + GlobalArray.intifyLocation(prioritizedRobotInfoLocation),15));
                 }
                 else {
