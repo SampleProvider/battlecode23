@@ -1,4 +1,4 @@
-package SPAARK;
+package SPAARK_1_13_2023;
 
 import battlecode.common.*;
 
@@ -31,15 +31,11 @@ public strictfp class Carrier {
     private int elixirAmount = 0;
     private int resourceCollectAmount = 40;
 
+    private MapInfo[] mapInfo;
     private WellInfo[] wellInfo;
-    private MapLocation priortizedWell;
+    private MapLocation closestWell;
     private MapLocation[] headquarters;
-    private MapLocation priortizedHeadquarters;
-
-    private WellInfo[] seenWells = new WellInfo[4];
-    private int seenWellIndex = 0;
-
-    private boolean clockwiseRotation = true;
+    private MapLocation closestHeadquarters;
 
     private int state = 0;
     // state
@@ -95,7 +91,10 @@ public strictfp class Carrier {
                             MapLocation islandLocation = islandLocs.iterator().next();
                             rc.setIndicatorString("Moving my anchor towards " + islandLocation);
                             while (!rc.getLocation().equals(islandLocation)) {
-                                Motion.bug(rc, islandLocation);
+                                Direction dir = rc.getLocation().directionTo(islandLocation);
+                                if (rc.canMove(dir)) {
+                                    rc.move(dir);
+                                }
                                 Clock.yield();
                             }
                             if (rc.canPlaceAnchor()) {
@@ -107,26 +106,16 @@ public strictfp class Carrier {
                             continue;
                         }
                     }
-                    updatepriortizedHeadquarters();
-                    if (rc.canTakeAnchor(priortizedHeadquarters, Anchor.STANDARD)) {
-                        rc.takeAnchor(priortizedHeadquarters, Anchor.STANDARD);
+                    updateClosestHeadquarters();
+                    if (rc.canTakeAnchor(closestHeadquarters, Anchor.STANDARD)) {
+                        rc.takeAnchor(closestHeadquarters, Anchor.STANDARD);
                         System.out.println("Taken Anchor!");
                         continue;
                     }
-                    
-                    if (rc.canWriteSharedArray(0, 0)) {
-                        for (int i = 0;i < 4;i++) {
-                            if (seenWells[i] != null) {
-                                if (GlobalArray.storeWell(rc, seenWells[i])) {
-                                    seenWells[i] = null;
-                                }
-                            }
-                        }
-                    }
-                    
+                    mapInfo = rc.senseNearbyMapInfos();
                     if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
-                        Motion.bug(rc, priortizedHeadquarters);
-                        if (priortizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
+                        Motion.bug(rc, mapInfo, closestHeadquarters);
+                        if (closestHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
                             attemptTransfer();
                         }
                         rc.setIndicatorString("Pathfinding to HQ");
@@ -163,35 +152,30 @@ public strictfp class Carrier {
                                 }
                             }
                             if (emptySpots >= 2) {
-                                clockwiseRotation = Motion.bug(rc, prioritizedWellInfoLocation, clockwiseRotation);
+                                Motion.bug(rc, mapInfo, prioritizedWellInfoLocation);
                                 rc.setIndicatorString("Wandering... (Next up: Pathfinding to Well)");
-                                priortizedWell = prioritizedWellInfoLocation;
-                                if (seenWellIndex < 4) {
-                                    seenWells[seenWellIndex] = prioritizedWellInfo;
-                                    seenWellIndex += 1;
-                                }
+                                closestWell = prioritizedWellInfoLocation;
                                 state = 1;
                                 continue;
                             }
                         }
-                        else {
-                            
-                        }
                     }
-                    Motion.spreadRandomly(rc, me, priortizedHeadquarters);
+                    Motion.spreadRandomly(rc, me, closestHeadquarters);
                 } else if (state == 1) {
                     rc.setIndicatorString("Pathfinding to Well...");
-                    clockwiseRotation = Motion.bug(rc, priortizedWell, clockwiseRotation);
-                    if (rc.canCollectResource(priortizedWell, -1)) {
-                        rc.collectResource(priortizedWell, -1);
+                    mapInfo = rc.senseNearbyMapInfos();
+                    Motion.bug(rc, mapInfo, closestWell);
+                    me = rc.getLocation();
+                    if (rc.canCollectResource(closestWell, -1)) {
+                        rc.collectResource(closestWell, -1);
                         state = 2;
                     }
                 } else if (state == 2) {
                     rc.setIndicatorString("Collecting resources...");
-                    if (rc.canCollectResource(priortizedWell, -1)
+                    if (rc.canCollectResource(closestWell, -1)
                             && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
-                        rc.collectResource(priortizedWell, -1);
-                        Motion.circleAroundTarget(rc, me, priortizedWell);
+                        rc.collectResource(closestWell, -1);
+                        Motion.circleAroundTarget(rc, me, closestWell);
                     } else {
                         state = 0;
                     }
@@ -209,38 +193,38 @@ public strictfp class Carrier {
     }
 
     private void attemptCollection() throws GameActionException {
-        if (rc.canCollectResource(priortizedWell, -1) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
-            rc.collectResource(priortizedWell, -1);
+        if (rc.canCollectResource(closestWell, -1) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
+            rc.collectResource(closestWell, -1);
             state = 2;
         }
     }
 
     private boolean attemptTransfer() throws GameActionException {
         boolean transferSuccess = false;
-        if (rc.canTransferResource(priortizedHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount)) {
-            rc.transferResource(priortizedHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount);
+        if (rc.canTransferResource(closestHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount)) {
+            rc.transferResource(closestHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount);
             transferSuccess = true;
         }
-        if (rc.canTransferResource(priortizedHeadquarters, ResourceType.MANA, manaAmount)) {
-            rc.transferResource(priortizedHeadquarters, ResourceType.MANA, manaAmount);
+        if (rc.canTransferResource(closestHeadquarters, ResourceType.MANA, manaAmount)) {
+            rc.transferResource(closestHeadquarters, ResourceType.MANA, manaAmount);
             transferSuccess = true;
         }
-        if (rc.canTransferResource(priortizedHeadquarters, ResourceType.ELIXIR, elixirAmount)) {
-            rc.transferResource(priortizedHeadquarters, ResourceType.ELIXIR, elixirAmount);
+        if (rc.canTransferResource(closestHeadquarters, ResourceType.ELIXIR, elixirAmount)) {
+            rc.transferResource(closestHeadquarters, ResourceType.ELIXIR, elixirAmount);
             transferSuccess = true;
         }
         return transferSuccess;
     }
 
-    private void updatepriortizedHeadquarters() throws GameActionException {
-        priortizedHeadquarters = headquarters[0];
+    private void updateClosestHeadquarters() throws GameActionException {
+        closestHeadquarters = headquarters[0];
         for (MapLocation hq : headquarters) {
             if (hq != null) {
                 // if (hq.distanceSquaredTo(me) > rc.getType().visionRadiusSquared) {
                 //     continue;
                 // }
-                if (priortizedHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
-                    priortizedHeadquarters = hq;
+                if (closestHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
+                    closestHeadquarters = hq;
                 }
             }
         }

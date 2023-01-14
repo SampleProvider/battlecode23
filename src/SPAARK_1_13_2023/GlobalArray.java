@@ -1,4 +1,4 @@
-package SPAARK;
+package SPAARK_1_13_2023;
 
 import battlecode.common.*;
 
@@ -40,7 +40,7 @@ public strictfp class GlobalArray {
             int resType = well.getResourceType().resourceID;
             MapLocation loc = well.getMapLocation();
             if (resType == 2) {
-                for (int i = 5; i < 9; i++) {
+                for (int i = 5; i <= 9; i++) {
                     int arrayWell = rc.readSharedArray(i);
                     if (!hasLocation(arrayWell) || parseLocation(arrayWell).equals(loc)) {
                         rc.writeSharedArray(i, ((well.isUpgraded() ? 1 : 0) << 15) | (resType << 13) | intifyLocation(well.getMapLocation()));
@@ -48,7 +48,7 @@ public strictfp class GlobalArray {
                     }
                 }
             } else if (resType == 1) {
-                for (int i = 9; i < 13; i++) {
+                for (int i = 10; i <= 13; i++) {
                     int arrayWell = rc.readSharedArray(i);
                     if (!hasLocation(arrayWell) || parseLocation(arrayWell).equals(loc)) {
                         rc.writeSharedArray(i, ((well.isUpgraded() ? 1 : 0) << 15) | (resType << 13) | intifyLocation(well.getMapLocation()));
@@ -61,13 +61,6 @@ public strictfp class GlobalArray {
             return false;
         }
         return false;
-    }
-    public static int[] getAllWells(RobotController rc) throws GameActionException {
-        int[] wells = new int[8];
-        for (int i = 5; i < 13; i++) {
-            wells[i - 5] = rc.readSharedArray(i);
-        }
-        return wells;
     }
 
     public static int[] parseGameState(int n) {
