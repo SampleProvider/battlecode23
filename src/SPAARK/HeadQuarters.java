@@ -76,6 +76,8 @@ public strictfp class HeadQuarters {
                         // if (turnCount >= 300) {
                         // carriers += 20;
                         // }
+                    // } else if (rc.canBuildRobot(RobotType.AMPLIFIER, newLoc) && rng.nextInt() < 10) {
+                    //     rc.buildRobot(RobotType.AMPLIFIER, newLoc);
                     } else if (rc.canBuildRobot(RobotType.LAUNCHER, newLoc)) {
                         rc.buildRobot(RobotType.LAUNCHER, newLoc);
                     }
