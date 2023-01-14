@@ -75,7 +75,7 @@ public strictfp class Launcher {
                         MapLocation priortizedAmplifierLocation = null;
                         for (int a = 0;a < 4;a++) {
                             if (rc.readSharedArray(14 + a * 2) >> 11 != 0 && rc.readSharedArray(15 + a * 2) >> 11 != 12) {
-                                MapLocation amplifierLocation = GameState.parseLocation(rc.readSharedArray(14 + a * 2));
+                                MapLocation amplifierLocation = GlobalArray.parseLocation(rc.readSharedArray(14 + a * 2));
                                 if (amplifierLocation.distanceSquaredTo(me) < amplifierRange) {
                                     if (priortizedAmplifierLocation == null) {
                                         priortizedAmplifierLocation = amplifierLocation;
@@ -103,7 +103,7 @@ public strictfp class Launcher {
                                 if (me.equals(priortizedAmplifierLocation.translate(launcherPositions[arrayIndex2 >> 11][0], launcherPositions[arrayIndex2 >> 11][1]))) {
                                     launcherID = arrayIndex2 >> 11;
                                     arrayIndex2 = arrayIndex2 & 0b0000111111111111 + (launcherID + 1) << 12;
-                                    rc.writeSharedArray(15 + amplifierID * 2,GameState.toggleBit(arrayIndex2,launcherID));
+                                    rc.writeSharedArray(15 + amplifierID * 2,GlobalArray.toggleBit(arrayIndex2,launcherID));
                                     state = 1;
                                     break;
                                 }

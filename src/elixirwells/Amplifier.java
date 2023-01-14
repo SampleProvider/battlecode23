@@ -46,7 +46,7 @@ public strictfp class Amplifier {
 
                 if (toWrite != null) {
                     //Write before running expensive BFS
-                    rc.writeSharedArray(14,  GameState.intifyLocation(toWrite));
+                    rc.writeSharedArray(14,  GlobalArray.intifyLocation(toWrite));
                 }
 
                 Direction[] pathToCarrier = BFS_Not_Hardcoded.run(rc, rc.senseNearbyMapInfos(), carrierLocation);
