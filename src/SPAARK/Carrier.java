@@ -82,8 +82,10 @@ public strictfp class Carrier {
                         int[] islands = rc.senseNearbyIslands();
                         Set<MapLocation> islandLocs = new HashSet<>();
                         for (int id : islands) {
-                            MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
-                            islandLocs.addAll(Arrays.asList(thisIslandLocs));
+                            if (rc.senseAnchor(id) == null) {
+                                MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
+                                islandLocs.addAll(Arrays.asList(thisIslandLocs));
+                            }
                         }
                         if (islandLocs.size() > 0) {
                             MapLocation islandLocation = islandLocs.iterator().next();
