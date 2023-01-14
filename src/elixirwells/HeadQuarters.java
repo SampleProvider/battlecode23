@@ -93,7 +93,6 @@ public strictfp class HeadQuarters {
                 }
                 carrierCooldown++;
                 launcherCooldown++;
-                rc.writeSharedArray(gArrIndex, GlobalArray.intifyHeadQuarters(rc));
                 if (isPrimaryHQ) {
                     // set target elixir well
                     if (carrierCount > 20 && turnCount > 50 && !setTargetElixirWell) {
@@ -126,8 +125,16 @@ public strictfp class HeadQuarters {
             int hqIndex = -1;
             for (int i = 0; i < headQuarters.length; i++) {
                 for (int j = 0; j < wells.length; j++) {
-                    
+                    int dist = headQuarters[i].distanceSquaredTo(wells[j]);
+                    if (dist < lowestDist) {
+                        lowestDist = dist;
+                        hqIndex = i;
+                        wellIndex = j;
+                    }
                 }
+            }
+            if (wellIndex > -1) {
+                globalArray.setTargetElixirWellHQPair(wellIndex, hqIndex);
             }
         } catch (GameActionException e) {
             System.out.println("GameActionException setting target elixir well");
