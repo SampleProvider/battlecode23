@@ -71,22 +71,8 @@ public strictfp class HeadQuarters {
                     System.out.println("Anchor Produced!");
                     carrierCooldown = 0;
                 }
-                // if (turnCount == 1) {
-                //     rc.buildRobot(RobotType.CARRIER, newLoc);
-                // }
-                // if (turnCount == 2) {
-                //     rc.buildRobot(RobotType.LAUNCHER, newLoc);
-                // }
                 Direction dir = directions[rng.nextInt(directions.length)];
                 MapLocation newLoc = rc.getLocation().add(dir);
-                if (rc.senseRobotAtLocation(newLoc) != null) {
-                    dir = directions[rng.nextInt(directions.length)];
-                    newLoc = rc.getLocation().add(dir);
-                }
-                if (rc.senseRobotAtLocation(newLoc) != null) {
-                    dir = directions[rng.nextInt(directions.length)];
-                    newLoc = rc.getLocation().add(dir);
-                }
                 if (isPrimaryHQ) {
                     // check amplifier states
                     for (int a = 0;a < 4;a++) {
