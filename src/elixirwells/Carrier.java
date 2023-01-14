@@ -10,19 +10,20 @@ import java.util.Set;
 public strictfp class Carrier {
     private RobotController rc;
     private MapLocation me;
+    GlobalArray gArray = new GlobalArray();
 
     private int turnCount = 0;
 
     private final Random rng = new Random(2023);
     private final Direction[] directions = {
-            Direction.SOUTHWEST,
-            Direction.SOUTH,
-            Direction.SOUTHEAST,
-            Direction.WEST,
-            Direction.EAST,
-            Direction.NORTHWEST,
-            Direction.NORTH,
-            Direction.NORTHEAST,
+        Direction.SOUTHWEST,
+        Direction.SOUTH,
+        Direction.SOUTHEAST,
+        Direction.WEST,
+        Direction.EAST,
+        Direction.NORTHWEST,
+        Direction.NORTH,
+        Direction.NORTHEAST,
     };
 
     private ResourceType prioritizedResourceType = ResourceType.ADAMANTIUM;
@@ -54,15 +55,7 @@ public strictfp class Carrier {
         try {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
-            int hqCount = 0;
-            for (int i = 1; i <= 4; i++) {
-                if (GlobalArray.hasLocation(rc.readSharedArray(i)))
-                    hqCount++;
-            }
-            headquarters = new MapLocation[hqCount];
-            for (int i = 0; i < hqCount; i++) {
-                headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + 1));
-            }
+            headquarters = GlobalArray.getKnownHeadQuarterLocations(rc);
         } catch (GameActionException e) {
             System.out.println("GameActionException at Carrier constructor");
             e.printStackTrace();
