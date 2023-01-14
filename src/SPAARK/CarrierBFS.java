@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public strictfp class Carrier {
+public strictfp class CarrierBFS {
     private RobotController rc;
     private MapLocation me;
 
@@ -42,8 +42,15 @@ public strictfp class Carrier {
     // 0 is wander
     // 1 is pathfinding to well
     // 2 is collecting
+    // 3 is pathfinding to hq
+    // 4 is transferring
 
-    public Carrier(RobotController rc) {
+    private Direction[] path = new Direction[0];
+    private MapLocation pathDest;
+    private int pathIndex = 0;
+    private int pathBlocked = 0;
+
+    public CarrierBFS(RobotController rc) {
         try {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
@@ -112,12 +119,23 @@ public strictfp class Carrier {
                     }
                     mapInfo = rc.senseNearbyMapInfos();
                     if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
-                        Motion.bug(rc, mapInfo, closestHeadquarters);
                         if (closestHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
-                            attemptTransfer();
+                            if (attemptTransfer()) {
+                                state = 4;
+                                continue;
+                            }
+                            path = BFS.run(rc, mapInfo, closestHeadquarters);
+                            if (path.length > 0) {
+                                rc.setIndicatorString("Wandering... (Next up: Pathfinding to HQ)");
+                                state = 3;
+                                continue;
+                            }
                         }
-                        rc.setIndicatorString("Pathfinding to HQ");
-                        continue;
+                        Direction direction = me.directionTo(closestHeadquarters);
+                        if (rc.canMove(direction)) {
+                            rc.move(direction);
+                            continue;
+                        }
                     } else {
                         wellInfo = rc.senseNearbyWells();
                         if (wellInfo.length > 0) {
@@ -139,6 +157,7 @@ public strictfp class Carrier {
                                     }
                                 }
                             }
+                            MapLocation adjPrioritizedWellInfoLocation = prioritizedWellInfoLocation;
                             int emptySpots = 0;
                             for (Direction d : directions) {
                                 MapLocation adjSpot = prioritizedWellInfoLocation.add(d);
@@ -147,26 +166,62 @@ public strictfp class Carrier {
                                 }
                                 if (rc.sensePassability(adjSpot) && rc.senseRobotAtLocation(adjSpot) == null) {
                                     emptySpots += 1;
+                                    if (adjSpot.distanceSquaredTo(me) < adjPrioritizedWellInfoLocation.distanceSquaredTo(me)) {
+                                        adjPrioritizedWellInfoLocation = adjSpot;
+                                    }
                                 }
                             }
-                            if (emptySpots >= 2) {
-                                Motion.bug(rc, mapInfo, prioritizedWellInfoLocation);
-                                rc.setIndicatorString("Wandering... (Next up: Pathfinding to Well)");
-                                closestWell = prioritizedWellInfoLocation;
-                                state = 1;
-                                continue;
+                            if (emptySpots >= 3) {
+                                path = BFS.run(rc, mapInfo, adjPrioritizedWellInfoLocation);
+                                if (path.length > 0) {
+                                    rc.setIndicatorString("Wandering... (Next up: Pathfinding to Well)");
+                                    closestWell = prioritizedWellInfoLocation;
+                                    pathDest = adjPrioritizedWellInfoLocation;
+                                    state = 1;
+                                    continue;
+                                }
                             }
                         }
                     }
-                    Motion.spreadRandomly(rc, me, closestHeadquarters);
+                    Motion.moveRandomly(rc);
                 } else if (state == 1) {
                     rc.setIndicatorString("Pathfinding to Well...");
-                    mapInfo = rc.senseNearbyMapInfos();
-                    Motion.bug(rc, mapInfo, closestWell);
-                    me = rc.getLocation();
-                    if (rc.canCollectResource(closestWell, -1)) {
-                        rc.collectResource(closestWell, -1);
-                        state = 2;
+                    if (rc.canSenseLocation(pathDest) && rc.senseRobotAtLocation(pathDest) != null) {
+                        pathIndex = 0;
+                        state = 0;
+                        Motion.moveRandomly(rc);
+                        continue;
+                    }
+                    if (pathIndex < path.length) {
+                        rc.setIndicatorString("Pathfinding to Well... (Path: " + path[pathIndex] + ")");
+                        while (rc.isMovementReady()) {
+                            if (rc.canMove(path[pathIndex])) {
+                                rc.move(path[pathIndex]);
+                                pathBlocked = 0;
+                                pathIndex += 1;
+                                if (pathIndex == path.length) {
+                                    pathIndex = 0;
+                                    state = 0;
+                                    if (rc.canCollectResource(closestWell, -1)) {
+                                        rc.collectResource(closestWell, -1);
+                                        state = 2;
+                                    }
+                                    break;
+                                }
+                            }
+                            else {
+                                pathBlocked += 1;
+                                if (pathBlocked > 5) {
+                                    pathIndex = 0;
+                                    state = 0;
+                                    Motion.moveRandomly(rc);
+                                }
+                            }
+                        }
+                    } else {
+                        pathIndex = 0;
+                        state = 0;
+                        Motion.moveRandomly(rc);
                     }
                 } else if (state == 2) {
                     rc.setIndicatorString("Collecting resources...");
@@ -176,6 +231,50 @@ public strictfp class Carrier {
                         Motion.circleAroundTarget(rc, me, closestWell);
                     } else {
                         state = 0;
+                    }
+                } else if (state == 3) {
+                    rc.setIndicatorString("Pathfinding to HQ...");
+                    if (pathIndex < path.length) {
+                        rc.setIndicatorString("Pathfinding to HQ... (Path: " + path[pathIndex] + ")");
+                        while (rc.isMovementReady()) {
+                            if (rc.canMove(path[pathIndex])) {
+                                rc.move(path[pathIndex]);
+                                pathBlocked = 0;
+                                pathIndex += 1;
+                                if (pathIndex == path.length) {
+                                    pathIndex = 0;
+                                    state = 0;
+                                }
+                                break;
+                            }
+                            else {
+                                pathBlocked += 1;
+                                if (pathBlocked > 5) {
+                                    pathIndex = 0;
+                                    state = 0;
+                                    Motion.moveRandomly(rc);
+                                }
+                            }
+                        }
+                    } else {
+                        pathIndex = 0;
+                        state = 0;
+                        Motion.moveRandomly(rc);
+                    }
+                } else if (state == 4) {
+                    rc.setIndicatorString("Transferring resources...");
+                    state = 0;
+                    if (rc.canTransferResource(closestHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount)) {
+                        rc.transferResource(closestHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount);
+                        state = 4;
+                    }
+                    if (rc.canTransferResource(closestHeadquarters, ResourceType.MANA, manaAmount)) {
+                        rc.transferResource(closestHeadquarters, ResourceType.MANA, manaAmount);
+                        state = 4;
+                    }
+                    if (rc.canTransferResource(closestHeadquarters, ResourceType.ELIXIR, elixirAmount)) {
+                        rc.transferResource(closestHeadquarters, ResourceType.ELIXIR, elixirAmount);
+                        state = 4;
                     }
                 }
             } catch (GameActionException e) {
@@ -191,8 +290,9 @@ public strictfp class Carrier {
     }
 
     private void attemptCollection() throws GameActionException {
-        if (rc.canCollectResource(closestWell, -1) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
-            rc.collectResource(closestWell, -1);
+        if (rc.canCollectResource(me, -1) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
+            rc.collectResource(me, -1);
+            closestWell = me;
             state = 2;
         }
     }

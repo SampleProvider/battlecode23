@@ -108,10 +108,10 @@ public strictfp class Amplifier {
                         arrayIndex1 = arrayIndex1 & 0b1111000000000000 + GlobalArray.intifyLocation(me);
                         arrayIndex1 = GlobalArray.setBit(arrayIndex1, 15, 0);
                     }
-                    moveRandomly();
+                    Motion.moveRandomly(rc);
                 }
                 else if (turnCount < 10) {
-                    moveRandomly();
+                    Motion.moveRandomly(rc);
                 }
                 rc.writeSharedArray(amplifierID, GlobalArray.toggleBit(arrayIndex1,15));
                 rc.writeSharedArray(amplifierID + 1, arrayIndex2);
@@ -123,23 +123,6 @@ public strictfp class Amplifier {
                 e.printStackTrace();
             } finally {
                 Clock.yield();
-            }
-        }
-    }
-
-    private void moveRandomly() throws GameActionException {
-        while (true) {
-            Direction direction = directions[rng.nextInt(directions.length)];
-            // for (int x = -2;x <= 2;x++) {
-            //     for (int y = -2;y <= 2;y++) {
-            //         if (!rc.sensePassability(me.add(direction).translate(x,y))) {
-            //             continue;
-            //         }
-            //     }
-            // }
-            if (rc.canMove(direction)) {
-                rc.move(direction);
-                break;
             }
         }
     }
