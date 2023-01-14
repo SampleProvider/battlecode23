@@ -17,7 +17,7 @@ public class Motion {
         Direction.NORTHEAST,
     };
 
-    public static void moveRandomly(RobotController rc) throws GameActionException {
+    protected static void moveRandomly(RobotController rc) throws GameActionException {
         while (rc.isMovementReady()) {
             Direction direction = directions[rng.nextInt(directions.length)];
             if (rc.canMove(direction)) {
@@ -25,7 +25,7 @@ public class Motion {
             }
         }
     }
-    public static void spreadRandomly(RobotController rc, MapLocation me, MapLocation target) throws GameActionException {
+    protected static void spreadRandomly(RobotController rc, MapLocation me, MapLocation target) throws GameActionException {
         if (rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam()).length <= 10) {
             moveRandomly(rc);
             return;
@@ -60,7 +60,7 @@ public class Motion {
             }
         }
     }
-    public static void spreadRandomly(RobotController rc, MapLocation me, MapLocation target, boolean avoidCorners) throws GameActionException {
+    protected static void spreadRandomly(RobotController rc, MapLocation me, MapLocation target, boolean avoidCorners) throws GameActionException {
         if (me.distanceSquaredTo(new MapLocation(0, 0)) <= 25 || me.distanceSquaredTo(new MapLocation(rc.getMapWidth(), 0)) <= 25 || me.distanceSquaredTo(new MapLocation(0, rc.getMapHeight())) <= 25 || me.distanceSquaredTo(new MapLocation(rc.getMapWidth(), rc.getMapHeight())) <= 25) {
             Direction direction = me.directionTo(new MapLocation(rc.getMapWidth() / 2,rc.getMapHeight() / 2));
             while (rc.isMovementReady()) {
@@ -113,7 +113,7 @@ public class Motion {
             }
         }
     }
-    public static void spreadCenter(RobotController rc, MapLocation me) throws GameActionException {
+    protected static void spreadCenter(RobotController rc, MapLocation me) throws GameActionException {
         Direction direction = me.directionTo(new MapLocation(rc.getMapWidth() / 2,rc.getMapHeight() / 2));
         while (rc.isMovementReady()) {
             boolean moved = false;
@@ -145,7 +145,7 @@ public class Motion {
             }
         }
     }
-    public static void circleAroundTarget(RobotController rc, MapLocation me, MapLocation target) throws GameActionException {
+    protected static void circleAroundTarget(RobotController rc, MapLocation me, MapLocation target) throws GameActionException {
         Direction direction = me.directionTo(target).rotateLeft();
         if (direction.ordinal() % 2 == 1) {
             direction = direction.rotateLeft();
@@ -154,7 +154,7 @@ public class Motion {
             rc.move(direction);
         }
     }
-    public static boolean circleAroundTarget(RobotController rc, MapLocation me, MapLocation target, int distance, boolean clockwiseRotation) throws GameActionException {
+    protected static boolean circleAroundTarget(RobotController rc, MapLocation me, MapLocation target, int distance, boolean clockwiseRotation) throws GameActionException {
         Direction direction = me.directionTo(target);
         if (me.distanceSquaredTo(target) > (int) distance * 1.25) {
             if (clockwiseRotation) {
@@ -187,7 +187,7 @@ public class Motion {
         return clockwiseRotation;
     }
 
-    public static void bug(RobotController rc,MapLocation dest) throws GameActionException {
+    protected static void bug(RobotController rc,MapLocation dest) throws GameActionException {
         Direction lastDirection = Direction.CENTER;
         while (rc.isMovementReady()) {
             MapLocation me = rc.getLocation();
@@ -237,7 +237,7 @@ public class Motion {
             }
         }
     }
-    public static boolean bug(RobotController rc,MapLocation dest, boolean clockwiseRotation) throws GameActionException {
+    protected static boolean bug(RobotController rc,MapLocation dest, boolean clockwiseRotation) throws GameActionException {
         Direction lastDirection = Direction.CENTER;
         while (rc.isMovementReady()) {
             MapLocation me = rc.getLocation();

@@ -8,9 +8,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public strictfp class Launcher {
-    private RobotController rc;
-    private MapLocation me;
-    GlobalArray gArray = new GlobalArray();
+    protected RobotController rc;
+    protected MapLocation me;
+    private GlobalArray globalArray = new GlobalArray();
 
     private int turnCount = 0;
 
@@ -37,8 +37,8 @@ public strictfp class Launcher {
     private int headquarterCircleRange = 100;
     private int headquarterCircleStuck = 0;
 
-    private int amplifierID = -1;
-    private int launcherID = -1;
+    protected int amplifierID = -1;
+    protected int launcherID = -1;
 
     private MapLocation priortizedAmplifierLocation;
 
