@@ -24,7 +24,7 @@ public strictfp class Amplifier {
     };
 
     private MapLocation[] headquarters;
-    private MapLocation priortizedHeadquarters;
+    private MapLocation prioritizedHeadquarters;
     private RobotType prioritizedRobotType = RobotType.LAUNCHER;
     
     private int amplifierArray;
@@ -78,11 +78,11 @@ public strictfp class Amplifier {
                 turnCount++;
                 amplifierArray = rc.readSharedArray(amplifierID);
                 me = rc.getLocation();
-                priortizedHeadquarters = headquarters[0];
+                prioritizedHeadquarters = headquarters[0];
                 for (MapLocation hq : headquarters) {
                     if (hq != null) {
-                        if (priortizedHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
-                            priortizedHeadquarters = hq;
+                        if (prioritizedHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
+                            prioritizedHeadquarters = hq;
                         }
                     }
                 }
