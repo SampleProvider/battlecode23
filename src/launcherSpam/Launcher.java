@@ -1,4 +1,4 @@
-package SPAARK;
+package launcherSpam;
 
 import battlecode.common.*;
 
@@ -53,6 +53,8 @@ public strictfp class Launcher {
     // 2 is travelling with amplifier
     // 3 is defense
 
+    private boolean offense;
+
     public Launcher(RobotController rc) {
         try {
             this.rc = rc;
@@ -65,6 +67,14 @@ public strictfp class Launcher {
             headquarters = new MapLocation[hqCount];
             for (int i = 0; i < hqCount; i++) {
                 headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + 1));
+            }
+            if (rc.getMapWidth() + rc.getMapHeight() > 50) {
+                if (rc.getRoundNum() % 3 != 0) {
+                    offense = true;
+                }
+            }
+            else {
+                offense = true;
             }
         } catch (GameActionException e) {
             System.out.println("GameActionException at Carrier constructor");
@@ -125,7 +135,7 @@ public strictfp class Launcher {
                             }
                         }
                     }
-                    if (priortizedAmplifierLocation != null) {
+                    if (priortizedAmplifierLocation != null && offense) {
                         state = 1;
                     }
                     else {
@@ -139,13 +149,20 @@ public strictfp class Launcher {
                         }
                         // Motion.spreadRandomly(rc, me, priortizedHeadquarters, true);
                         rc.setIndicatorString("swarming");
-                        if (rng.nextBoolean()) {
-                            Motion.swarm(rc, me, RobotType.CARRIER);
-                        }
-                        else {
+                        if (offense) {
                             Motion.spreadCenter(rc, me);
                         }
-                        // Motion.spreadCenter(rc, me);
+                        else {
+                            Motion.swarm(rc, me, RobotType.CARRIER);
+                        }
+                        // if (rng.nextBoolean()) {
+                        // }
+                        // else {
+                        //     Motion.spreadCenter(rc, me);
+                        // }
+                    }
+                    if (prioritizedRobotInfoLocation != null) {
+                        state = 5;
                     }
                 }
                 if (state == 1) {
@@ -259,6 +276,14 @@ public strictfp class Launcher {
                     }
                     else {
                         state = 3;
+                    }
+                }
+                if (state == 5) {
+                    if (prioritizedRobotInfoLocation != null) {
+                        clockwiseRotation = Motion.bug(rc, prioritizedRobotInfoLocation, clockwiseRotation);
+                    }
+                    else {
+                        state = 0;
                     }
                 }
             } catch (GameActionException e) {

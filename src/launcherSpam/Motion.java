@@ -1,4 +1,4 @@
-package SPAARK;
+package launcherSpam;
 
 import battlecode.common.*;
 
@@ -136,13 +136,13 @@ public class Motion {
                     moved = true;
                 }
             }
-            while (moved == false) {
-                Direction d = directions[rng.nextInt(directions.length)];
-                if (rc.canMove(d)) {
-                    rc.move(d);
-                    moved = true;
-                }
-            }
+            // while (moved == false) {
+            //     Direction d = directions[rng.nextInt(directions.length)];
+            //     if (rc.canMove(d)) {
+            //         rc.move(d);
+            //         moved = true;
+            //     }
+            // }
         }
     }
     protected static void spreadEdges(RobotController rc, MapLocation me) throws GameActionException {

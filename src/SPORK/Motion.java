@@ -1,4 +1,4 @@
-package SPAARK;
+package SPORK;
 
 import battlecode.common.*;
 
@@ -17,7 +17,7 @@ public class Motion {
         Direction.NORTHEAST,
     };
 
-    protected static void moveRandomly(RobotController rc) throws GameActionException {
+    public static void moveRandomly(RobotController rc) throws GameActionException {
         while (rc.isMovementReady()) {
             Direction direction = directions[rng.nextInt(directions.length)];
             if (rc.canMove(direction)) {
@@ -25,7 +25,7 @@ public class Motion {
             }
         }
     }
-    protected static void spreadRandomly(RobotController rc, MapLocation me, MapLocation target) throws GameActionException {
+    public static void spreadRandomly(RobotController rc, MapLocation me, MapLocation target) throws GameActionException {
         if (rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam()).length <= 10) {
             moveRandomly(rc);
             return;
@@ -60,7 +60,7 @@ public class Motion {
             }
         }
     }
-    protected static void spreadRandomly(RobotController rc, MapLocation me, MapLocation target, boolean avoidCorners) throws GameActionException {
+    public static void spreadRandomly(RobotController rc, MapLocation me, MapLocation target, boolean avoidCorners) throws GameActionException {
         if (me.distanceSquaredTo(new MapLocation(0, 0)) <= 25 || me.distanceSquaredTo(new MapLocation(rc.getMapWidth(), 0)) <= 25 || me.distanceSquaredTo(new MapLocation(0, rc.getMapHeight())) <= 25 || me.distanceSquaredTo(new MapLocation(rc.getMapWidth(), rc.getMapHeight())) <= 25) {
             Direction direction = me.directionTo(new MapLocation(rc.getMapWidth() / 2,rc.getMapHeight() / 2));
             while (rc.isMovementReady()) {
@@ -113,7 +113,7 @@ public class Motion {
             }
         }
     }
-    protected static void spreadCenter(RobotController rc, MapLocation me) throws GameActionException {
+    public static void spreadCenter(RobotController rc, MapLocation me) throws GameActionException {
         Direction direction = me.directionTo(new MapLocation(rc.getMapWidth() / 2,rc.getMapHeight() / 2));
         while (rc.isMovementReady()) {
             boolean moved = false;
@@ -145,39 +145,7 @@ public class Motion {
             }
         }
     }
-    protected static void spreadEdges(RobotController rc, MapLocation me) throws GameActionException {
-        Direction direction = me.directionTo(new MapLocation(rc.getMapWidth() / 2,rc.getMapHeight() / 2)).opposite();
-        while (rc.isMovementReady()) {
-            boolean moved = false;
-            int random = rng.nextInt(6);
-            if (random == 0) {
-                if (rc.canMove(direction.rotateLeft().rotateLeft())) {
-                    rc.move(direction.rotateLeft().rotateLeft());
-                    moved = true;
-                }
-            }
-            else if (random == 3) {
-                if (rc.canMove(direction.rotateRight().rotateRight())) {
-                    rc.move(direction.rotateRight().rotateRight());
-                    moved = true;
-                }
-            }
-            else if (random == 1 || random == 2) {
-                if (rc.canMove(direction)) {
-                    rc.move(direction);
-                    moved = true;
-                }
-            }
-            while (moved == false) {
-                Direction d = directions[rng.nextInt(directions.length)];
-                if (rc.canMove(d)) {
-                    rc.move(d);
-                    moved = true;
-                }
-            }
-        }
-    }
-    protected static void circleAroundTarget(RobotController rc, MapLocation me, MapLocation target) throws GameActionException {
+    public static void circleAroundTarget(RobotController rc, MapLocation me, MapLocation target) throws GameActionException {
         Direction direction = me.directionTo(target).rotateLeft();
         if (direction.ordinal() % 2 == 1) {
             direction = direction.rotateLeft();
@@ -186,7 +154,7 @@ public class Motion {
             rc.move(direction);
         }
     }
-    protected static boolean circleAroundTarget(RobotController rc, MapLocation me, MapLocation target, int distance, boolean clockwiseRotation) throws GameActionException {
+    public static boolean circleAroundTarget(RobotController rc, MapLocation me, MapLocation target, int distance, boolean clockwiseRotation) throws GameActionException {
         Direction direction = me.directionTo(target);
         if (me.distanceSquaredTo(target) > (int) distance * 1.25) {
             if (clockwiseRotation) {
@@ -219,84 +187,14 @@ public class Motion {
         return clockwiseRotation;
     }
 
-    public static void swarm(RobotController rc, MapLocation me, RobotType robotType) throws GameActionException {
-        RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
-        if (robotInfo.length > 0) {
-            int adjacentRobots = 0;
-            MapLocation prioritizedRobotInfoLocation = null;
-            for (RobotInfo w : robotInfo) {
-                if (w.getType() != robotType) {
-                    continue;
-                }
-                if (me.isAdjacentTo(w.getLocation())) {
-                    adjacentRobots += 1;
-                    continue;
-                }
-                if (prioritizedRobotInfoLocation == null) {
-                    prioritizedRobotInfoLocation = w.getLocation();
-                    continue;
-                }
-                if (prioritizedRobotInfoLocation.distanceSquaredTo(me) > w.getLocation()
-                        .distanceSquaredTo(me)) {
-                    prioritizedRobotInfoLocation = w.getLocation();
-                }
-            }
-            if (prioritizedRobotInfoLocation != null) {
-                Direction direction = me.directionTo(prioritizedRobotInfoLocation);
-                if (adjacentRobots >= 3) {
-                    direction = direction.opposite();
-                }
-                while (rc.isMovementReady()) {
-                    if (rc.canMove(direction)) {
-                        rc.move(direction);
-                        continue;
-                    }
-                    if (rc.canMove(direction.rotateLeft())) {
-                        rc.move(direction.rotateLeft());
-                        continue;
-                    }
-                    if (rc.canMove(direction.rotateRight())) {
-                        rc.move(direction.rotateRight());
-                        continue;
-                    }
-                    if (rc.canMove(direction.rotateLeft().rotateLeft())) {
-                        rc.move(direction.rotateLeft().rotateLeft());
-                        continue;
-                    }
-                    if (rc.canMove(direction.rotateRight().rotateRight())) {
-                        rc.move(direction.rotateRight().rotateRight());
-                        continue;
-                    }
-                    if (rc.canMove(direction.rotateLeft().rotateLeft().rotateLeft())) {
-                        rc.move(direction.rotateLeft().rotateLeft().rotateLeft());
-                        continue;
-                    }
-                    if (rc.canMove(direction.rotateRight().rotateRight().rotateRight())) {
-                        rc.move(direction.rotateRight().rotateRight().rotateRight());
-                        continue;
-                    }
-                    if (rc.canMove(direction.opposite())) {
-                        rc.move(direction.opposite());
-                        continue;
-                    }
-                }
-            }
-            else {
-                moveRandomly(rc);
-            }
-        }
-        else {
-            moveRandomly(rc);
-        }
-    }
-
-    protected static void bug(RobotController rc,MapLocation dest) throws GameActionException {
+    public static void bug(RobotController rc,MapLocation dest) throws GameActionException {
         Direction lastDirection = Direction.CENTER;
         while (rc.isMovementReady()) {
             MapLocation me = rc.getLocation();
             if (me.equals(dest)) {
                 return;
             }
+            boolean moved = false;
             Direction direction = me.directionTo(dest);
             if (rc.canMove(direction)) {
                 rc.move(direction);
@@ -339,13 +237,14 @@ public class Motion {
             }
         }
     }
-    protected static boolean bug(RobotController rc,MapLocation dest, boolean clockwiseRotation) throws GameActionException {
+    public static boolean bug(RobotController rc,MapLocation dest, boolean clockwiseRotation) throws GameActionException {
         Direction lastDirection = Direction.CENTER;
         while (rc.isMovementReady()) {
             MapLocation me = rc.getLocation();
             if (me.equals(dest)) {
                 return clockwiseRotation;
             }
+            boolean moved = false;
             Direction direction = me.directionTo(dest);
             if (rc.canMove(direction)) {
                 rc.move(direction);

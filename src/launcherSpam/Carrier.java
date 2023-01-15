@@ -1,4 +1,4 @@
-package SPAARK;
+package launcherSpam;
 
 import battlecode.common.*;
 
@@ -26,7 +26,7 @@ public strictfp class Carrier {
         Direction.NORTHEAST,
     };
 
-    private ResourceType prioritizedResourceType = ResourceType.ELIXIR;
+    private ResourceType prioritizedResourceType = ResourceType.ADAMANTIUM;
     private int adamantiumAmount = 0;
     private int manaAmount = 0;
     private int elixirAmount = 0;
