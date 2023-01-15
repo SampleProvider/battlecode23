@@ -31,10 +31,12 @@ public strictfp class Carrier {
     private int elixirAmount = 0;
     private int resourceCollectAmount = 40;
 
+    private RobotType prioritizedRobotType = RobotType.LAUNCHER;
+
     private WellInfo[] wellInfo;
-    private MapLocation priortizedWell;
+    private MapLocation prioritizedWell;
     private MapLocation[] headquarters;
-    private MapLocation priortizedHeadquarters;
+    private MapLocation prioritizedHeadquarters;
 
     private WellInfo[] seenWells = new WellInfo[4];
     private int seenWellIndex = 0;
@@ -50,7 +52,8 @@ public strictfp class Carrier {
     // 0 is wander
     // 1 is pathfinding to well
     // 2 is collecting
-    // 3 is retreat
+    // 3 is pathfinding to island
+    // 4 is retreat
 
     public Carrier(RobotController rc) {
         try {
@@ -73,7 +76,7 @@ public strictfp class Carrier {
             System.out.println("Exception at Carrier constructor");
             e.printStackTrace();
         } finally {
-            Clock.yield();
+            // Clock.yield();
         }
         run();
     }
@@ -81,9 +84,6 @@ public strictfp class Carrier {
     private void run() {
         while (true) {
             try {
-                if (rc.getRoundNum() > 200) {
-                    prioritizedResourceType = ResourceType.MANA;
-                }
                 me = rc.getLocation();
                 adamantiumAmount = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 manaAmount = rc.getResourceAmount(ResourceType.MANA);
@@ -92,135 +92,22 @@ public strictfp class Carrier {
                 globalArray.parseGameState(rc.readSharedArray(0));
                 prioritizedResourceType = globalArray.prioritizedResource();
 
+                if (rc.canWriteSharedArray(0, 0)) {
+                    for (int i = 0;i < 4;i++) {
+                        if (seenWells[i] != null) {
+                            if (GlobalArray.storeWell(rc, seenWells[i])) {
+                                seenWells[i] = null;
+                            }
+                        }
+                    }
+                }
+
                 if (rc.getHealth() != lastHealth) {
-                    // state = 3;
-                    enemyLocation = me;
+                    state = 4;
                 }
                 lastHealth = rc.getHealth();
 
-                if (state == 0) {
-                    rc.setIndicatorString("Wandering...");
-                    if (rc.getAnchor() != null) {
-                        int[] islands = rc.senseNearbyIslands();
-                        Set<MapLocation> islandLocs = new HashSet<>();
-                        for (int id : islands) {
-                            if (rc.senseAnchor(id) == null) {
-                                MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
-                                islandLocs.addAll(Arrays.asList(thisIslandLocs));
-                            }
-                        }
-                        if (islandLocs.size() > 0) {
-                            MapLocation islandLocation = islandLocs.iterator().next();
-                            rc.setIndicatorString("Moving my anchor towards " + islandLocation);
-                            while (!rc.getLocation().equals(islandLocation)) {
-                                clockwiseRotation = Motion.bug(rc, islandLocation, clockwiseRotation);
-                                Clock.yield();
-                            }
-                            if (rc.canPlaceAnchor()) {
-                                rc.setIndicatorString("Huzzah, placed anchor!");
-                                rc.placeAnchor();
-                            }
-                        } else {
-                            Motion.moveRandomly(rc);
-                            continue;
-                        }
-                    }
-                    updatePriortizedHeadquarters();
-                    if (rc.canTakeAnchor(priortizedHeadquarters, Anchor.STANDARD)) {
-                        rc.takeAnchor(priortizedHeadquarters, Anchor.STANDARD);
-                        System.out.println("Taken Anchor!");
-                        continue;
-                    }
-                    
-                    if (rc.canWriteSharedArray(0, 0)) {
-                        for (int i = 0;i < 4;i++) {
-                            if (seenWells[i] != null) {
-                                if (GlobalArray.storeWell(rc, seenWells[i])) {
-                                    seenWells[i] = null;
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
-                        Motion.bug(rc, priortizedHeadquarters);
-                        if (priortizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
-                            attemptTransfer();
-                        }
-                        rc.setIndicatorString("Pathfinding to HQ");
-                        continue;
-                    } else {
-                        wellInfo = rc.senseNearbyWells();
-                        if (wellInfo.length > 0) {
-                            WellInfo prioritizedWellInfo = wellInfo[0];
-                            MapLocation prioritizedWellInfoLocation = wellInfo[0].getMapLocation();
-                            for (WellInfo w : wellInfo) {
-                                if (prioritizedWellInfo.getResourceType() == prioritizedResourceType) {
-                                    if (w.getResourceType() == prioritizedResourceType
-                                            && prioritizedWellInfo.getMapLocation().distanceSquaredTo(me) > w
-                                                    .getMapLocation().distanceSquaredTo(me)) {
-                                        prioritizedWellInfo = w;
-                                        prioritizedWellInfoLocation = w.getMapLocation();
-                                    }
-                                } else {
-                                    if (prioritizedWellInfo.getMapLocation().distanceSquaredTo(me) > w.getMapLocation()
-                                            .distanceSquaredTo(me)) {
-                                        prioritizedWellInfo = w;
-                                        prioritizedWellInfoLocation = w.getMapLocation();
-                                    }
-                                }
-                            }
-                            int emptySpots = 0;
-                            for (Direction d : directions) {
-                                MapLocation adjSpot = prioritizedWellInfoLocation.add(d);
-                                if (!rc.canSenseLocation(adjSpot)) {
-                                    continue;
-                                }
-                                if (rc.sensePassability(adjSpot) && rc.senseRobotAtLocation(adjSpot) == null) {
-                                    emptySpots += 1;
-                                }
-                            }
-                            if (emptySpots >= 2) {
-                                clockwiseRotation = Motion.bug(rc, prioritizedWellInfoLocation, clockwiseRotation);
-                                rc.setIndicatorString("Wandering... (Next up: Pathfinding to Well)");
-                                priortizedWell = prioritizedWellInfoLocation;
-                                if (seenWellIndex < 4) {
-                                    seenWells[seenWellIndex] = prioritizedWellInfo;
-                                    seenWellIndex += 1;
-                                }
-                                state = 1;
-                                continue;
-                            }
-                        }
-                        else {
-                            
-                        }
-                    }
-                    Motion.spreadRandomly(rc, me, priortizedHeadquarters);
-                } else if (state == 1) {
-                    rc.setIndicatorString("Pathfinding to Well...");
-                    clockwiseRotation = Motion.bug(rc, priortizedWell, clockwiseRotation);
-                    if (rc.canCollectResource(priortizedWell, -1)) {
-                        rc.collectResource(priortizedWell, -1);
-                        state = 2;
-                    }
-                } else if (state == 2) {
-                    rc.setIndicatorString("Collecting resources...");
-                    if (rc.canCollectResource(priortizedWell, -1)
-                            && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
-                        rc.collectResource(priortizedWell, -1);
-                        Motion.circleAroundTarget(rc, me, priortizedWell);
-                    } else {
-                        state = 0;
-                    }
-                } else if (state == 3) {
-                    rc.setIndicatorString("Retreating...");
-                    updatePriortizedHeadquarters();
-                    Motion.bug(rc, priortizedHeadquarters);
-                    if (priortizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
-                        attemptTransfer();
-                    }
-                }
+                runState();
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Carrier");
                 e.printStackTrace();
@@ -233,39 +120,221 @@ public strictfp class Carrier {
         }
     }
 
+    private void runState() throws GameActionException {
+        Attack.attack(rc, me, prioritizedRobotType, false);
+        if (state == 0) {
+            updatePrioritizedHeadquarters();
+            if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD)) {
+                rc.takeAnchor(prioritizedHeadquarters, Anchor.STANDARD);
+            }
+
+            if (rc.getAnchor() != null) {
+                state = 3;
+            }
+
+            if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
+                Motion.bug(rc, prioritizedHeadquarters);
+                if (prioritizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
+                    attemptTransfer();
+                }
+                rc.setIndicatorString("Pathfinding to HQ");
+                return;
+            } else {
+                wellInfo = rc.senseNearbyWells();
+                if (wellInfo.length > 0) {
+                    WellInfo prioritizedWellInfo = wellInfo[0];
+                    MapLocation prioritizedWellInfoLocation = wellInfo[0].getMapLocation();
+                    for (WellInfo w : wellInfo) {
+                        if (prioritizedWellInfo.getResourceType() == prioritizedResourceType) {
+                            if (w.getResourceType() == prioritizedResourceType
+                                    && prioritizedWellInfo.getMapLocation().distanceSquaredTo(me) > w
+                                            .getMapLocation().distanceSquaredTo(me)) {
+                                prioritizedWellInfo = w;
+                                prioritizedWellInfoLocation = w.getMapLocation();
+                            }
+                        } else {
+                            if (prioritizedWellInfo.getMapLocation().distanceSquaredTo(me) > w.getMapLocation()
+                                    .distanceSquaredTo(me)) {
+                                prioritizedWellInfo = w;
+                                prioritizedWellInfoLocation = w.getMapLocation();
+                            }
+                        }
+                    }
+                    int emptySpots = 0;
+                    int fullSpots = 0;
+                    for (Direction d : directions) {
+                        MapLocation adjSpot = prioritizedWellInfoLocation.add(d);
+                        if (!rc.canSenseLocation(adjSpot)) {
+                            continue;
+                        }
+                        if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null) {
+                            fullSpots += 1;
+                        }
+                        else {
+                            emptySpots += 1;
+                        }
+                    }
+                    if (fullSpots < emptySpots) {
+                        rc.setIndicatorString("Wandering... (Next up: Pathfinding to Well)");
+                        prioritizedWell = prioritizedWellInfoLocation;
+                        if (seenWellIndex < 4) {
+                            seenWells[seenWellIndex] = prioritizedWellInfo;
+                            seenWellIndex += 1;
+                        }
+                        state = 1;
+                        runState();
+                        return;
+                    }
+                }
+                else {
+                    MapLocation[] wellLocations = GlobalArray.getKnownWellLocations(rc);
+                    MapLocation prioritizedWellLocation = null;
+                    for (MapLocation m : wellLocations) {
+                        if (m == null) {
+                            continue;
+                        }
+                        if (prioritizedWellLocation == null) {
+                            prioritizedWellLocation = m;
+                        }
+                        else if (prioritizedWellLocation.distanceSquaredTo(me) > m.distanceSquaredTo(me)) {
+                            prioritizedWellLocation = m;
+                        }
+                    }
+                    if (prioritizedWellLocation != null) {
+                        int emptySpots = 0;
+                        int fullSpots = 0;
+                        for (Direction d : directions) {
+                            MapLocation adjSpot = prioritizedWellLocation.add(d);
+                            if (!rc.canSenseLocation(adjSpot)) {
+                                continue;
+                            }
+                            if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null) {
+                                fullSpots += 1;
+                            }
+                            else {
+                                emptySpots += 1;
+                            }
+                        }
+                        if (fullSpots < emptySpots) {
+                            rc.setIndicatorString("Wandering... (Next up: Pathfinding to Well)");
+                            prioritizedWell = prioritizedWellLocation;
+                            state = 1;
+                            runState();
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            Motion.spreadRandomly(rc, me, prioritizedHeadquarters);
+        }
+        else if (state == 1) {
+            int emptySpots = 0;
+            int fullSpots = 0;
+            for (Direction d : directions) {
+                MapLocation adjSpot = prioritizedWell.add(d);
+                if (!rc.canSenseLocation(adjSpot)) {
+                    continue;
+                }
+                if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null) {
+                    fullSpots += 1;
+                }
+                else {
+                    emptySpots += 1;
+                }
+            }
+            if (fullSpots > emptySpots + 1) {
+                state = 0;
+                runState();
+                return;
+            }
+            clockwiseRotation = Motion.bug(rc, prioritizedWell, clockwiseRotation);
+            attemptCollection();
+            me = rc.getLocation();
+            rc.setIndicatorString("Pathfinding to Well...");
+            rc.setIndicatorLine(me, prioritizedWell, 255, 0, 0);
+        }
+        else if (state == 2) {
+            rc.setIndicatorString("Collecting resources...");
+            rc.setIndicatorLine(me, prioritizedWell, 255, 0, 0);
+            if (rc.canCollectResource(prioritizedWell, -1)
+                    && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
+                rc.collectResource(prioritizedWell, -1);
+                Motion.circleAroundTarget(rc, me, prioritizedWell);
+            } else {
+                state = 0;
+                runState();
+            }
+        }
+        else if (state == 3) {
+            int[] islands = rc.senseNearbyIslands();
+            MapLocation prioritizedIslandLocation = null;
+            for (int id : islands) {
+                if (rc.senseAnchor(id) == null) {
+                    MapLocation[] islandLocations = rc.senseNearbyIslandLocations(id);
+                    for (MapLocation m : islandLocations) {
+                        if (prioritizedIslandLocation == null) {
+                            prioritizedIslandLocation = m;
+                        }
+                        else if (m.distanceSquaredTo(me) < prioritizedIslandLocation.distanceSquaredTo(me)) {
+                            prioritizedIslandLocation = m;
+                        }
+                    }
+                }
+            }
+            if (prioritizedIslandLocation != null) {
+                clockwiseRotation = Motion.bug(rc, prioritizedIslandLocation, clockwiseRotation);
+                me = rc.getLocation();
+                if (rc.canPlaceAnchor()) {
+                    if (rc.senseTeamOccupyingIsland(rc.senseIsland(me)) == Team.NEUTRAL) {
+                        rc.setIndicatorString("Placed Anchor!");
+                        rc.placeAnchor();
+                        state = 0;
+                    }
+                }
+                rc.setIndicatorLine(me, prioritizedIslandLocation, 255, 0, 0);
+            } else {
+                // get island location from global array
+                Motion.moveRandomly(rc);
+                return;
+            }
+        }
+        else if (state == 4) {
+            rc.setIndicatorString("Retreating...");
+            Motion.bug(rc, prioritizedHeadquarters);
+            if (prioritizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
+                attemptTransfer();
+                state = 0;
+            }
+        }
+        Attack.attack(rc, me, prioritizedRobotType, false);
+    }
+
     private void attemptCollection() throws GameActionException {
-        if (rc.canCollectResource(priortizedWell, -1) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
-            rc.collectResource(priortizedWell, -1);
+        if (rc.canCollectResource(prioritizedWell, -1) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
+            rc.collectResource(prioritizedWell, -1);
             state = 2;
         }
     }
 
-    private boolean attemptTransfer() throws GameActionException {
-        boolean transferSuccess = false;
-        if (rc.canTransferResource(priortizedHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount)) {
-            rc.transferResource(priortizedHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount);
-            transferSuccess = true;
+    private void attemptTransfer() throws GameActionException {
+        if (rc.canTransferResource(prioritizedHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount)) {
+            rc.transferResource(prioritizedHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount);
         }
-        if (rc.canTransferResource(priortizedHeadquarters, ResourceType.MANA, manaAmount)) {
-            rc.transferResource(priortizedHeadquarters, ResourceType.MANA, manaAmount);
-            transferSuccess = true;
+        if (rc.canTransferResource(prioritizedHeadquarters, ResourceType.MANA, manaAmount)) {
+            rc.transferResource(prioritizedHeadquarters, ResourceType.MANA, manaAmount);
         }
-        if (rc.canTransferResource(priortizedHeadquarters, ResourceType.ELIXIR, elixirAmount)) {
-            rc.transferResource(priortizedHeadquarters, ResourceType.ELIXIR, elixirAmount);
-            transferSuccess = true;
+        if (rc.canTransferResource(prioritizedHeadquarters, ResourceType.ELIXIR, elixirAmount)) {
+            rc.transferResource(prioritizedHeadquarters, ResourceType.ELIXIR, elixirAmount);
         }
-        return transferSuccess;
     }
 
-    private void updatePriortizedHeadquarters() throws GameActionException {
-        priortizedHeadquarters = headquarters[0];
+    private void updatePrioritizedHeadquarters() throws GameActionException {
+        prioritizedHeadquarters = headquarters[0];
         for (MapLocation hq : headquarters) {
             if (hq != null) {
-                // if (hq.distanceSquaredTo(me) > rc.getType().visionRadiusSquared) {
-                //     continue;
-                // }
-                if (priortizedHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
-                    priortizedHeadquarters = hq;
+                if (prioritizedHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
+                    prioritizedHeadquarters = hq;
                 }
             }
         }

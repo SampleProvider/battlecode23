@@ -223,29 +223,33 @@ public class Motion {
         RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
         if (robotInfo.length > 0) {
             int adjacentRobots = 0;
-            MapLocation prioritizedRobotInfoLocation = null;
+            MapLocation closestRobotInfoLocation = null;
+            MapLocation adjacentRobotInfoLocation = null;
             for (RobotInfo w : robotInfo) {
                 if (w.getType() != robotType) {
                     continue;
                 }
                 if (me.isAdjacentTo(w.getLocation())) {
                     adjacentRobots += 1;
+                    adjacentRobotInfoLocation = w.getLocation();
                     continue;
                 }
-                if (prioritizedRobotInfoLocation == null) {
-                    prioritizedRobotInfoLocation = w.getLocation();
+                if (closestRobotInfoLocation == null) {
+                    closestRobotInfoLocation = w.getLocation();
                     continue;
                 }
-                if (prioritizedRobotInfoLocation.distanceSquaredTo(me) > w.getLocation()
-                        .distanceSquaredTo(me)) {
-                    prioritizedRobotInfoLocation = w.getLocation();
+                if (closestRobotInfoLocation.distanceSquaredTo(me) > w.getLocation().distanceSquaredTo(me)) {
+                    closestRobotInfoLocation = w.getLocation();
                 }
             }
-            if (prioritizedRobotInfoLocation != null) {
-                Direction direction = me.directionTo(prioritizedRobotInfoLocation);
-                if (adjacentRobots >= 3) {
-                    direction = direction.opposite();
-                }
+            Direction direction = null;
+            if (closestRobotInfoLocation != null) {
+                direction = me.directionTo(closestRobotInfoLocation);
+            }
+            if (adjacentRobots >= 2) {
+                direction = me.directionTo(adjacentRobotInfoLocation).opposite();
+            }
+            if (direction != null){
                 while (rc.isMovementReady()) {
                     if (rc.canMove(direction)) {
                         rc.move(direction);
@@ -286,7 +290,7 @@ public class Motion {
             }
         }
         else {
-            moveRandomly(rc);
+            // moveRandomly(rc);
         }
     }
 
