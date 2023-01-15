@@ -9,12 +9,15 @@ public class Attack {
             RobotInfo prioritizedRobotInfo = null;
             MapLocation prioritizedRobotInfoLocation = null;
             for (RobotInfo w : robotInfo) {
+                if (w.getType() == RobotType.HEADQUARTERS) {
+                    continue;
+                }
                 if (w.getType() == robotType) {
                     if (prioritizedRobotInfo == null) {
                         prioritizedRobotInfo = w;
                         prioritizedRobotInfoLocation = w.getLocation();
                     }
-                    else if (prioritizedRobotInfoLocation.distanceSquaredTo(me) > w.getLocation().distanceSquaredTo(me)) {
+                    else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
                         prioritizedRobotInfo = w;
                         prioritizedRobotInfoLocation = w.getLocation();
                     }
@@ -24,8 +27,7 @@ public class Attack {
                         prioritizedRobotInfo = w;
                         prioritizedRobotInfoLocation = w.getLocation();
                     }
-                    else if (prioritizedRobotInfoLocation.distanceSquaredTo(me) > w.getLocation()
-                            .distanceSquaredTo(me)) {
+                    else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
                         prioritizedRobotInfo = w;
                         prioritizedRobotInfoLocation = w.getLocation();
                     }

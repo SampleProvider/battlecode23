@@ -41,7 +41,7 @@ public strictfp class Carrier {
     private WellInfo[] seenWells = new WellInfo[4];
     private int seenWellIndex = 0;
 
-    private MapLocation enemyLocation;
+    private MapLocation opponentLocation;
 
     private boolean clockwiseRotation = true;
 
@@ -100,6 +100,11 @@ public strictfp class Carrier {
                             }
                         }
                     }
+                    if (opponentLocation != null) {
+                        if (GlobalArray.storeOpponentLocation(rc, opponentLocation)) {
+                            opponentLocation = null;
+                        }
+                    }
                 }
 
                 if (rc.getHealth() != lastHealth) {
@@ -121,7 +126,10 @@ public strictfp class Carrier {
     }
 
     private void runState() throws GameActionException {
-        Attack.attack(rc, me, prioritizedRobotType, false);
+        MapLocation loc = Attack.attack(rc, me, prioritizedRobotType, false);
+        if (loc != null) {
+            opponentLocation = loc;
+        }
         if (state == 0) {
             updatePrioritizedHeadquarters();
             if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD)) {
@@ -302,12 +310,15 @@ public strictfp class Carrier {
         else if (state == 4) {
             rc.setIndicatorString("Retreating...");
             Motion.bug(rc, prioritizedHeadquarters);
-            if (prioritizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
+            if (prioritizedHeadquarters.distanceSquaredTo(me) <= RobotType.HEADQUARTERS.visionRadiusSquared) {
                 attemptTransfer();
                 state = 0;
             }
         }
-        Attack.attack(rc, me, prioritizedRobotType, false);
+        loc = Attack.attack(rc, me, prioritizedRobotType, false);
+        if (loc != null) {
+            opponentLocation = loc;
+        }
     }
 
     private void attemptCollection() throws GameActionException {
