@@ -5,17 +5,22 @@ import battlecode.common.*;
 import java.util.Random;
 
 public strictfp class HeadQuarters {
-    RobotController rc;
-    MapLocation me;
-    GlobalArray globalArray = new GlobalArray();
+    protected RobotController rc;
+    protected MapLocation me;
+    private GlobalArray globalArray = new GlobalArray();
 
+    protected int hqIndex;
+    private int locInt;
+    private int hqCount;
+    
     private int turnCount = 0;
-    private int carrierCount = 0;
-    private int launcherCount = 0;
-    private int carrierCooldown = 0;
-    private int launcherCooldown = 0;
-    private boolean isPrimaryHQ = false;
+    private int anchorCooldown = 0;
+    protected boolean isPrimaryHQ = false;
     private boolean setTargetElixirWell = false;
+    protected int adamantium = 0;
+    protected int mana = 0;
+    protected int lastAdamantium = 0;
+    protected int lastMana = 0;
 
     static final Random rng = new Random(2023);
 
@@ -35,16 +40,20 @@ public strictfp class HeadQuarters {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
             // setting headquarter locations
-            int locInt = GlobalArray.intifyLocation(rc.getLocation());
+            locInt = GlobalArray.intifyLocation(rc.getLocation());
             if (!GlobalArray.hasLocation(rc.readSharedArray(1))) {
                 rc.writeSharedArray(1, locInt);
+                hqIndex = 1;
                 isPrimaryHQ = true;
             } else if (!GlobalArray.hasLocation(rc.readSharedArray(2))) {
                 rc.writeSharedArray(2, locInt);
+                hqIndex = 2;
             } else if (!GlobalArray.hasLocation(rc.readSharedArray(3))) {
                 rc.writeSharedArray(3, locInt);
+                hqIndex = 3;
             } else if (!GlobalArray.hasLocation(rc.readSharedArray(4))) {
                 rc.writeSharedArray(4, locInt);
+                hqIndex = 4;
             } else {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many HeadQuarters!");
             }
@@ -64,36 +73,56 @@ public strictfp class HeadQuarters {
         while (true) {
             try {
                 turnCount++;
+                me = rc.getLocation();
                 globalArray.parseGameState(rc.readSharedArray(0));
                 Direction dir = directions[rng.nextInt(directions.length)];
-                MapLocation newLoc = rc.getLocation().add(dir);
-                if (rc.canBuildAnchor(Anchor.STANDARD) && carrierCount >= 20) {
+                // build bots and anchors based on input
+                if (rc.canBuildAnchor(Anchor.STANDARD) && turnCount > 100 && anchorCooldown > 50) {
                     rc.buildAnchor(Anchor.STANDARD);
+                    anchorCooldown = 0;
                     System.out.println("Anchor Produced!");
                 }
-                if ((carrierCount < 40 || carrierCooldown > 20) && rc.canBuildRobot(RobotType.CARRIER, newLoc)) {
-                    rc.buildRobot(RobotType.CARRIER, newLoc);
-                    carrierCount++;
-                    carrierCooldown = 0;
-                }
-                if ((launcherCount < 30 || launcherCooldown > 20) && rc.canBuildRobot(RobotType.LAUNCHER, newLoc)) {
-                    rc.buildRobot(RobotType.LAUNCHER, newLoc);
-                    launcherCount++;
-                    launcherCooldown = 0;
-                }
-                if (turnCount % 30 == 0) {
-                    carrierCount--;
-                    launcherCount--;
-                }
-                carrierCooldown++;
-                launcherCooldown++;
+                MapLocation newLoc = me.add(dir);
+                anchorCooldown++;
+                // store
+                GlobalArray.storeHeadquarters(this);
                 if (isPrimaryHQ) {
+                    if (hqCount == 0) {
+                        for (int i = 1; i <= 4; i++) {
+                            if (GlobalArray.hasLocation(rc.readSharedArray(i))) hqCount++;
+                        }
+                    }
+                    // set prioritized resource
+                    // set upgrade wells if resources adequate
+                    boolean upgradeWells = true;
+                    int totalRatio = 0;
+                    for (int i = 1; i <= hqCount+1; i++) {
+                        int arrayHQ = rc.readSharedArray(i);
+                        if (!GlobalArray.adequateResources(arrayHQ)) {
+                            upgradeWells = false;
+                        }
+                        totalRatio += GlobalArray.resourceRatio(arrayHQ);
+                    }
+                    // upgrade wells
+                    globalArray.setUpgradeWells(upgradeWells);
+                    // prioritized resources
+                    int deviation = totalRatio - (2 * hqCount);
+                    if (Math.abs(deviation) <= 1) {
+                        globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE);
+                    } else if (deviation < 0) {
+                        globalArray.setPrioritizedResource(ResourceType.MANA);
+                    } else {
+                        globalArray.setPrioritizedResource(ResourceType.ADAMANTIUM);
+                    }
                     // set target elixir well
-                    if (carrierCount > 20 && turnCount > 50 && !setTargetElixirWell) {
+                    if (turnCount > 200 && !setTargetElixirWell) {
                         setTargetElixirWell();
                     }
-                    if (globalArray.changedState()) rc.writeSharedArray(0, globalArray.getGameStateNumber());
+                    // save game state
+                    rc.writeSharedArray(0, globalArray.getGameStateNumber());
                 }
+                lastAdamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
+                lastMana = rc.getResourceAmount(ResourceType.MANA);
             } catch (GameActionException e) {
                 System.out.println("GameActionException at HeadQuarters");
                 e.printStackTrace();
@@ -125,6 +154,8 @@ public strictfp class HeadQuarters {
                 }
             }
             if (wellIndex > -1) {
+                rc.setIndicatorString("SET ELIXIR-HQ TARGET PAIR: " + wells[wellIndex].toString() + " " + headQuarters[hqIndex].toString());
+                System.out.println("SET ELIXIR-HQ TARGET PAIR: " + wells[wellIndex].toString() + " " + headQuarters[hqIndex].toString());
                 globalArray.setTargetElixirWellHQPair(wellIndex, hqIndex);
             }
         } catch (GameActionException e) {

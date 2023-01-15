@@ -1,11 +1,11 @@
-package elixirwells;
+package SPAARK_last;
 
 import battlecode.common.*;
 
 public strictfp class Destabilizer {
-    protected RobotController rc;
-    protected MapLocation me;
-    private GlobalArray globalArray = new GlobalArray();
+    private RobotController rc;
+    private MapLocation me;
+    GlobalArray gArray = new GlobalArray();
 
     private static int turnCount = 0;
 

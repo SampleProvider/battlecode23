@@ -3,9 +3,9 @@ package SPAARK;
 import battlecode.common.*;
 
 public strictfp class Destabilizer {
-    private RobotController rc;
-    private MapLocation me;
-    GlobalArray gArray = new GlobalArray();
+    protected RobotController rc;
+    protected MapLocation me;
+    private GlobalArray globalArray = new GlobalArray();
 
     private static int turnCount = 0;
 
@@ -25,7 +25,7 @@ public strictfp class Destabilizer {
         run();
     }
 
-    public void run() {
+    private void run() {
         while (true) {
             try {
                 // code

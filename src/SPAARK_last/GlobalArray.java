@@ -1,21 +1,18 @@
-package elixirwells;
+package SPAARK_last;
 
 import java.util.Arrays;
 
 import battlecode.common.*;
 
 public strictfp class GlobalArray {
-    public static final int PRIORITIZED_RESOURCE = 0;
-    public static final int CONVERT_WELL = 1;
-    public static final int UPGRADE_WELLS = 2;
-    public static final int ELIXIR_HQ_ID = 3;
-    public static final int CONVERSION_WELL_ID = 4;
+    public static final int CONVERT_WELL = 0;
+    public static final int UPGRADE_WELLS = 1;
+    public static final int ELIXIR_HQ_ID = 2;
+    public static final int CONVERSION_WELL_ID = 3;
 
     private static final ResourceType[] resourceTypes = new ResourceType[] {ResourceType.NO_RESOURCE, ResourceType.ADAMANTIUM, ResourceType.MANA, ResourceType.ELIXIR};
-    private static final int adequateManaThreshold = 15;
-    private static final int adequateAdamantiumThreshold = 24;
-    
     private final int[] currentState = new int[5];
+    private boolean changedState = false;
 
     /*
      * Bits 0-5     x coordinate
@@ -25,7 +22,7 @@ public strictfp class GlobalArray {
      * Bit 15       upgraded well
      */
 
-    // general location/data parsing/writing
+    // general location/data parsing
     public static boolean hasLocation(int n) {
         return (n >> 12 & 0b1) == 1;
     }
@@ -91,17 +88,6 @@ public strictfp class GlobalArray {
         }
         return Arrays.copyOf(headquarters, hqCount);
     }
-    public static void storeHeadquarters(HeadQuarters hq) throws GameActionException {
-        int ratio = (hq.adamantium == 0 ? 0 : ((int) ((hq.mana / (hq.adamantium*1.2)) * 3) + 1));
-        int adequateResources = (((hq.adamantium - hq.lastAdamantium) > adequateAdamantiumThreshold && (hq.mana - hq.lastMana) > adequateManaThreshold) ? 1 : 0);
-        hq.rc.writeSharedArray(hq.hqIndex, (ratio << 14) | (adequateResources << 13) | intifyLocation(hq.me));
-    }
-    public static int resourceRatio(int n) {
-        return n >> 14;
-    }
-    public static boolean adequateResources(int n) {
-        return ((n >> 13) & 0b1) == 1;
-    }
 
     /*
      * Bits 0-1     prioritized resource
@@ -112,16 +98,12 @@ public strictfp class GlobalArray {
      */
 
     // read game state
-    public int[] parseGameState(int n) {
-        currentState[PRIORITIZED_RESOURCE] = n & 0b11; // bits 0-1
-        currentState[CONVERT_WELL] = n >> 2 & 0b1; // bit 2
-        currentState[UPGRADE_WELLS] = n >> 3 & 0b1; // bit 3
-        currentState[ELIXIR_HQ_ID] = n >> 4 & 0b11; // bits 4-5
-        currentState[CONVERSION_WELL_ID] = n >> 6 & 0b111; // bits 6-8
+     public int[] parseGameState(int n) {
+        currentState[CONVERT_WELL] = n & 0b1; // bit 0
+        currentState[UPGRADE_WELLS] = n >> 1 & 0b1; // bit 1
+        currentState[ELIXIR_HQ_ID] = n >> 2 & 0b11; // bits 2-3
+        currentState[CONVERSION_WELL_ID] = n >> 4 & 0b111; // bits 4-6
         return currentState;
-    }
-    public ResourceType prioritizedResource() {
-        return resourceTypes[currentState[PRIORITIZED_RESOURCE]];
     }
     public boolean convertWell() {
         return currentState[CONVERT_WELL] == 1;
@@ -135,15 +117,17 @@ public strictfp class GlobalArray {
 
     // write game state
     public int getGameStateNumber() {
-        return (currentState[PRIORITIZED_RESOURCE]) | (currentState[CONVERT_WELL] << 2) | (currentState[UPGRADE_WELLS] << 3) | (currentState[ELIXIR_HQ_ID] << 4) |( currentState[CONVERSION_WELL_ID] << 6);
+        return currentState[CONVERT_WELL] | currentState[UPGRADE_WELLS] << 1 | currentState[ELIXIR_HQ_ID] << 2 | currentState[CONVERSION_WELL_ID] << 4;
     }
-    public void setPrioritizedResource(ResourceType resource) {
-        currentState[PRIORITIZED_RESOURCE] = resource.resourceID;
+    public boolean changedState() {
+        return changedState;
     }
     public void setUpgradeWells(boolean set) {
+        changedState = true;
         currentState[UPGRADE_WELLS] = set ? 1 : 0;
     }
     public void setTargetElixirWellHQPair(int wellIndex, int hqIndex) {
+        changedState = true;
         currentState[CONVERSION_WELL_ID] = wellIndex;
         currentState[ELIXIR_HQ_ID] = hqIndex;
     }

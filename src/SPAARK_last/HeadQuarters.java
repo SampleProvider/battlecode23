@@ -1,27 +1,22 @@
-package SPAARK;
+package SPAARK_last;
 
 import battlecode.common.*;
 
 import java.util.Random;
 
 public strictfp class HeadQuarters {
-    protected RobotController rc;
-    protected MapLocation me;
-    private GlobalArray globalArray = new GlobalArray();
-
-    protected int hqIndex;
-    private int locInt;
-    private int hqCount;
+    RobotController rc;
+    MapLocation me;
+    GlobalArray globalArray = new GlobalArray();
 
     private int turnCount = 0;
     private int carriers = -100;
     private int carrierCooldown = 0;
     private boolean isPrimaryHQ = false;
     private boolean setTargetElixirWell = false;
-    protected int adamantium = 0;
-    protected int mana = 0;
-    protected int lastAdamantium = 0;
-    protected int lastMana = 0;
+
+    private static int[] amplifierToggleState = new int[]{0,0,0,0};
+    private static boolean[] amplifierAliveState = new boolean[]{false, false, false, false};
 
     static final Random rng = new Random(2023);
 
@@ -41,20 +36,16 @@ public strictfp class HeadQuarters {
             this.rc = rc;
             rc.setIndicatorString("Initializing");
             // setting headquarter locations
-            locInt = GlobalArray.intifyLocation(rc.getLocation());
+            int locInt = GlobalArray.intifyLocation(rc.getLocation());
             if (!GlobalArray.hasLocation(rc.readSharedArray(1))) {
                 rc.writeSharedArray(1, locInt);
-                hqIndex = 1;
                 isPrimaryHQ = true;
             } else if (!GlobalArray.hasLocation(rc.readSharedArray(2))) {
                 rc.writeSharedArray(2, locInt);
-                hqIndex = 2;
             } else if (!GlobalArray.hasLocation(rc.readSharedArray(3))) {
                 rc.writeSharedArray(3, locInt);
-                hqIndex = 3;
             } else if (!GlobalArray.hasLocation(rc.readSharedArray(4))) {
                 rc.writeSharedArray(4, locInt);
-                hqIndex = 4;
             } else {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many HeadQuarters!");
             }
@@ -82,10 +73,28 @@ public strictfp class HeadQuarters {
                 }
                 Direction dir = directions[rng.nextInt(directions.length)];
                 MapLocation newLoc = rc.getLocation().add(dir).add(dir);
+                if (isPrimaryHQ) {
+                    // check amplifier states
+                    for (int a = 0;a < 4;a++) {
+                        if (((rc.readSharedArray(14 + a) >> 15) & 1) == amplifierToggleState[a] || (rc.readSharedArray(14 + a) >> 14) % 2 == 0) {
+                            rc.writeSharedArray(14 + a,0);
+                            amplifierAliveState[a] = false;
+                        }
+                        else {
+                            amplifierToggleState[a] = (rc.readSharedArray(14 + a) >> 15) & 1;
+                            amplifierAliveState[a] = true;
+                        }
+                    }
+                    // set target elixir well
+                    if (carriers > 20 && turnCount > 50 && !setTargetElixirWell) {
+                        // setTargetElixirWell();
+                    }
+                    if (globalArray.changedState()) rc.writeSharedArray(0, globalArray.getGameStateNumber());
+                }
                 if (carrierCooldown <= 4 || turnCount < 300) {
                     boolean canProduceAmplifier = false;
-                    for (int a = 0;a < 4;a++) {
-                        if ((rc.readSharedArray(14 + a) >> 14) % 2 == 0) {
+                    for (boolean a : amplifierAliveState) {
+                        if (a == false) {
                             canProduceAmplifier = true;
                         }
                     }
@@ -96,52 +105,13 @@ public strictfp class HeadQuarters {
                         // if (turnCount >= 300) {
                         // carriers += 20;
                         // }
-                    } else if (rc.canBuildRobot(RobotType.AMPLIFIER, newLoc) && turnCount > 75 && canProduceAmplifier) {
+                    } else if (rc.canBuildRobot(RobotType.AMPLIFIER, newLoc) && rng.nextInt(20) == 1 && canProduceAmplifier) {
                         rc.buildRobot(RobotType.AMPLIFIER, newLoc);
                     } else if (rc.canBuildRobot(RobotType.LAUNCHER, newLoc)) {
                         rc.buildRobot(RobotType.LAUNCHER, newLoc);
                     }
                 }
                 carriers -= 1;
-                // store
-                GlobalArray.storeHeadquarters(this);
-                if (isPrimaryHQ) {
-                    if (hqCount == 0) {
-                        for (int i = 1; i <= 4; i++) {
-                            if (GlobalArray.hasLocation(rc.readSharedArray(i))) hqCount++;
-                        }
-                    }
-                    // set prioritized resource
-                    // set upgrade wells if resources adequate
-                    boolean upgradeWells = true;
-                    int totalRatio = 0;
-                    for (int i = 1; i <= hqCount+1; i++) {
-                        int arrayHQ = rc.readSharedArray(i);
-                        if (!GlobalArray.adequateResources(arrayHQ)) {
-                            upgradeWells = false;
-                        }
-                        totalRatio += GlobalArray.resourceRatio(arrayHQ);
-                    }
-                    // upgrade wells
-                    globalArray.setUpgradeWells(upgradeWells);
-                    // prioritized resources
-                    int deviation = totalRatio - (2 * hqCount);
-                    if (Math.abs(deviation) <= 1) {
-                        globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE);
-                    } else if (deviation < 0) {
-                        globalArray.setPrioritizedResource(ResourceType.MANA);
-                    } else {
-                        globalArray.setPrioritizedResource(ResourceType.ADAMANTIUM);
-                    }
-                    // set target elixir well
-                    if (turnCount > 200 && !setTargetElixirWell) {
-                        setTargetElixirWell();
-                    }
-                    // save game state
-                    rc.writeSharedArray(0, globalArray.getGameStateNumber());
-                }
-                lastAdamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
-                lastMana = rc.getResourceAmount(ResourceType.MANA);
             } catch (GameActionException e) {
                 System.out.println("GameActionException at HeadQuarters");
                 e.printStackTrace();
