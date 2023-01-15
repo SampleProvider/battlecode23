@@ -12,10 +12,9 @@ public strictfp class Carrier {
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
 
-    private int turnCount = 0;
-
-    private final Random rng = new Random(2023);
-    private final Direction[] directions = {
+    private static final Random rng = new Random(2023);
+    
+    private static final Direction[] directions = {
         Direction.SOUTHWEST,
         Direction.SOUTH,
         Direction.SOUTHEAST,
@@ -82,7 +81,6 @@ public strictfp class Carrier {
     private void run() {
         while (true) {
             try {
-                turnCount++;
                 if (rc.getRoundNum() > 200) {
                     prioritizedResourceType = ResourceType.MANA;
                 }

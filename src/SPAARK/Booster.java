@@ -7,8 +7,6 @@ public strictfp class Booster {
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
 
-    private static int turnCount = 0;
-
     public Booster(RobotController rc) {
         try {
             this.rc = rc;
@@ -29,7 +27,6 @@ public strictfp class Booster {
         while (true) {
             try {
                 // code
-                turnCount++;
             // } catch (GameActionException e) {
             //     System.out.println("GameActionException at Booster");
             //     e.printStackTrace();

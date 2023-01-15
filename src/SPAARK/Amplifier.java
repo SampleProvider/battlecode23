@@ -9,9 +9,8 @@ public strictfp class Amplifier {
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
 
-    private int turnCount = 0;
-
     private final Random rng = new Random(2023);
+
     private final Direction[] directions = {
         Direction.SOUTHWEST,
         Direction.SOUTH,
@@ -75,7 +74,6 @@ public strictfp class Amplifier {
     public void run() {
         while (true) {
             try {
-                turnCount++;
                 amplifierArray = rc.readSharedArray(amplifierID);
                 me = rc.getLocation();
                 prioritizedHeadquarters = headquarters[0];

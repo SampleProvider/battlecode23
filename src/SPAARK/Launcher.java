@@ -12,9 +12,8 @@ public strictfp class Launcher {
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
 
-    private int turnCount = 0;
-
     private static final Random rng = new Random(2023);
+
     private static final Direction[] directions = {
         Direction.SOUTHWEST,
         Direction.SOUTH,
@@ -81,7 +80,6 @@ public strictfp class Launcher {
     private void run() {
         while (true) {
             try {
-                turnCount++;
                 me = rc.getLocation();
                 if (state == 0) {
                     updatePriortizedOpponentHeadquarters();

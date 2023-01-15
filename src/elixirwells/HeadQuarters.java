@@ -13,7 +13,6 @@ public strictfp class HeadQuarters {
     private int locInt;
     private int hqCount;
     
-    private int turnCount = 0;
     private int anchorCooldown = 0;
     protected boolean isPrimaryHQ = false;
     private boolean setTargetElixirWell = false;
@@ -21,6 +20,9 @@ public strictfp class HeadQuarters {
     protected int mana = 0;
     protected int lastAdamantium = 0;
     protected int lastMana = 0;
+    protected int lastDeltaResources = 0;
+
+    private static final
 
     static final Random rng = new Random(2023);
 
@@ -57,6 +59,10 @@ public strictfp class HeadQuarters {
             } else {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many HeadQuarters!");
             }
+            WellInfo nearbyWellInfo[] = rc.senseNearbyWells();
+            for (int i = 0; i < nearbyWellInfo.length; i++) {
+                GlobalArray.storeWell(rc, nearbyWellInfo[i]);
+            }
         } catch (GameActionException e) {
             System.out.println("GameActionException at HeadQuarters constructor");
             e.printStackTrace();
@@ -72,18 +78,19 @@ public strictfp class HeadQuarters {
     private void run() {
         while (true) {
             try {
-                turnCount++;
                 me = rc.getLocation();
                 globalArray.parseGameState(rc.readSharedArray(0));
-                Direction dir = directions[rng.nextInt(directions.length)];
-                // build bots and anchors based on input
-                if (rc.canBuildAnchor(Anchor.STANDARD) && turnCount > 100 && anchorCooldown > 50) {
+                // build anchors because yes
+                if (rc.canBuildAnchor(Anchor.STANDARD) && rc.getRoundNum() > 100 && anchorCooldown > 50) {
                     rc.buildAnchor(Anchor.STANDARD);
                     anchorCooldown = 0;
                     System.out.println("Anchor Produced!");
                 }
-                MapLocation newLoc = me.add(dir);
                 anchorCooldown++;
+                // build bots depending on resource deltas
+                int deltaResources = (int) ((0.5 * lastDeltaResources) + (0.5 * rc.getResourceAmount(ResourceType.ADAMANTIUM)-lastAdamantium+rc.getResourceAmount(ResourceType.MANA)-lastMana));
+                
+                lastDeltaResources = deltaResources;
                 // store
                 GlobalArray.storeHeadquarters(this);
                 if (isPrimaryHQ) {

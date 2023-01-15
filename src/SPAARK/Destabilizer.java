@@ -7,8 +7,6 @@ public strictfp class Destabilizer {
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
 
-    private static int turnCount = 0;
-
     public Destabilizer(RobotController rc) {
         try {
             this.rc = rc;
@@ -29,7 +27,6 @@ public strictfp class Destabilizer {
         while (true) {
             try {
                 // code
-                turnCount++;
             // } catch (GameActionException e) {
             //     System.out.println("GameActionException at Destabilizer");
             //     e.printStackTrace();

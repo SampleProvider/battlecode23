@@ -9,6 +9,19 @@ public strictfp class HeadQuarters {
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
 
+    private static final Random rng = new Random(2023);
+
+    private static final Direction[] directions = {
+        Direction.SOUTHWEST,
+        Direction.SOUTH,
+        Direction.SOUTHEAST,
+        Direction.WEST,
+        Direction.EAST,
+        Direction.NORTHWEST,
+        Direction.NORTH,
+        Direction.NORTHEAST,
+    };
+
     protected int hqIndex;
     private int locInt;
     private int hqCount;
@@ -22,19 +35,6 @@ public strictfp class HeadQuarters {
     protected int mana = 0;
     protected int lastAdamantium = 0;
     protected int lastMana = 0;
-
-    static final Random rng = new Random(2023);
-
-    static final Direction[] directions = {
-        Direction.SOUTHWEST,
-        Direction.SOUTH,
-        Direction.SOUTHEAST,
-        Direction.WEST,
-        Direction.EAST,
-        Direction.NORTHWEST,
-        Direction.NORTH,
-        Direction.NORTHEAST,
-    };
 
     public HeadQuarters(RobotController rc) {
         try {
