@@ -1,31 +1,27 @@
-package TEMPLATE1;
+package SPAARK_1_15_2023;
 
 import battlecode.common.*;
 
-public class RobotPlayer {
-    @SuppressWarnings("unused")
+public strictfp class RobotPlayer {
     public static void run(RobotController rc) {
-        System.out.println("Robot " + rc.getType() + " is hp " + rc.getHealth());
-
-        rc.setIndicatorString("Initializing");
         switch (rc.getType()) {
             case HEADQUARTERS:
-                HeadQuarters.run(rc);
+                new HeadQuarters(rc);
                 break;
             case CARRIER:
-                Carrier.run(rc);
+                new Carrier(rc);
                 break;
             case LAUNCHER:
-                Launcher.run(rc);
+                new Launcher(rc);
                 break;
             case AMPLIFIER:
-                Amplifier.run(rc);
+                new Amplifier(rc);
                 break;
             case BOOSTER:
-                Booster.run(rc);
+                new Booster(rc);
                 break;
             case DESTABILIZER:
-                Destabilizer.run(rc);
+                new Destabilizer(rc);
                 break;
         }
     }

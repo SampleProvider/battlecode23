@@ -1,4 +1,4 @@
-package elixirwells;
+package SPAARK_1_15_2023;
 
 import battlecode.common.*;
 
@@ -6,7 +6,7 @@ import java.lang.StringBuilder;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class BFStest {
+public class BFS {
     static final Direction[] BFSDirections = {
         Direction.SOUTHWEST,
         Direction.SOUTH,
