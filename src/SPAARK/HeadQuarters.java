@@ -9,6 +9,19 @@ public strictfp class HeadQuarters {
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
 
+    private static final Random rng = new Random(2023);
+
+    private static final Direction[] directions = {
+        Direction.SOUTHWEST,
+        Direction.SOUTH,
+        Direction.SOUTHEAST,
+        Direction.WEST,
+        Direction.EAST,
+        Direction.NORTHWEST,
+        Direction.NORTH,
+        Direction.NORTHEAST,
+    };
+
     protected int hqIndex;
     private int locInt;
     private int hqCount;
@@ -22,19 +35,6 @@ public strictfp class HeadQuarters {
     protected int mana = 0;
     protected int lastAdamantium = 0;
     protected int lastMana = 0;
-
-    static final Random rng = new Random(2023);
-
-    static final Direction[] directions = {
-        Direction.SOUTHWEST,
-        Direction.SOUTH,
-        Direction.SOUTHEAST,
-        Direction.WEST,
-        Direction.EAST,
-        Direction.NORTHWEST,
-        Direction.NORTH,
-        Direction.NORTHEAST,
-    };
 
     public HeadQuarters(RobotController rc) {
         try {
@@ -163,12 +163,16 @@ public strictfp class HeadQuarters {
             int wellIndex = -1;
             int hqIndex = -1;
             for (int i = 0; i < headQuarters.length; i++) {
-                for (int j = 0; j < wells.length; j++) {
-                    int dist = headQuarters[i].distanceSquaredTo(wells[j]);
-                    if (dist < lowestDist) {
-                        lowestDist = dist;
-                        hqIndex = i;
-                        wellIndex = j;
+                if (headQuarters[i] != null) {
+                    for (int j = 0; j < wells.length; j++) {
+                        if (wells[j] != null) {
+                            int dist = headQuarters[i].distanceSquaredTo(wells[j]);
+                            if (dist < lowestDist) {
+                                lowestDist = dist;
+                                hqIndex = i;
+                                wellIndex = j;
+                            }
+                        }
                     }
                 }
             }
