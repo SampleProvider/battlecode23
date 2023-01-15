@@ -117,7 +117,7 @@ public strictfp class HeadQuarters {
                 else {
                     boolean canProduceAmplifier = false;
                     for (int a = 0;a < 4;a++) {
-                        if (!GlobalArray.hasLocation(rc.readSharedArray(14 + a) >> 12)) {
+                        if (!GlobalArray.hasLocation(rc.readSharedArray(14 + a))) {
                             canProduceAmplifier = true;
                         }
                     }
@@ -227,7 +227,7 @@ public strictfp class HeadQuarters {
         if (wellInfo.length > 0 && well) {
             WellInfo prioritizedWellInfo = wellInfo[0];
             MapLocation prioritizedWellInfoLocation = wellInfo[0].getMapLocation();
-            ResourceType prioritizedResourceType = ResourceType.ADAMANTIUM;
+            ResourceType prioritizedResourceType = ResourceType.ELIXIR;
             // if (turnCount < 15) {
             //     prioritizedResourceType = ResourceType.ADAMANTIUM;
             // }
