@@ -22,7 +22,7 @@ public strictfp class HeadQuarters {
     protected int lastMana = 0;
     protected int lastDeltaResources = 0;
 
-    private static final
+    // private static final
 
     static final Random rng = new Random(2023);
 
@@ -123,9 +123,9 @@ public strictfp class HeadQuarters {
                     }
                     System.out.println(globalArray.prioritizedResource());
                     // set target elixir well
-                    if (turnCount > 200 && !setTargetElixirWell) {
-                        setTargetElixirWell();
-                    }
+                    // if (turnCount > 200 && !setTargetElixirWell) {
+                    //     setTargetElixirWell();
+                    // }
                     // save game state
                     rc.writeSharedArray(0, globalArray.getGameStateNumber());
                 }
