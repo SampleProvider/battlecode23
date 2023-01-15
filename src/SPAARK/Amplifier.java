@@ -86,26 +86,42 @@ public strictfp class Amplifier {
                 }
                 RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
                 if (robotInfo.length > 0) {
-                    RobotInfo prioritizedRobotInfo = robotInfo[0];
-                    MapLocation prioritizedRobotInfoLocation = robotInfo[0].getLocation();
+                    RobotInfo prioritizedRobotInfo = null;
+                    MapLocation prioritizedRobotInfoLocation = null;
                     for (RobotInfo w : robotInfo) {
-                        if (prioritizedRobotInfo.getType() == prioritizedRobotType) {
-                            if (w.getType() == prioritizedRobotType
-                                    && prioritizedRobotInfo.getLocation().distanceSquaredTo(me) > w
-                                            .getLocation().distanceSquaredTo(me)) {
+                        if (w.getType() == RobotType.HEADQUARTERS) {
+                            continue;
+                        }
+                        if (w.getType() == prioritizedRobotType) {
+                            if (prioritizedRobotInfo == null) {
                                 prioritizedRobotInfo = w;
                                 prioritizedRobotInfoLocation = w.getLocation();
                             }
-                        } else {
-                            if (prioritizedRobotInfo.getLocation().distanceSquaredTo(me) > w.getLocation()
-                                    .distanceSquaredTo(me)) {
+                            else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
+                                prioritizedRobotInfo = w;
+                                prioritizedRobotInfoLocation = w.getLocation();
+                            }
+                        }
+                        else {
+                            if (prioritizedRobotInfo == null) {
+                                prioritizedRobotInfo = w;
+                                prioritizedRobotInfoLocation = w.getLocation();
+                            }
+                            else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
                                 prioritizedRobotInfo = w;
                                 prioritizedRobotInfoLocation = w.getLocation();
                             }
                         }
                     }
-                    Motion.spreadRandomly(rc, me, prioritizedRobotInfoLocation);
-                    rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(prioritizedRobotInfoLocation), 15, rc.getRoundNum() % 2));
+                    if (prioritizedRobotInfoLocation != null) {
+                        Motion.spreadRandomly(rc, me, prioritizedRobotInfoLocation);
+                        rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(prioritizedRobotInfoLocation), 15, rc.getRoundNum() % 2));
+                    }
+                    else {
+                        Motion.spreadCenter(rc, me);
+                        me = rc.getLocation();
+                        rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(me), 15, rc.getRoundNum() % 2));
+                    }
                 }
                 else {
                     Motion.spreadCenter(rc, me);

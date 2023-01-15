@@ -95,6 +95,16 @@ public strictfp class HeadQuarters {
                 //     rc.resign();
                 // }
 
+                if (isPrimaryHQ) {
+                    for (int a = 0;a < 4;a++) {
+                        if (GlobalArray.hasLocation(rc.readSharedArray(14 + a) >> 12)) {
+                            if ((rc.readSharedArray(14 + a) >> 15) == rc.getRoundNum() % 2) {
+                                rc.writeSharedArray(14 + a,0);
+                            }
+                        }
+                    }
+                }
+
                 MapLocation optimalSpawningLocationWell = optimalSpawnLocation(rc, me, true);
                 MapLocation optimalSpawningLocation = optimalSpawnLocation(rc, me, false);
                 if (anchorCooldown <= 0 && turnCount >= 200 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
@@ -107,7 +117,7 @@ public strictfp class HeadQuarters {
                 else {
                     boolean canProduceAmplifier = false;
                     for (int a = 0;a < 4;a++) {
-                        if ((rc.readSharedArray(14 + a) >> 14) % 2 == 0) {
+                        if (!GlobalArray.hasLocation(rc.readSharedArray(14 + a) >> 12)) {
                             canProduceAmplifier = true;
                         }
                     }
@@ -127,12 +137,7 @@ public strictfp class HeadQuarters {
                 }
                 anchorCooldown -= 1;
                 // store
-                try {
-                    GlobalArray.storeHeadquarters(this);
-                }
-                catch (GameActionException e) {
-
-                }
+                GlobalArray.storeHeadquarters(this);
                 if (isPrimaryHQ) {
                     if (hqCount == 0) {
                         for (int i = 1; i <= 4; i++) {

@@ -68,6 +68,19 @@ public strictfp class GlobalArray {
         }
         return false;
     }
+    public static boolean storeOpponentLocation(RobotController rc, MapLocation opponentLocation) throws GameActionException {
+        if (rc.canWriteSharedArray(0, 0)) {
+            for (int i = 22; i <= 25; i++) {
+                int arrayOpponentLocation = rc.readSharedArray(i);
+                if (!hasLocation(arrayOpponentLocation) || parseLocation(arrayOpponentLocation).equals(opponentLocation)) {
+                    rc.writeSharedArray(i, intifyLocation(opponentLocation));
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
+    }
     public static MapLocation[] getKnownWellLocations(RobotController rc) throws GameActionException {
         MapLocation[] wells = new MapLocation[8];
         for (int i = 0; i < 8; i++) {
@@ -78,6 +91,16 @@ public strictfp class GlobalArray {
             }
         }
         return wells;
+    }
+    public static MapLocation[] getKnownOpponentLocations(RobotController rc) throws GameActionException {
+        MapLocation[] opponentLocations = new MapLocation[4];
+        for (int i = 0; i < 4; i++) {
+            int arrayOpponentLocation = rc.readSharedArray(i+22);
+            if (hasLocation(arrayOpponentLocation)) {
+                opponentLocations[i] = parseLocation(arrayOpponentLocation);
+            }
+        }
+        return opponentLocations;
     }
     public static MapLocation[] getKnownHeadQuarterLocations(RobotController rc) throws GameActionException {
         MapLocation[] headquarters = new MapLocation[4];
