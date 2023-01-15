@@ -3,7 +3,7 @@ package SPAARK;
 import battlecode.common.*;
 
 public class Attack {
-    protected static MapLocation attack(RobotController rc, MapLocation me, RobotType robotType, boolean attackAll) throws GameActionException{
+    protected static MapLocation attack(RobotController rc, MapLocation me, RobotType robotType, boolean attackAll) throws GameActionException {
         RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
         if (robotInfo.length > 0) {
             RobotInfo prioritizedRobotInfo = null;
