@@ -137,12 +137,13 @@ public strictfp class Launcher {
                         }
                         // Motion.spreadRandomly(rc, me, priortizedHeadquarters, true);
                         rc.setIndicatorString("swarming");
-                        if (rng.nextBoolean()) {
-                            Motion.swarm(rc, me, RobotType.CARRIER);
-                        }
-                        else {
-                            Motion.spreadCenter(rc, me);
-                        }
+                        // if (rng.nextBoolean()) {
+                        //     Motion.swarm(rc, me, RobotType.CARRIER);
+                        // }
+                        // else {
+                        //     Motion.spreadCenter(rc, me);
+                        // }
+                        Motion.bug(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2));
                         // Motion.spreadCenter(rc, me);
                     }
                 }
