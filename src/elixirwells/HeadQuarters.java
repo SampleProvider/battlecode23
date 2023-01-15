@@ -123,9 +123,9 @@ public strictfp class HeadQuarters {
                     }
                     System.out.println(globalArray.prioritizedResource());
                     // set target elixir well
-                    // if (turnCount > 200 && !setTargetElixirWell) {
-                    //     setTargetElixirWell();
-                    // }
+                    if (rc.getRoundNum() > 300 && !setTargetElixirWell) {
+                        setTargetElixirWell();
+                    }
                     // save game state
                     rc.writeSharedArray(0, globalArray.getGameStateNumber());
                 }
