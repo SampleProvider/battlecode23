@@ -86,8 +86,8 @@ public strictfp class Carrier {
                 manaAmount = rc.getResourceAmount(ResourceType.MANA);
                 elixirAmount = rc.getResourceAmount(ResourceType.ELIXIR);
 
-                globalArray.parseGameState(rc.readSharedArray(0));
-                prioritizedResourceType = globalArray.prioritizedResource();
+                // globalArray.parseGameState(rc.readSharedArray(0));
+                // prioritizedResourceType = globalArray.prioritizedResource();
 
                 indicatorString = new StringBuilder();
 
