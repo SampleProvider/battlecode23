@@ -86,8 +86,8 @@ public strictfp class Carrier {
                 manaAmount = rc.getResourceAmount(ResourceType.MANA);
                 elixirAmount = rc.getResourceAmount(ResourceType.ELIXIR);
 
-                globalArray.parseGameState(rc.readSharedArray(0));
-                prioritizedResourceType = globalArray.prioritizedResource();
+                // globalArray.parseGameState(rc.readSharedArray(0));
+                // prioritizedResourceType = globalArray.prioritizedResource();
 
                 indicatorString = new StringBuilder();
 
@@ -257,6 +257,93 @@ public strictfp class Carrier {
             Motion.spreadRandomly(rc, me, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2));
         }
         else if (state == 1) {
+            WellInfo[] wellInfo = rc.senseNearbyWells();
+            if (wellInfo.length > 0) {
+                WellInfo prioritizedWellInfo = wellInfo[0];
+                MapLocation prioritizedWellInfoLocation = wellInfo[0].getMapLocation();
+                for (WellInfo w : wellInfo) {
+                    if (prioritizedWellInfo.getResourceType() == prioritizedResourceType) {
+                        if (w.getResourceType() == prioritizedResourceType
+                                && prioritizedWellInfo.getMapLocation().distanceSquaredTo(me) > w
+                                        .getMapLocation().distanceSquaredTo(me)) {
+                            prioritizedWellInfo = w;
+                            prioritizedWellInfoLocation = w.getMapLocation();
+                        }
+                    } else {
+                        if (prioritizedWellInfo.getMapLocation().distanceSquaredTo(me) > w.getMapLocation()
+                                .distanceSquaredTo(me)) {
+                            prioritizedWellInfo = w;
+                            prioritizedWellInfoLocation = w.getMapLocation();
+                        }
+                    }
+                    if (seenWellIndex < 4) {
+                        boolean newWell = true;
+                        for (int i = 0;i < seenWellIndex; i++) {
+                            if (seenWells[i] == null) {
+                                continue;
+                            }
+                            if (seenWells[i].getMapLocation().equals(w.getMapLocation())) {
+                                newWell = false;
+                            }
+                        }
+                        if (newWell) {
+                            seenWells[seenWellIndex] = w;
+                            seenWellIndex += 1;
+                        }
+                    }
+                }
+                int emptySpots = 0;
+                int fullSpots = 0;
+                for (Direction d : DIRECTIONS) {
+                    MapLocation adjSpot = prioritizedWellInfoLocation.add(d);
+                    if (!rc.canSenseLocation(adjSpot)) {
+                        continue;
+                    }
+                    if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null) {
+                        fullSpots += 1;
+                    }
+                    else {
+                        emptySpots += 1;
+                    }
+                }
+                if (fullSpots <= emptySpots + 1) {
+                    prioritizedWell = prioritizedWellInfoLocation;
+                }
+            }
+            else {
+                MapLocation[] wellLocations = GlobalArray.getKnownWellLocations(rc);
+                MapLocation prioritizedWellLocation = null;
+                for (MapLocation m : wellLocations) {
+                    if (m == null) {
+                        continue;
+                    }
+                    if (prioritizedWellLocation == null) {
+                        prioritizedWellLocation = m;
+                    }
+                    else if (prioritizedWellLocation.distanceSquaredTo(me) > m.distanceSquaredTo(me)) {
+                        prioritizedWellLocation = m;
+                    }
+                }
+                if (prioritizedWellLocation != null) {
+                    int emptySpots = 0;
+                    int fullSpots = 0;
+                    for (Direction d : DIRECTIONS) {
+                        MapLocation adjSpot = prioritizedWellLocation.add(d);
+                        if (!rc.canSenseLocation(adjSpot)) {
+                            continue;
+                        }
+                        if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null) {
+                            fullSpots += 1;
+                        }
+                        else {
+                            emptySpots += 1;
+                        }
+                    }
+                    if (fullSpots <= emptySpots + 1) {
+                        prioritizedWell = prioritizedWellLocation;
+                    }
+                }
+            }
             int emptySpots = 0;
             int fullSpots = 0;
             for (Direction d : DIRECTIONS) {

@@ -10,19 +10,6 @@ public strictfp class HeadQuarters {
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
-    private static final Random rng = new Random(2023);
-
-    private static final Direction[] directions = {
-        Direction.SOUTHWEST,
-        Direction.SOUTH,
-        Direction.SOUTHEAST,
-        Direction.WEST,
-        Direction.EAST,
-        Direction.NORTHWEST,
-        Direction.NORTH,
-        Direction.NORTHEAST,
-    };
-
     protected int hqIndex;
     private int locInt;
     private int hqCount;

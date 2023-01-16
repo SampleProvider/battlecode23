@@ -316,7 +316,7 @@ public strictfp class Launcher {
                             headquarterCircleRange = 16 + surroundingLaunchers / 3;
                             if (opponentLocation != null) {
                                 rc.setIndicatorLine(me, opponentLocation, 255, 125, 25);
-                                clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation, indicatorString);
+                                clockwiseRotation = Motion.bug(rc, opponentLocation, clockwiseRotation, indicatorString);
                                 me = rc.getLocation();
                                 if (me.distanceSquaredTo(opponentLocation) <= 2) {
                                     opponentLocation = null;
