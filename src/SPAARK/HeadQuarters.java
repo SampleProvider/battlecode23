@@ -14,8 +14,6 @@ public strictfp class HeadQuarters {
     private int locInt;
     private int hqCount;
 
-    private int turnCount = 0;
-
     private int anchorCooldown = 0;
 
     private int carriers = 0;
@@ -70,7 +68,6 @@ public strictfp class HeadQuarters {
     private void run() {
         while (true) {
             try {
-                turnCount++;
                 me = rc.getLocation();
                 round = rc.getRoundNum();
                 adamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
@@ -92,7 +89,7 @@ public strictfp class HeadQuarters {
 
                 MapLocation optimalSpawningLocationWell = optimalSpawnLocation(rc, me, true);
                 MapLocation optimalSpawningLocation = optimalSpawnLocation(rc, me, false);
-                if (anchorCooldown <= 0 && turnCount >= 200 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
+                if (anchorCooldown <= 0 && round >= 200 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
                     if (adamantium >= 100 && mana >= 100) {
                         rc.buildAnchor(Anchor.STANDARD);
                         indicatorString.append("PROD ANC; ");
@@ -183,7 +180,7 @@ public strictfp class HeadQuarters {
                         indicatorString.append("PR=AD; ");
                     }
                     // set target elixir well
-                    if (turnCount > 200 && !setTargetElixirWell) {
+                    if (round > 200 && !setTargetElixirWell) {
                         // setTargetElixirWell();
                     }
                     // save game state

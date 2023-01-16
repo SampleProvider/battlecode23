@@ -1,4 +1,4 @@
-package betterspawning;
+package SPAARK;
 
 import battlecode.common.*;
 
@@ -8,10 +8,11 @@ public strictfp class Destabilizer {
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
+    protected StringBuilder indicatorString = new StringBuilder();
+
     public Destabilizer(RobotController rc) {
         try {
             this.rc = rc;
-            rc.setIndicatorString("Initializing");
         // } catch (GameActionException e) {
         //     System.out.println("GameActionException at Destabilizer constructor");
         //     e.printStackTrace();
@@ -19,9 +20,8 @@ public strictfp class Destabilizer {
             System.out.println("Exception at Destabilizer constructor");
             e.printStackTrace();
         } finally {
-            Clock.yield();
+            run();
         }
-        run();
     }
 
     private void run() {
@@ -29,6 +29,7 @@ public strictfp class Destabilizer {
             try {
                 me = rc.getLocation();
                 round = rc.getRoundNum();
+                indicatorString = new StringBuilder();
                 // code
             // } catch (GameActionException e) {
             //     System.out.println("GameActionException at Destabilizer");
@@ -37,6 +38,7 @@ public strictfp class Destabilizer {
                 System.out.println("Exception at Destabilizer");
                 e.printStackTrace();
             } finally {
+                rc.setIndicatorString(indicatorString.toString());
                 Clock.yield();
             }
         }
