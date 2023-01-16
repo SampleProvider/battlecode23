@@ -13,11 +13,11 @@ public strictfp class GlobalArray {
     public static final int ADAMANTIUM_WELLS = 11;
     public static final int ADAMANTIUM_WELLS_LENGTH = 6;
     public static final int AMPLIFIERS = 17;
-    public static final int AMPLIFIERS_LENGTH = 4;
-    public static final int OPPONENTS = 21;
+    public static final int AMPLIFIERS_LENGTH = 6;
+    public static final int OPPONENTS = 23;
     public static final int OPPONENTS_LENGTH = 4;
-    public static final int CARRIERCOUNT = 25;
-    public static final int LAUNCHERCOUNT = 26;
+    public static final int CARRIERCOUNT = 27;
+    public static final int LAUNCHERCOUNT = 28;
 
     public static final int PRIORITIZED_RESOURCE_HQ1 = 0;
     public static final int PRIORITIZED_RESOURCE_HQ2 = 1;

@@ -82,7 +82,7 @@ public strictfp class HeadQuarters {
                         if (GlobalArray.hasLocation(arrAmp)) {
                             if ((arrAmp >> 15) == round % 2) {
                                 rc.writeSharedArray(a,0);
-                                indicatorString.append("AMP " + a + " die; ");
+                                indicatorString.append("AMP " + (a - GlobalArray.AMPLIFIERS) + " die; ");
                             }
                         }
                     }
@@ -110,15 +110,15 @@ public strictfp class HeadQuarters {
                         }
                     }
                 } else {
-                    if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && (deltaResources < 20 || carrierCooldown <= 0) && round >= 5 && possibleSpawningLocations >= 3) {
+                    if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && (deltaResources < 5 || carrierCooldown <= 0) && round >= 5 && possibleSpawningLocations >= 3) {
                         rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                         indicatorString.append("PROD CAR; ");
                         rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
-                        carrierCooldown = 10;
+                        carrierCooldown = 20;
                     } else if (optimalSpawningLocation != null && possibleSpawningLocations >= 5) {
                         boolean canProduceAmplifier = false;
-                        for (int a = 14; a <= 18; a++) {
-                            if (((rc.readSharedArray(a) >> 14) & 0b1) == 0) {
+                        for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS_LENGTH; a++) {
+                            if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
                                 canProduceAmplifier = true;
                             }
                         }
