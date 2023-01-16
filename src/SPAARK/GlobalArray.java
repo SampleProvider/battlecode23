@@ -1,4 +1,4 @@
-package betterspawning;
+package SPAARK;
 
 import java.util.Arrays;
 
