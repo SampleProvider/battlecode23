@@ -97,7 +97,7 @@ public strictfp class HeadQuarters {
 
                 if (isPrimaryHQ) {
                     for (int a = 0;a < 4;a++) {
-                        if (GlobalArray.hasLocation(rc.readSharedArray(14 + a) >> 12)) {
+                        if (GlobalArray.hasLocation(rc.readSharedArray(14 + a))) {
                             if ((rc.readSharedArray(14 + a) >> 15) == rc.getRoundNum() % 2) {
                                 rc.writeSharedArray(14 + a,0);
                             }
@@ -126,7 +126,7 @@ public strictfp class HeadQuarters {
                         launchers += 1;
                         rc.setIndicatorString("Produced Launcher!");
                     }
-                    else if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && possibleSpawningLocations >= 6 && launchers > 20 && canProduceAmplifier) {
+                    else if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && possibleSpawningLocations >= 6 && launchers > 10 && canProduceAmplifier) {
                         rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                     }
                     else if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
