@@ -34,7 +34,6 @@ public strictfp class Carrier {
 
     private RobotType prioritizedRobotType = RobotType.LAUNCHER;
 
-    private WellInfo[] wellInfo;
     private MapLocation prioritizedWell;
     private MapLocation[] headquarters;
     private MapLocation prioritizedHeadquarters;
@@ -42,6 +41,7 @@ public strictfp class Carrier {
     private WellInfo[] seenWells = new WellInfo[4];
     private int seenWellIndex = 0;
 
+    private RobotInfo[] robotInfo;
     private MapLocation opponentLocation;
 
     private boolean clockwiseRotation = true;
@@ -118,6 +118,16 @@ public strictfp class Carrier {
                 }
                 lastHealth = rc.getHealth();
 
+                robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
+                MapLocation loc = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
+                if (loc == null) {
+                    loc = Attack.senseOpponent(rc, me, robotInfo);
+                }
+                if (loc != null) {
+                    opponentLocation = loc;
+                    state = 4;
+                }
+
                 runState();
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Carrier");
@@ -133,10 +143,6 @@ public strictfp class Carrier {
     }
 
     private void runState() throws GameActionException {
-        MapLocation loc = Attack.attack(rc, me, prioritizedRobotType, false, indicatorString);
-        if (loc != null) {
-            opponentLocation = loc;
-        }
         if (state == 0) {
             updatePrioritizedHeadquarters();
             if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD)) {
@@ -153,10 +159,10 @@ public strictfp class Carrier {
                 if (prioritizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
                     attemptTransfer();
                 }
-                rc.setIndicatorLine(me, prioritizedHeadquarters, 255, 255, 0);
+                rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 25, 255);
                 return;
             } else {
-                wellInfo = rc.senseNearbyWells();
+                WellInfo[] wellInfo = rc.senseNearbyWells();
                 if (wellInfo.length > 0) {
                     WellInfo prioritizedWellInfo = wellInfo[0];
                     MapLocation prioritizedWellInfoLocation = wellInfo[0].getMapLocation();
@@ -176,8 +182,19 @@ public strictfp class Carrier {
                             }
                         }
                         if (seenWellIndex < 4) {
-                            seenWells[seenWellIndex] = w;
-                            seenWellIndex += 1;
+                            boolean newWell = true;
+                            for (int i = 0;i < seenWellIndex; i++) {
+                                if (seenWells[i] == null) {
+                                    continue;
+                                }
+                                if (seenWells[i].getMapLocation().equals(w.getMapLocation())) {
+                                    newWell = false;
+                                }
+                            }
+                            if (newWell) {
+                                seenWells[seenWellIndex] = w;
+                                seenWellIndex += 1;
+                            }
                         }
                     }
                     int emptySpots = 0;
@@ -242,7 +259,7 @@ public strictfp class Carrier {
                 }
             }
             
-            Motion.spreadRandomly(rc, me, prioritizedHeadquarters);
+            Motion.spreadRandomly(rc, me, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2));
         }
         else if (state == 1) {
             int emptySpots = 0;
@@ -317,6 +334,7 @@ public strictfp class Carrier {
             }
         }
         else if (state == 4) {
+            updatePrioritizedHeadquarters();
             indicatorString.append("RETREAT; ");
             rc.setIndicatorLine(me, prioritizedHeadquarters, 255, 255, 0);
             Motion.bug(rc, prioritizedHeadquarters, indicatorString);
@@ -325,7 +343,9 @@ public strictfp class Carrier {
                 state = 0;
             }
         }
-        loc = Attack.attack(rc, me, prioritizedRobotType, false, indicatorString);
+        me = rc.getLocation();
+        robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
+        MapLocation loc = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
         if (loc != null) {
             opponentLocation = loc;
         }
