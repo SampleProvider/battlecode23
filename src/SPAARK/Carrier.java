@@ -167,6 +167,10 @@ public strictfp class Carrier {
                                 prioritizedWellInfoLocation = w.getMapLocation();
                             }
                         }
+                        if (seenWellIndex < 4) {
+                            seenWells[seenWellIndex] = w;
+                            seenWellIndex += 1;
+                        }
                     }
                     int emptySpots = 0;
                     int fullSpots = 0;
@@ -185,10 +189,6 @@ public strictfp class Carrier {
                     if (fullSpots < emptySpots) {
                         rc.setIndicatorString("Wandering... (Next up: Pathfinding to Well)");
                         prioritizedWell = prioritizedWellInfoLocation;
-                        if (seenWellIndex < 4) {
-                            seenWells[seenWellIndex] = prioritizedWellInfo;
-                            seenWellIndex += 1;
-                        }
                         state = 1;
                         runState();
                         return;
