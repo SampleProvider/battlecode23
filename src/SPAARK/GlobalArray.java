@@ -5,6 +5,18 @@ import java.util.Arrays;
 import battlecode.common.*;
 
 public strictfp class GlobalArray {
+    public static final int GAMESTATE = 0;
+    public static final int HEADQUARTERS = 1;
+    public static final int HEADQUARTERS_LENGTH = 4;
+    public static final int MANA_WELLS = 5;
+    public static final int MANA_WELLS_LENGTH = 6;
+    public static final int ADAMANTIUM_WELLS = 12;
+    public static final int ADAMANTIUM_WELLS_LENGTH = 6;
+    public static final int AMPLIFIERS = 18;
+    public static final int AMPLIFIERS_LENGTH = 4;
+    public static final int OPPONENTS = 21;
+    public static final int OPPONENTS_LENGTH = 4;
+
     public static final int PRIORITIZED_RESOURCE = 0;
     public static final int CONVERT_WELL = 1;
     public static final int UPGRADE_WELLS = 2;
@@ -36,6 +48,31 @@ public strictfp class GlobalArray {
         return 0b1000000000000 | (loc.y << 6) | loc.x;
     }
     
+    // headquarters
+    public static int resourceRatio(int n) {
+        return n >> 14;
+    }
+    public static boolean adequateResources(int n) {
+        return ((n >> 13) & 0b1) == 1;
+    }
+    public static void storeHeadquarters(HeadQuarters hq) throws GameActionException {
+        int ratio = (hq.adamantium == 0 ? 0 : Math.min((int) ((hq.mana / (hq.adamantium*1.2) * 3) + 1), 3));
+        int adequateResources = (((hq.adamantium - hq.lastAdamantium) > adequateAdamantiumThreshold && (hq.mana - hq.lastMana) > adequateManaThreshold) ? 1 : 0);
+        hq.rc.writeSharedArray(hq.hqIndex, (ratio << 14) | (adequateResources << 13) | intifyLocation(hq.me));
+    }
+    public static MapLocation[] getKnownHeadQuarterLocations(RobotController rc) throws GameActionException {
+        MapLocation[] headquarters = new MapLocation[HEADQUARTERS_LENGTH];
+        int hqCount = 0;
+        for (int i = HEADQUARTERS; i < HEADQUARTERS + HEADQUARTERS_LENGTH; i++) {
+            int arrayHQ = rc.readSharedArray(i);
+            if (hasLocation(arrayHQ)) {
+                headquarters[i - HEADQUARTERS] = parseLocation(arrayHQ);
+                hqCount++;
+            }
+        }
+        return Arrays.copyOf(headquarters, hqCount);
+    }
+
     // wells
     public static ResourceType wellType(int n) {
         return resourceTypes[n >> 13 & 0b11];
@@ -48,7 +85,7 @@ public strictfp class GlobalArray {
             int resType = well.getResourceType().resourceID;
             MapLocation loc = well.getMapLocation();
             if (resType == 2) {
-                for (int i = 5; i <= 9; i++) {
+                for (int i = MANA_WELLS; i < MANA_WELLS + MANA_WELLS_LENGTH; i++) {
                     int arrayWell = rc.readSharedArray(i);
                     if (!hasLocation(arrayWell) || parseLocation(arrayWell).equals(loc)) {
                         rc.writeSharedArray(i, ((well.isUpgraded() ? 1 : 0) << 15) | (resType << 13) | intifyLocation(well.getMapLocation()));
@@ -56,7 +93,7 @@ public strictfp class GlobalArray {
                     }
                 }
             } else if (resType == 1) {
-                for (int i = 10; i <= 13; i++) {
+                for (int i = ADAMANTIUM_WELLS; i < ADAMANTIUM_WELLS + ADAMANTIUM_WELLS_LENGTH; i++) {
                     int arrayWell = rc.readSharedArray(i);
                     if (!hasLocation(arrayWell) || parseLocation(arrayWell).equals(loc)) {
                         rc.writeSharedArray(i, ((well.isUpgraded() ? 1 : 0) << 15) | (resType << 13) | intifyLocation(well.getMapLocation()));
@@ -71,12 +108,11 @@ public strictfp class GlobalArray {
         return false;
     }
     public static MapLocation[] getKnownWellLocations(RobotController rc) throws GameActionException {
-        MapLocation[] wells = new MapLocation[8];
-        for (int i = 0; i < 8; i++) {
-            int arrayWell = rc.readSharedArray(i+5);
+        MapLocation[] wells = new MapLocation[MANA_WELLS_LENGTH + ADAMANTIUM_WELLS_LENGTH];
+        for (int i = MANA_WELLS; i < MANA_WELLS + MANA_WELLS_LENGTH + ADAMANTIUM_WELLS_LENGTH; i++) {
+            int arrayWell = rc.readSharedArray(i);
             if (hasLocation(arrayWell)) {
-                wells[i] = parseLocation(arrayWell);
-                // wells[j++] = new WellInfo(parseLocation(arrayWell), wellType(arrayWell), null, isUpgradedWell(arrayWell));
+                wells[i - MANA_WELLS] = parseLocation(arrayWell);
             }
         }
         return wells;
@@ -85,7 +121,7 @@ public strictfp class GlobalArray {
     // opponents
     public static boolean storeOpponentLocation(RobotController rc, MapLocation opponentLocation) throws GameActionException {
         if (rc.canWriteSharedArray(0, 0)) {
-            for (int i = 22; i <= 25; i++) {
+            for (int i = OPPONENTS; i < OPPONENTS + OPPONENTS_LENGTH; i++) {
                 int arrayOpponentLocation = rc.readSharedArray(i);
                 if (!hasLocation(arrayOpponentLocation) || parseLocation(arrayOpponentLocation).equals(opponentLocation)) {
                     rc.writeSharedArray(i, intifyLocation(opponentLocation));
@@ -97,41 +133,16 @@ public strictfp class GlobalArray {
         return false;
     }
     public static MapLocation[] getKnownOpponentLocations(RobotController rc) throws GameActionException {
-        MapLocation[] opponentLocations = new MapLocation[4];
-        for (int i = 0; i < 4; i++) {
-            int arrayOpponentLocation = rc.readSharedArray(i+22);
+        MapLocation[] opponentLocations = new MapLocation[OPPONENTS_LENGTH];
+        for (int i = OPPONENTS; i < OPPONENTS + OPPONENTS_LENGTH; i++) {
+            int arrayOpponentLocation = rc.readSharedArray(i);
             if (hasLocation(arrayOpponentLocation)) {
-                opponentLocations[i] = parseLocation(arrayOpponentLocation);
+                opponentLocations[i - OPPONENTS] = parseLocation(arrayOpponentLocation);
             }
         }
         return opponentLocations;
     }
     
-    // headquarters
-    public static void storeHeadquarters(HeadQuarters hq) throws GameActionException {
-        int ratio = (hq.adamantium == 0 ? 0 : Math.min((int) ((hq.mana / (hq.adamantium*1.2) * 3) + 1), 3));
-        int adequateResources = (((hq.adamantium - hq.lastAdamantium) > adequateAdamantiumThreshold && (hq.mana - hq.lastMana) > adequateManaThreshold) ? 1 : 0);
-        hq.rc.writeSharedArray(hq.hqIndex, (ratio << 14) | (adequateResources << 13) | intifyLocation(hq.me));
-    }
-    public static int resourceRatio(int n) {
-        return n >> 14;
-    }
-    public static boolean adequateResources(int n) {
-        return ((n >> 13) & 0b1) == 1;
-    }
-    public static MapLocation[] getKnownHeadQuarterLocations(RobotController rc) throws GameActionException {
-        MapLocation[] headquarters = new MapLocation[4];
-        int hqCount = 0;
-        for (int i = 0; i < 4; i++) {
-            int arrayHQ = rc.readSharedArray(i+1);
-            if (hasLocation(arrayHQ)) {
-                headquarters[i] = parseLocation(arrayHQ);
-                hqCount++;
-            }
-        }
-        return Arrays.copyOf(headquarters, hqCount);
-    }
-
     /*
      * Bits 0-1     prioritized resource
      * Bit 2        convert well

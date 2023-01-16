@@ -10,8 +10,6 @@ public strictfp class Amplifier {
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
-    private final Random rng = new Random(2023);
-
     private final Direction[] directions = {
         Direction.SOUTHWEST,
         Direction.SOUTH,
@@ -41,27 +39,28 @@ public strictfp class Amplifier {
         try {
             this.rc = rc;
             int hqCount = 0;
-            for (int i = 1; i <= 4; i++) {
+            for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
                 if (GlobalArray.hasLocation(rc.readSharedArray(i)))
                     hqCount++;
             }
             headquarters = new MapLocation[hqCount];
             for (int i = 0; i < hqCount; i++) {
-                headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + 1));
+                headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
             }
+            round = rc.getRoundNum();
             int locInt = GlobalArray.intifyLocation(rc.getLocation());
-            if (!GlobalArray.hasLocation(rc.readSharedArray(14))) {
-                rc.writeSharedArray(14, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
-                amplifierID = 14;
-            } else if (!GlobalArray.hasLocation(rc.readSharedArray(15))) {
-                rc.writeSharedArray(15, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
-                amplifierID = 15;
-            } else if (!GlobalArray.hasLocation(rc.readSharedArray(16))) {
-                rc.writeSharedArray(16, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
-                amplifierID = 16;
-            } else if (!GlobalArray.hasLocation(rc.readSharedArray(17))) {
-                rc.writeSharedArray(17, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
-                amplifierID = 17;
+            if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.AMPLIFIERS))) {
+                rc.writeSharedArray(GlobalArray.AMPLIFIERS, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
+                amplifierID = GlobalArray.AMPLIFIERS;
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.AMPLIFIERS + 1))) {
+                rc.writeSharedArray(GlobalArray.AMPLIFIERS + 1, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
+                amplifierID = GlobalArray.AMPLIFIERS + 1;
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.AMPLIFIERS + 2))) {
+                rc.writeSharedArray(GlobalArray.AMPLIFIERS + 2, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
+                amplifierID = GlobalArray.AMPLIFIERS + 2;
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.AMPLIFIERS + 3))) {
+                rc.writeSharedArray(GlobalArray.AMPLIFIERS + 3, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
+                amplifierID = GlobalArray.AMPLIFIERS + 3;
             } else {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
             }

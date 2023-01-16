@@ -13,9 +13,7 @@ public strictfp class Launcher {
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
-    private static final Random rng = new Random(2023);
-
-    private static final Direction[] directions = {
+    private static final Direction[] DIRECTIONS = {
         Direction.SOUTHWEST,
         Direction.SOUTH,
         Direction.SOUTHEAST,
@@ -75,17 +73,17 @@ public strictfp class Launcher {
         try {
             this.rc = rc;
             int hqCount = 0;
-            for (int i = 1; i <= 4; i++) {
+            for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
                 if (GlobalArray.hasLocation(rc.readSharedArray(i)))
                     hqCount++;
             }
             headquarters = new MapLocation[hqCount];
             for (int i = 0; i < hqCount; i++) {
-                headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + 1));
+                headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
             }
             state = 3;
         } catch (GameActionException e) {
-            System.out.println("GameActionException at Carrier constructor");
+            System.out.println("GameActionException at Launcher constructor");
             e.printStackTrace();
         } catch (Exception e) {
             System.out.println("Exception at Launcher constructor");
@@ -150,7 +148,7 @@ public strictfp class Launcher {
                     updatePrioritizedOpponentHeadquarters();
                     if (prioritizedOpponentHeadquarters != null) {
                         boolean hasSpace = false;
-                        for (Direction d : directions) {
+                        for (Direction d : DIRECTIONS) {
                             if (rc.canSenseLocation(prioritizedOpponentHeadquarters.add(d))) {
                                 if (rc.senseRobotAtLocation(prioritizedOpponentHeadquarters.add(d)) == null && rc.sensePassability(prioritizedOpponentHeadquarters.add(d))) {
                                     hasSpace = true;
@@ -209,7 +207,7 @@ public strictfp class Launcher {
                     updatePrioritizedOpponentHeadquarters();
                     if (prioritizedOpponentHeadquarters != null) {
                         boolean hasSpace = false;
-                        for (Direction d : directions) {
+                        for (Direction d : DIRECTIONS) {
                             if (rc.canSenseLocation(prioritizedOpponentHeadquarters.add(d))) {
                                 if (rc.senseRobotAtLocation(prioritizedOpponentHeadquarters.add(d)) == null && rc.sensePassability(prioritizedOpponentHeadquarters.add(d))) {
                                     hasSpace = true;
@@ -239,7 +237,7 @@ public strictfp class Launcher {
                     }
                     else {
                         boolean hasSpace = false;
-                        for (Direction d : directions) {
+                        for (Direction d : DIRECTIONS) {
                             if (rc.canSenseLocation(prioritizedOpponentHeadquarters.add(d))) {
                                 if (rc.senseRobotAtLocation(prioritizedOpponentHeadquarters.add(d)) == null && rc.sensePassability(prioritizedOpponentHeadquarters.add(d))) {
                                     hasSpace = true;
@@ -375,18 +373,18 @@ public strictfp class Launcher {
 
     private boolean detectAmplifier() throws GameActionException {
         prioritizedAmplifierLocation = null;
-        for (int a = 0;a < 4;a++) {
+        for (int a = 0; a < GlobalArray.AMPLIFIERS_LENGTH; a++) {
             int amplifierArray = rc.readSharedArray(14 + a);
             if (amplifierArray >> 14 != 0) {
                 MapLocation amplifierLocation = GlobalArray.parseLocation(amplifierArray);
                 if (amplifierLocation.distanceSquaredTo(me) < amplifierSensingRange) {
                     if (prioritizedAmplifierLocation == null) {
                         prioritizedAmplifierLocation = amplifierLocation;
-                        amplifierID = 14 + a;
+                        amplifierID = GlobalArray.AMPLIFIERS + a;
                     }
                     else if (amplifierLocation.distanceSquaredTo(me) < prioritizedAmplifierLocation.distanceSquaredTo(me)) {
                         prioritizedAmplifierLocation = amplifierLocation;
-                        amplifierID = 14 + a;
+                        amplifierID = GlobalArray.AMPLIFIERS + a;
                     }
                 }
             }

@@ -6,7 +6,7 @@ import java.util.Random;
 
 public class Motion {
     private static final Random rng = new Random(2023);
-    private static final Direction[] directions = {
+    private static final Direction[] DIRECTIONS = {
         Direction.SOUTHWEST,
         Direction.SOUTH,
         Direction.SOUTHEAST,
@@ -16,7 +16,7 @@ public class Motion {
         Direction.NORTH,
         Direction.NORTHEAST,
     };
-    private static final String[] dirAbbrev = {
+    private static final String[] DIRABBREV = {
         "SW",
         "S",
         "SE",
@@ -30,7 +30,7 @@ public class Motion {
 
     protected static void moveRandomly(RobotController rc) throws GameActionException {
         while (rc.isMovementReady()) {
-            Direction direction = directions[rng.nextInt(directions.length)];
+            Direction direction = DIRECTIONS[rng.nextInt(DIRECTIONS.length)];
             if (rc.canMove(direction)) {
                 rc.move(direction);
             }
@@ -76,7 +76,7 @@ public class Motion {
                 }
             }
             if (moved == false) {
-                Direction d = directions[rng.nextInt(directions.length)];
+                Direction d = DIRECTIONS[rng.nextInt(DIRECTIONS.length)];
                 if (rc.canMove(d)) {
                     rc.move(d);
                 }
@@ -141,7 +141,7 @@ public class Motion {
                 }
             }
             if (moved == false) {
-                Direction d = directions[rng.nextInt(directions.length)];
+                Direction d = DIRECTIONS[rng.nextInt(DIRECTIONS.length)];
                 if (rc.canMove(d)) {
                     rc.move(d);
                 }
@@ -173,7 +173,7 @@ public class Motion {
                 }
             }
             while (moved == false) {
-                Direction d = directions[rng.nextInt(directions.length)];
+                Direction d = DIRECTIONS[rng.nextInt(DIRECTIONS.length)];
                 if (rc.canMove(d)) {
                     rc.move(d);
                     moved = true;
@@ -205,7 +205,7 @@ public class Motion {
                 }
             }
             while (moved == false) {
-                Direction d = directions[rng.nextInt(directions.length)];
+                Direction d = DIRECTIONS[rng.nextInt(DIRECTIONS.length)];
                 if (rc.canMove(d)) {
                     rc.move(d);
                     moved = true;
@@ -343,7 +343,7 @@ public class Motion {
                 lastDirection = direction;
             }
             else {
-                indicatorString.append("BUG-DIR=" + dirAbbrev[direction.getDirectionOrderNum()] + "; ");
+                indicatorString.append("BUG-DIR=" + DIRABBREV[direction.getDirectionOrderNum()] + "; ");
                 if (rc.canMove(direction.rotateLeft()) && lastDirection != direction.rotateLeft().opposite()) {
                     rc.move(direction.rotateLeft());
                     lastDirection = direction.rotateLeft();
@@ -392,7 +392,7 @@ public class Motion {
                 lastDirection = direction;
             }
             else {
-                indicatorString.append("BUG-DIR=" + dirAbbrev[direction.getDirectionOrderNum()] + "; BUG-CW=" + clockwiseRotation + "; ");
+                indicatorString.append("BUG-DIR=" + DIRABBREV[direction.getDirectionOrderNum()] + "; BUG-CW=" + clockwiseRotation + "; ");
                 if (clockwiseRotation) {
                     if (rc.canMove(direction.rotateLeft()) && lastDirection != direction.rotateLeft().opposite()) {
                         rc.move(direction.rotateLeft());
