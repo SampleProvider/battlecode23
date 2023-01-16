@@ -143,7 +143,8 @@ public strictfp class HeadQuarters {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                             indicatorString.append("PROD LAU; ");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                            launcherCooldown = 5;
+                            launchers++;
+                            launcherCooldown = 4;
                         }
                     }
                 }
@@ -157,6 +158,19 @@ public strictfp class HeadQuarters {
                     System.out.println("Error storing HeadQuarters");
                     e.printStackTrace();
                 }
+                // prioritized resources
+                double deviation = (mana - (adamantium * 1.5)) / (mana + (adamantium * 1.5));
+                if (Math.abs(deviation) < 0.2) {
+                    globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE, hqIndex);
+                    indicatorString.append("PR=NO; ");
+                } else if (deviation < 0) {
+                    globalArray.setPrioritizedResource(ResourceType.MANA, hqIndex);
+                    indicatorString.append("PR=MN; ");
+                } else {
+                    globalArray.setPrioritizedResource(ResourceType.ADAMANTIUM, hqIndex);
+                    indicatorString.append("PR=AD; ");
+                }
+                // primary headquarters stuff
                 if (isPrimaryHQ) {
                     if (round == 2) {
                         for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
@@ -166,28 +180,14 @@ public strictfp class HeadQuarters {
                     // set prioritized resource
                     // set upgrade wells if resources adequate
                     boolean upgradeWells = true;
-                    int totalRatio = 0;
                     for (int i = GlobalArray.HEADQUARTERS; i <= GlobalArray.HEADQUARTERS + hqCount; i++) {
                         int arrayHQ = rc.readSharedArray(i);
                         if (!GlobalArray.adequateResources(arrayHQ)) {
                             upgradeWells = false;
                         }
-                        totalRatio += GlobalArray.resourceRatio(arrayHQ);
                     }
                     // upgrade wells
                     globalArray.setUpgradeWells(upgradeWells);
-                    // prioritized resources
-                    int deviation = totalRatio - (2 * hqCount);
-                    if (Math.abs(deviation) <= 1) {
-                        globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE);
-                        indicatorString.append("PR=NO; ");
-                    } else if (deviation < 0) {
-                        globalArray.setPrioritizedResource(ResourceType.MANA);
-                        indicatorString.append("PR=MN; ");
-                    } else {
-                        globalArray.setPrioritizedResource(ResourceType.ADAMANTIUM);
-                        indicatorString.append("PR=AD; ");
-                    }
                     // set target elixir well
                     if (round > 200 && !setTargetElixirWell) {
                         // setTargetElixirWell();
