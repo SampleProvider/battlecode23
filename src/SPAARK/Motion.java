@@ -24,7 +24,8 @@ public class Motion {
         "E",
         "NW",
         "N",
-        "NE"
+        "NE",
+        "C"
     };
 
     protected static void moveRandomly(RobotController rc) throws GameActionException {
