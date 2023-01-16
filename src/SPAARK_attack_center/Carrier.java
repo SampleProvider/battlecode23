@@ -11,6 +11,7 @@ public strictfp class Carrier {
     protected RobotController rc;
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
+    private int round = 0;
 
     private static final Random rng = new Random(2023);
     
@@ -33,7 +34,6 @@ public strictfp class Carrier {
 
     private RobotType prioritizedRobotType = RobotType.LAUNCHER;
 
-    private WellInfo[] wellInfo;
     private MapLocation prioritizedWell;
     private MapLocation[] headquarters;
     private MapLocation prioritizedHeadquarters;
@@ -41,6 +41,7 @@ public strictfp class Carrier {
     private WellInfo[] seenWells = new WellInfo[4];
     private int seenWellIndex = 0;
 
+    private RobotInfo[] robotInfo;
     private MapLocation opponentLocation;
 
     private boolean clockwiseRotation = true;
@@ -55,10 +56,11 @@ public strictfp class Carrier {
     // 3 is pathfinding to island
     // 4 is retreat
 
+    private String indicatorString;
+
     public Carrier(RobotController rc) {
         try {
             this.rc = rc;
-            rc.setIndicatorString("Initializing");
             int hqCount = 0;
             for (int i = 1; i <= 4; i++) {
                 if (GlobalArray.hasLocation(rc.readSharedArray(i)))
@@ -76,15 +78,15 @@ public strictfp class Carrier {
             System.out.println("Exception at Carrier constructor");
             e.printStackTrace();
         } finally {
-            // Clock.yield();
+            run();
         }
-        run();
     }
 
     private void run() {
         while (true) {
             try {
                 me = rc.getLocation();
+                round = rc.getRoundNum();
                 adamantiumAmount = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 manaAmount = rc.getResourceAmount(ResourceType.MANA);
                 elixirAmount = rc.getResourceAmount(ResourceType.ELIXIR);
@@ -92,16 +94,20 @@ public strictfp class Carrier {
                 globalArray.parseGameState(rc.readSharedArray(0));
                 prioritizedResourceType = globalArray.prioritizedResource();
 
+                indicatorString = "";
+
                 if (rc.canWriteSharedArray(0, 0)) {
                     for (int i = 0;i < 4;i++) {
                         if (seenWells[i] != null) {
                             if (GlobalArray.storeWell(rc, seenWells[i])) {
+                                indicatorString += "STO WELL " + seenWells[i].toString() + "; ";
                                 seenWells[i] = null;
                             }
                         }
                     }
                     if (opponentLocation != null) {
                         if (GlobalArray.storeOpponentLocation(rc, opponentLocation)) {
+                            indicatorString += "STO OPP " + opponentLocation.toString() + "; ";
                             opponentLocation = null;
                         }
                     }
@@ -112,6 +118,16 @@ public strictfp class Carrier {
                 }
                 lastHealth = rc.getHealth();
 
+                robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
+                MapLocation loc = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false);
+                if (loc == null) {
+                    loc = Attack.senseOpponent(rc, me, robotInfo);
+                }
+                if (loc != null) {
+                    opponentLocation = loc;
+                    // state = 4;
+                }
+
                 runState();
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Carrier");
@@ -120,16 +136,13 @@ public strictfp class Carrier {
                 System.out.println("Exception at Carrier");
                 e.printStackTrace();
             } finally {
+                rc.setIndicatorString(indicatorString);
                 Clock.yield();
             }
         }
     }
 
     private void runState() throws GameActionException {
-        MapLocation loc = Attack.attack(rc, me, prioritizedRobotType, false);
-        if (loc != null) {
-            opponentLocation = loc;
-        }
         if (state == 0) {
             updatePrioritizedHeadquarters();
             if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD)) {
@@ -145,10 +158,11 @@ public strictfp class Carrier {
                 if (prioritizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
                     attemptTransfer();
                 }
-                rc.setIndicatorString("Pathfinding to HQ");
+                indicatorString += "PATH->HQ; ";
+                rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 25, 255);
                 return;
             } else {
-                wellInfo = rc.senseNearbyWells();
+                WellInfo[] wellInfo = rc.senseNearbyWells();
                 if (wellInfo.length > 0) {
                     WellInfo prioritizedWellInfo = wellInfo[0];
                     MapLocation prioritizedWellInfoLocation = wellInfo[0].getMapLocation();
@@ -167,6 +181,21 @@ public strictfp class Carrier {
                                 prioritizedWellInfoLocation = w.getMapLocation();
                             }
                         }
+                        if (seenWellIndex < 4) {
+                            boolean newWell = true;
+                            for (int i = 0;i < seenWellIndex; i++) {
+                                if (seenWells[i] == null) {
+                                    continue;
+                                }
+                                if (seenWells[i].getMapLocation().equals(w.getMapLocation())) {
+                                    newWell = false;
+                                }
+                            }
+                            if (newWell) {
+                                seenWells[seenWellIndex] = w;
+                                seenWellIndex += 1;
+                            }
+                        }
                     }
                     int emptySpots = 0;
                     int fullSpots = 0;
@@ -182,13 +211,9 @@ public strictfp class Carrier {
                             emptySpots += 1;
                         }
                     }
-                    if (fullSpots < emptySpots) {
-                        rc.setIndicatorString("Wandering... (Next up: Pathfinding to Well)");
+                    if (fullSpots <= emptySpots + 1) {
+                        indicatorString += "WANDER-(NXT:PATH->WELL); ";
                         prioritizedWell = prioritizedWellInfoLocation;
-                        if (seenWellIndex < 4) {
-                            seenWells[seenWellIndex] = prioritizedWellInfo;
-                            seenWellIndex += 1;
-                        }
                         state = 1;
                         runState();
                         return;
@@ -223,8 +248,8 @@ public strictfp class Carrier {
                                 emptySpots += 1;
                             }
                         }
-                        if (fullSpots < emptySpots) {
-                            rc.setIndicatorString("Wandering... (Next up: Pathfinding to Well)");
+                        if (fullSpots <= emptySpots + 1) {
+                            indicatorString += "WANDER-(NXT:PATH->WELL); ";
                             prioritizedWell = prioritizedWellLocation;
                             state = 1;
                             runState();
@@ -234,7 +259,7 @@ public strictfp class Carrier {
                 }
             }
             
-            Motion.spreadRandomly(rc, me, prioritizedHeadquarters);
+            Motion.spreadRandomly(rc, me, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2));
         }
         else if (state == 1) {
             int emptySpots = 0;
@@ -259,11 +284,11 @@ public strictfp class Carrier {
             clockwiseRotation = Motion.bug(rc, prioritizedWell, clockwiseRotation);
             attemptCollection();
             me = rc.getLocation();
-            rc.setIndicatorString("Pathfinding to Well...");
+            indicatorString += "PATH->WELL; ";
             rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
         }
         else if (state == 2) {
-            rc.setIndicatorString("Collecting resources...");
+            indicatorString += "COLLECT; ";
             rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
             if (rc.canCollectResource(prioritizedWell, -1)
                     && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
@@ -297,6 +322,7 @@ public strictfp class Carrier {
                 if (rc.canPlaceAnchor()) {
                     if (rc.senseTeamOccupyingIsland(rc.senseIsland(me)) == Team.NEUTRAL) {
                         rc.setIndicatorString("Placed Anchor!");
+                        indicatorString += "PLAC ANC; ";
                         rc.placeAnchor();
                         state = 0;
                     }
@@ -309,15 +335,18 @@ public strictfp class Carrier {
             }
         }
         else if (state == 4) {
-            rc.setIndicatorString("Retreating...");
-            rc.setIndicatorLine(me, prioritizedHeadquarters, 255, 75, 75);
+            updatePrioritizedHeadquarters();
+            indicatorString += "RETREAT; ";
+            rc.setIndicatorLine(me, prioritizedHeadquarters, 255, 255, 0);
             Motion.bug(rc, prioritizedHeadquarters);
             if (prioritizedHeadquarters.distanceSquaredTo(me) <= RobotType.HEADQUARTERS.visionRadiusSquared) {
                 attemptTransfer();
                 state = 0;
             }
         }
-        loc = Attack.attack(rc, me, prioritizedRobotType, false);
+        me = rc.getLocation();
+        robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
+        MapLocation loc = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false);
         if (loc != null) {
             opponentLocation = loc;
         }
@@ -333,12 +362,15 @@ public strictfp class Carrier {
     private void attemptTransfer() throws GameActionException {
         if (rc.canTransferResource(prioritizedHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount)) {
             rc.transferResource(prioritizedHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount);
+            indicatorString += "DROP AD; ";
         }
         if (rc.canTransferResource(prioritizedHeadquarters, ResourceType.MANA, manaAmount)) {
             rc.transferResource(prioritizedHeadquarters, ResourceType.MANA, manaAmount);
+            indicatorString += "DROP MN; ";
         }
         if (rc.canTransferResource(prioritizedHeadquarters, ResourceType.ELIXIR, elixirAmount)) {
             rc.transferResource(prioritizedHeadquarters, ResourceType.ELIXIR, elixirAmount);
+            indicatorString += "DROP EX; ";
         }
     }
 

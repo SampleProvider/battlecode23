@@ -111,6 +111,25 @@ public strictfp class HeadQuarters {
                         indicatorString += "PROD ANC; ";
                         anchorCooldown = 100;
                     }
+                    else {
+                        indicatorString += "TRY PROD ANC; ";
+                        if (adamantium >= 150) {
+                            if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
+                                rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
+                                carriers += 1;
+                                indicatorString += "PROD CAR";
+                                rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
+                            }
+                        }
+                        if (mana >= 160) {
+                            if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
+                                rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
+                                launchers++;
+                                indicatorString += "PROD LAU; ";
+                                rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                            }
+                        }
+                    }
                 }
                 else {
                     boolean canProduceAmplifier = false;
@@ -272,16 +291,32 @@ public strictfp class HeadQuarters {
             }
         }
         else {
-            for (MapLocation m : spawningLocations) {
-                if (rc.sensePassability(m) == false || rc.isLocationOccupied(m)) {
-                    continue;
+            if (well) {
+                for (MapLocation m : spawningLocations) {
+                    if (rc.sensePassability(m) == false || rc.isLocationOccupied(m)) {
+                        continue;
+                    }
+                    possibleSpawningLocations += 1;
+                    if (optimalSpawningLocation == null) {
+                        optimalSpawningLocation = m;
+                    }
+                    else if (optimalSpawningLocation.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) < m.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))) {
+                        optimalSpawningLocation = m;
+                    }
                 }
-                possibleSpawningLocations += 1;
-                if (optimalSpawningLocation == null) {
-                    optimalSpawningLocation = m;
-                }
-                else if (optimalSpawningLocation.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) > m.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))) {
-                    optimalSpawningLocation = m;
+            }
+            else {
+                for (MapLocation m : spawningLocations) {
+                    if (rc.sensePassability(m) == false || rc.isLocationOccupied(m)) {
+                        continue;
+                    }
+                    possibleSpawningLocations += 1;
+                    if (optimalSpawningLocation == null) {
+                        optimalSpawningLocation = m;
+                    }
+                    else if (optimalSpawningLocation.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) > m.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))) {
+                        optimalSpawningLocation = m;
+                    }
                 }
             }
         }

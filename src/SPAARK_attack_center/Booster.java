@@ -6,11 +6,13 @@ public strictfp class Booster {
     protected RobotController rc;
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
+    private int round = 0;
+
+    private String indicatorString;
 
     public Booster(RobotController rc) {
         try {
             this.rc = rc;
-            rc.setIndicatorString("Initializing");
         // } catch (GameActionException e) {
         //     System.out.println("GameActionException at Booster constructor");
         //     e.printStackTrace();
@@ -18,14 +20,16 @@ public strictfp class Booster {
             System.out.println("Exception at Booster constructor");
             e.printStackTrace();
         } finally {
-            Clock.yield();
+            run();
         }
-        run();
     }
     
     private void run() {
         while (true) {
             try {
+                me = rc.getLocation();
+                round = rc.getRoundNum();
+                indicatorString = "";
                 // code
             // } catch (GameActionException e) {
             //     System.out.println("GameActionException at Booster");
@@ -34,6 +38,7 @@ public strictfp class Booster {
                 System.out.println("Exception at Booster");
                 e.printStackTrace();
             } finally {
+                rc.setIndicatorString(indicatorString);
                 Clock.yield();
             }
         }

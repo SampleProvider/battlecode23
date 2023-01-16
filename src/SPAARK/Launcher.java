@@ -54,6 +54,7 @@ public strictfp class Launcher {
     protected int launcherID = -1;
 
     private MapLocation prioritizedRobotInfoLocation;
+    private MapLocation pathfindRobotInfoLocation;
 
     private MapLocation prioritizedAmplifierLocation;
 
@@ -101,6 +102,9 @@ public strictfp class Launcher {
                 round = rc.getRoundNum();
                 robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
                 prioritizedRobotInfoLocation = Attack.attack(rc, me, robotInfo, prioritizedRobotType, true);
+                if (prioritizedRobotInfoLocation != null && state == 3) {
+                    opponentLocation = prioritizedRobotInfoLocation;
+                }
 
                 indicatorString = "";
 
@@ -108,16 +112,17 @@ public strictfp class Launcher {
                     for (int i = 0;i < 4;i++) {
                         if (seenWells[i] != null) {
                             if (GlobalArray.storeWell(rc, seenWells[i])) {
+                                indicatorString += "STO WELL " + seenWells[i].toString() + "; ";
                                 seenWells[i] = null;
                             }
                         }
                     }
-                    if (opponentLocation != null) {
-                        if (GlobalArray.storeOpponentLocation(rc, opponentLocation)) {
-                            opponentLocation = null;
-                            indicatorString += "STO OPP " + opponentLocation.toString() + "; ";
-                        }
-                    }
+                    // if (opponentLocation != null) {
+                    //     if (GlobalArray.storeOpponentLocation(rc, opponentLocation)) {
+                    //         indicatorString += "STO OPP " + opponentLocation.toString() + "; ";
+                    //         opponentLocation = null;
+                    //     }
+                    // }
                 }
                 WellInfo[] wellInfo = rc.senseNearbyWells();
                 if (wellInfo.length > 0) {
@@ -308,9 +313,15 @@ public strictfp class Launcher {
                                     surroundingLaunchers += 1;
                                 }
                             }
-                            headquarterCircleRange = 9 + surroundingLaunchers / 3;
+                            headquarterCircleRange = 16 + surroundingLaunchers / 3;
                             if (opponentLocation != null) {
-                                clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation);
+                                indicatorString += "ATK-" + opponentLocation.toString() + "; ";
+                                rc.setIndicatorLine(me, opponentLocation, 255, 125, 25);
+                                clockwiseRotation = Motion.bug(rc, opponentLocation, clockwiseRotation);
+                                me = rc.getLocation();
+                                if (me.distanceSquaredTo(opponentLocation) <= 2) {
+                                    opponentLocation = null;
+                                }
                             }
                             else if (me.distanceSquaredTo(prioritizedHeadquarters) <= headquarterCircleRange * 1.25) {
                                 if (me.x <= edgeRange || me.x >= rc.getMapWidth() - edgeRange || me.y <= edgeRange || me.y >= rc.getMapHeight() - edgeRange) {
@@ -332,22 +343,9 @@ public strictfp class Launcher {
                             else {
                                 clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation);
                             }
-                            if (prioritizedRobotInfoLocation != null) {
-                                state = 4;
-                            }
                         }
                         me = rc.getLocation();
                         rc.setIndicatorDot(me, 75, 255, 75);
-                    }
-                }
-                if (state == 4) {
-                    if (prioritizedRobotInfoLocation != null) {
-                        indicatorString += "ATK-" + prioritizedRobotInfoLocation.toString() + "; ";
-                        rc.setIndicatorLine(me, prioritizedRobotInfoLocation, 255, 125, 25);
-                        clockwiseRotation = Motion.bug(rc, prioritizedRobotInfoLocation, clockwiseRotation);
-                    }
-                    else {
-                        state = 3;
                     }
                 }
                 if (state == 5) {

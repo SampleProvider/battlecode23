@@ -11,6 +11,7 @@ public strictfp class Launcher {
     protected RobotController rc;
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
+    private int round = 0;
 
     private static final Random rng = new Random(2023);
 
@@ -29,6 +30,12 @@ public strictfp class Launcher {
     private MapLocation prioritizedHeadquarters;
     private MapLocation prioritizedOpponentHeadquarters;
 
+    private WellInfo[] seenWells = new WellInfo[4];
+    private int seenWellIndex = 0;
+
+    private RobotInfo[] robotInfo;
+    private MapLocation opponentLocation;
+
     private RobotType prioritizedRobotType = RobotType.LAUNCHER;
     private int amplifierSensingRange = 50;
     private int amplifierCircleRange = 10;
@@ -37,6 +44,7 @@ public strictfp class Launcher {
     private int headquarterCircleStuck = 0;
     
     private int defenseRange = 64;
+    private int edgeRange = 4;
     private boolean[] invalidOpponentLocations = new boolean[4];
 
     private int centerRange = 2;
@@ -46,6 +54,7 @@ public strictfp class Launcher {
     protected int launcherID = -1;
 
     private MapLocation prioritizedRobotInfoLocation;
+    private MapLocation pathfindRobotInfoLocation;
 
     private MapLocation prioritizedAmplifierLocation;
 
@@ -57,11 +66,14 @@ public strictfp class Launcher {
     // 1 is travelling to amplifier
     // 2 is travelling with amplifier
     // 3 is defense
+    // 4 is pathfinding to opponent
+    // 5 is bad
+
+    private String indicatorString;
 
     public Launcher(RobotController rc) {
         try {
             this.rc = rc;
-            rc.setIndicatorString("Initializing");
             int hqCount = 0;
             for (int i = 1; i <= 4; i++) {
                 if (GlobalArray.hasLocation(rc.readSharedArray(i)))
@@ -81,16 +93,59 @@ public strictfp class Launcher {
             System.out.println("Exception at Launcher constructor");
             e.printStackTrace();
         } finally {
-            // Clock.yield();
+            run();
         }
-        run();
     }
     
     private void run() {
         while (true) {
             try {
                 me = rc.getLocation();
-                prioritizedRobotInfoLocation = Attack.attack(rc, me, prioritizedRobotType, true);
+                round = rc.getRoundNum();
+                robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
+                prioritizedRobotInfoLocation = Attack.attack(rc, me, robotInfo, prioritizedRobotType, true);
+                if (prioritizedRobotInfoLocation != null && state == 3) {
+                    opponentLocation = prioritizedRobotInfoLocation;
+                }
+
+                indicatorString = "";
+
+                if (rc.canWriteSharedArray(0, 0)) {
+                    for (int i = 0;i < 4;i++) {
+                        if (seenWells[i] != null) {
+                            if (GlobalArray.storeWell(rc, seenWells[i])) {
+                                indicatorString += "STO WELL " + seenWells[i].toString() + "; ";
+                                seenWells[i] = null;
+                            }
+                        }
+                    }
+                    // if (opponentLocation != null) {
+                    //     if (GlobalArray.storeOpponentLocation(rc, opponentLocation)) {
+                    //         indicatorString += "STO OPP " + opponentLocation.toString() + "; ";
+                    //         opponentLocation = null;
+                    //     }
+                    // }
+                }
+                WellInfo[] wellInfo = rc.senseNearbyWells();
+                if (wellInfo.length > 0) {
+                    for (WellInfo w : wellInfo) {
+                        if (seenWellIndex < 4) {
+                            boolean newWell = true;
+                            for (int i = 0;i < seenWellIndex; i++) {
+                                if (seenWells[i] == null) {
+                                    continue;
+                                }
+                                if (seenWells[i].getMapLocation().equals(w.getMapLocation())) {
+                                    newWell = false;
+                                }
+                            }
+                            if (newWell) {
+                                seenWells[seenWellIndex] = w;
+                                seenWellIndex += 1;
+                            }
+                        }
+                    }
+                }
                 
                 if (state == 0) {
                     updatePrioritizedOpponentHeadquarters();
@@ -118,7 +173,7 @@ public strictfp class Launcher {
                             }
                         }
                         // Motion.spreadRandomly(rc, me, prioritizedHeadquarters, true);
-                        rc.setIndicatorString("swarming");
+                        // indicatorString += "SWARM-CAR; ";
                         // if (rng.nextBoolean()) {
                         //     Motion.swarm(rc, me, RobotType.CARRIER);
                         // }
@@ -127,14 +182,16 @@ public strictfp class Launcher {
                         // }
                         if (prioritizedRobotInfoLocation != null) {
                             Motion.bug(rc, prioritizedRobotInfoLocation);
-                            rc.setIndicatorLine(me, prioritizedRobotInfoLocation, 255, 125, 25);
+                            indicatorString += "PATH->PINFO-" + prioritizedRobotInfoLocation.toString() + "; ";
+                            rc.setIndicatorLine(me, prioritizedRobotInfoLocation, 255, 25, 125);
                         }
                         else if (arrivedAtCenter) {
+                            indicatorString += "SWARM-LAU; ";
                             Motion.swarm(rc, me, RobotType.LAUNCHER);
                         }
                         else if (me.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) >= centerRange) {
                             Motion.bug(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2));
-                            rc.setIndicatorString("moving to center");
+                            indicatorString += "PATH->CEN; ";
                         }
                         else {
                             arrivedAtCenter = true;
@@ -152,7 +209,6 @@ public strictfp class Launcher {
                     }
                     updatePrioritizedOpponentHeadquarters();
                     if (prioritizedOpponentHeadquarters != null) {
-                        prioritizedRobotInfoLocation = Attack.attack(rc, me, prioritizedRobotType, true);
                         boolean hasSpace = false;
                         for (Direction d : directions) {
                             if (rc.canSenseLocation(prioritizedOpponentHeadquarters.add(d))) {
@@ -167,6 +223,7 @@ public strictfp class Launcher {
                         }
                     }
                     prioritizedAmplifierLocation = GlobalArray.parseLocation(amplifierArray);
+                    indicatorString += "AMP " + prioritizedAmplifierLocation.toString() + "; ";
                     rc.setIndicatorLine(me, prioritizedAmplifierLocation, 255, 175, 75);
                     if (me.distanceSquaredTo(prioritizedAmplifierLocation) <= amplifierCircleRange) {
                         clockwiseRotation = Motion.circleAroundTarget(rc, me, prioritizedAmplifierLocation, amplifierCircleRange, clockwiseRotation);
@@ -176,7 +233,7 @@ public strictfp class Launcher {
                     }
                 }
                 if (state == 2) {
-                    rc.setIndicatorString("Blocking HQ...");
+                    indicatorString += "BLK HQ; ";
                     if (me.distanceSquaredTo(prioritizedOpponentHeadquarters) <= 2) {
                         Motion.circleAroundTarget(rc, me, prioritizedOpponentHeadquarters);
                     }
@@ -198,8 +255,8 @@ public strictfp class Launcher {
                     }
                 }
                 if (state == 3) {
-                    // if (!detectAmplifier()) {
-                        rc.setIndicatorString("defense");
+                    if (!detectAmplifier()) {
+                        indicatorString += "DEF; ";
                         prioritizedHeadquarters = headquarters[0];
                         for (MapLocation hq : headquarters) {
                             if (hq != null) {
@@ -238,9 +295,9 @@ public strictfp class Launcher {
                             }
                             else {
                                 clockwiseRotation = Motion.bug(rc, prioritizedOpponentLocation, clockwiseRotation);
-                                RobotInfo[] opponentRobots = rc.senseNearbyRobots(RobotType.LAUNCHER.visionRadiusSquared,rc.getTeam().opponent());
+                                RobotInfo[] robotInfo = rc.senseNearbyRobots(RobotType.LAUNCHER.visionRadiusSquared,rc.getTeam().opponent());
                                 boolean allDead = true;
-                                for (RobotInfo r : opponentRobots) {
+                                for (RobotInfo r : robotInfo) {
                                     if (r.getType() != RobotType.HEADQUARTERS) {
                                         allDead = false;
                                     }
@@ -251,7 +308,29 @@ public strictfp class Launcher {
                             }
                         }
                         else {
-                            if (me.distanceSquaredTo(prioritizedHeadquarters) <= headquarterCircleRange * 1.5) {
+                            int surroundingLaunchers = 0;
+                            RobotInfo[] friendlyRobotInfo = rc.senseNearbyRobots(RobotType.LAUNCHER.visionRadiusSquared, rc.getTeam());
+                            for (RobotInfo w : friendlyRobotInfo) {
+                                if (w.getType() == RobotType.LAUNCHER) {
+                                    surroundingLaunchers += 1;
+                                }
+                            }
+                            headquarterCircleRange = 16 + surroundingLaunchers / 3;
+                            if (opponentLocation != null) {
+                                indicatorString += "ATK-" + opponentLocation.toString() + "; ";
+                                rc.setIndicatorLine(me, opponentLocation, 255, 125, 25);
+                                clockwiseRotation = Motion.bug(rc, opponentLocation, clockwiseRotation);
+                                me = rc.getLocation();
+                                if (me.distanceSquaredTo(opponentLocation) <= 2) {
+                                    opponentLocation = null;
+                                }
+                            }
+                            else if (me.distanceSquaredTo(prioritizedHeadquarters) <= headquarterCircleRange * 1.25) {
+                                if (me.x <= edgeRange || me.x >= rc.getMapWidth() - edgeRange || me.y <= edgeRange || me.y >= rc.getMapHeight() - edgeRange) {
+                                    if (rc.isMovementReady()) {
+                                        clockwiseRotation = !clockwiseRotation;
+                                    }
+                                }
                                 clockwiseRotation = Motion.circleAroundTarget(rc, me, prioritizedHeadquarters, headquarterCircleRange, clockwiseRotation);
                                 if (me.equals(rc.getLocation())) {
                                     headquarterCircleStuck += 1;
@@ -266,21 +345,9 @@ public strictfp class Launcher {
                             else {
                                 clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation);
                             }
-                            if (prioritizedRobotInfoLocation != null) {
-                                state = 4;
-                            }
                         }
                         me = rc.getLocation();
                         rc.setIndicatorDot(me, 75, 255, 75);
-                    // }
-                }
-                if (state == 4) {
-                    if (prioritizedRobotInfoLocation != null) {
-                        rc.setIndicatorLine(me, prioritizedRobotInfoLocation, 255, 125, 25);
-                        clockwiseRotation = Motion.bug(rc, prioritizedRobotInfoLocation, clockwiseRotation);
-                    }
-                    else {
-                        state = 3;
                     }
                 }
                 if (state == 5) {
@@ -289,7 +356,11 @@ public strictfp class Launcher {
                     }
                 }
                 me = rc.getLocation();
-                prioritizedRobotInfoLocation = Attack.attack(rc, me, prioritizedRobotType, true);
+                robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
+                prioritizedRobotInfoLocation = Attack.attack(rc, me, robotInfo, prioritizedRobotType, true);
+                if (prioritizedRobotInfoLocation != null && state == 3) {
+                    opponentLocation = prioritizedRobotInfoLocation;
+                }
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Launcher");
                 e.printStackTrace();
@@ -297,6 +368,7 @@ public strictfp class Launcher {
                 System.out.println("Exception at Launcher");
                 e.printStackTrace();
             } finally {
+                rc.setIndicatorString(indicatorString);
                 Clock.yield();
             }
         }
@@ -327,9 +399,8 @@ public strictfp class Launcher {
         return false;
     }
     private void updatePrioritizedOpponentHeadquarters() throws GameActionException {
-        RobotInfo[] opponentRobots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
         prioritizedOpponentHeadquarters = null;
-        for (RobotInfo r : opponentRobots) {
+        for (RobotInfo r : robotInfo) {
             if (r.getType() == RobotType.HEADQUARTERS) {
                 if (prioritizedOpponentHeadquarters == null) {
                     prioritizedOpponentHeadquarters = r.getLocation();

@@ -100,8 +100,8 @@ public strictfp class Carrier {
                     for (int i = 0;i < 4;i++) {
                         if (seenWells[i] != null) {
                             if (GlobalArray.storeWell(rc, seenWells[i])) {
-                            indicatorString += "STO WELL " + opponentLocation.toString() + "; ";
-                            seenWells[i] = null;
+                                indicatorString += "STO WELL " + seenWells[i].toString() + "; ";
+                                seenWells[i] = null;
                             }
                         }
                     }
@@ -125,7 +125,7 @@ public strictfp class Carrier {
                 }
                 if (loc != null) {
                     opponentLocation = loc;
-                    state = 4;
+                    // state = 4;
                 }
 
                 runState();
@@ -211,7 +211,7 @@ public strictfp class Carrier {
                             emptySpots += 1;
                         }
                     }
-                    if (fullSpots < emptySpots) {
+                    if (fullSpots <= emptySpots + 1) {
                         indicatorString += "WANDER-(NXT:PATH->WELL); ";
                         prioritizedWell = prioritizedWellInfoLocation;
                         state = 1;
@@ -248,7 +248,7 @@ public strictfp class Carrier {
                                 emptySpots += 1;
                             }
                         }
-                        if (fullSpots < emptySpots) {
+                        if (fullSpots <= emptySpots + 1) {
                             indicatorString += "WANDER-(NXT:PATH->WELL); ";
                             prioritizedWell = prioritizedWellLocation;
                             state = 1;
