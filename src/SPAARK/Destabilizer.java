@@ -8,7 +8,7 @@ public strictfp class Destabilizer {
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
-    private String indicatorString;
+    protected StringBuilder indicatorString = new StringBuilder();
 
     public Destabilizer(RobotController rc) {
         try {
@@ -29,7 +29,7 @@ public strictfp class Destabilizer {
             try {
                 me = rc.getLocation();
                 round = rc.getRoundNum();
-                indicatorString = "";
+                indicatorString = new StringBuilder();
                 // code
             // } catch (GameActionException e) {
             //     System.out.println("GameActionException at Destabilizer");
@@ -38,7 +38,7 @@ public strictfp class Destabilizer {
                 System.out.println("Exception at Destabilizer");
                 e.printStackTrace();
             } finally {
-                rc.setIndicatorString(indicatorString);
+                rc.setIndicatorString(indicatorString.toString());
                 Clock.yield();
             }
         }
