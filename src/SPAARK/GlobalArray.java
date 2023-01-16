@@ -17,11 +17,14 @@ public strictfp class GlobalArray {
     public static final int OPPONENTS = 21;
     public static final int OPPONENTS_LENGTH = 4;
 
-    public static final int PRIORITIZED_RESOURCE = 0;
-    public static final int CONVERT_WELL = 1;
-    public static final int UPGRADE_WELLS = 2;
-    public static final int ELIXIR_HQ_ID = 3;
-    public static final int CONVERSION_WELL_ID = 4;
+    public static final int PRIORITIZED_RESOURCE_HQ1 = 0;
+    public static final int PRIORITIZED_RESOURCE_HQ2 = 2;
+    public static final int PRIORITIZED_RESOURCE_HQ3 = 4;
+    public static final int PRIORITIZED_RESOURCE_HQ4 = 6;
+    public static final int CONVERT_WELL = 8;
+    public static final int UPGRADE_WELLS = 9;
+    public static final int ELIXIR_HQ_ID = 10;
+    public static final int CONVERSION_WELL_ID = 12;
 
     private static final ResourceType[] resourceTypes = new ResourceType[] {ResourceType.NO_RESOURCE, ResourceType.ADAMANTIUM, ResourceType.MANA, ResourceType.ELIXIR};
     private static final int adequateManaThreshold = 15;
@@ -153,7 +156,7 @@ public strictfp class GlobalArray {
 
     // read game state
     public int[] parseGameState(int n) {
-        currentState[PRIORITIZED_RESOURCE] = n & 0b11; // bits 0-1
+        currentState[PRIORITIZED_RESOURCE_HQ1] = n & 0b11; // bits 0-1
         currentState[CONVERT_WELL] = n >> 2 & 0b1; // bit 2
         currentState[UPGRADE_WELLS] = n >> 3 & 0b1; // bit 3
         currentState[ELIXIR_HQ_ID] = n >> 4 & 0b11; // bits 4-5
@@ -161,7 +164,7 @@ public strictfp class GlobalArray {
         return currentState;
     }
     public ResourceType prioritizedResource() {
-        return resourceTypes[currentState[PRIORITIZED_RESOURCE]];
+        return resourceTypes[currentState[PRIORITIZED_RESOURCE_HQ1]];
     }
     public boolean convertWell() {
         return currentState[CONVERT_WELL] == 1;
@@ -175,10 +178,10 @@ public strictfp class GlobalArray {
 
     // write game state
     public int getGameStateNumber() {
-        return (currentState[PRIORITIZED_RESOURCE]) | (currentState[CONVERT_WELL] << 2) | (currentState[UPGRADE_WELLS] << 3) | (currentState[ELIXIR_HQ_ID] << 4) |( currentState[CONVERSION_WELL_ID] << 6);
+        return (currentState[PRIORITIZED_RESOURCE_HQ1]) | (currentState[CONVERT_WELL] << 2) | (currentState[UPGRADE_WELLS] << 3) | (currentState[ELIXIR_HQ_ID] << 4) |( currentState[CONVERSION_WELL_ID] << 6);
     }
     public void setPrioritizedResource(ResourceType resource) {
-        currentState[PRIORITIZED_RESOURCE] = resource.resourceID;
+        currentState[PRIORITIZED_RESOURCE_HQ1] = resource.resourceID;
     }
     public void setUpgradeWells(boolean set) {
         currentState[UPGRADE_WELLS] = set ? 1 : 0;
