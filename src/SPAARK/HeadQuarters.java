@@ -141,7 +141,12 @@ public strictfp class HeadQuarters {
                 }
                 anchorCooldown -= 1;
                 // store
-                GlobalArray.storeHeadquarters(this);
+                try {
+                    GlobalArray.storeHeadquarters(this);
+                } catch (GameActionException e) {
+                    System.out.println("Error storing HeadQuarters");
+                    e.printStackTrace();
+                }
                 if (isPrimaryHQ) {
                     if (hqCount == 0) {
                         for (int i = 1; i <= 4; i++) {

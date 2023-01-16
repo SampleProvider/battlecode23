@@ -176,11 +176,6 @@ public strictfp class GlobalArray {
         return n ^ (1 << pos);
     }
     public static int setBit(int n, int pos, int m) {
-        if (m == 0) {
-            return n & ~(1 << pos);
-        }
-        else {
-            return n | 1 << pos;
-        }
+        return n & ~(1 << pos) | (m << pos);
     }
 }
