@@ -113,7 +113,7 @@ public strictfp class Launcher {
                     for (int i = 0;i < 4;i++) {
                         if (seenWells[i] != null) {
                             if (GlobalArray.storeWell(rc, seenWells[i])) {
-                                indicatorString += "STO WELL " + seenWells[i].toString() + "; ";
+                                indicatorString.append("STO WELL " + seenWells[i].toString() + "; ");
                                 seenWells[i] = null;
                             }
                         }
