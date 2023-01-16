@@ -35,7 +35,7 @@ public strictfp class Amplifier {
     private int amplifierArray;
     protected int amplifierID = 0;
 
-    protected StringBuilder indicatorString;
+    protected StringBuilder indicatorString = new StringBuilder();
 
     public Amplifier(RobotController rc) {
         try {

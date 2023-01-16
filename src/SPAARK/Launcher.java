@@ -68,7 +68,7 @@ public strictfp class Launcher {
     // 4 is pathfinding to opponent
     // 5 is bad
 
-    protected StringBuilder indicatorString;
+    protected StringBuilder indicatorString = new StringBuilder();
 
     public Launcher(RobotController rc) {
         try {

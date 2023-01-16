@@ -46,7 +46,7 @@ public strictfp class HeadQuarters {
     protected int lastAdamantium = 0;
     protected int lastMana = 0;
 
-    protected StringBuilder indicatorString;
+    protected StringBuilder indicatorString = new StringBuilder();
 
     public HeadQuarters(RobotController rc) {
         try {
