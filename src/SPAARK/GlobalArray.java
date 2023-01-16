@@ -35,6 +35,8 @@ public strictfp class GlobalArray {
     public static int intifyLocation(MapLocation loc) {
         return 0b1000000000000 | (loc.y << 6) | loc.x;
     }
+    
+    // wells
     public static ResourceType wellType(int n) {
         return resourceTypes[n >> 13 & 0b11];
     }
@@ -68,6 +70,19 @@ public strictfp class GlobalArray {
         }
         return false;
     }
+    public static MapLocation[] getKnownWellLocations(RobotController rc) throws GameActionException {
+        MapLocation[] wells = new MapLocation[8];
+        for (int i = 0; i < 8; i++) {
+            int arrayWell = rc.readSharedArray(i+5);
+            if (hasLocation(arrayWell)) {
+                wells[i] = parseLocation(arrayWell);
+                // wells[j++] = new WellInfo(parseLocation(arrayWell), wellType(arrayWell), null, isUpgradedWell(arrayWell));
+            }
+        }
+        return wells;
+    }
+    
+    // opponents
     public static boolean storeOpponentLocation(RobotController rc, MapLocation opponentLocation) throws GameActionException {
         if (rc.canWriteSharedArray(0, 0)) {
             for (int i = 22; i <= 25; i++) {
@@ -81,17 +96,6 @@ public strictfp class GlobalArray {
         }
         return false;
     }
-    public static MapLocation[] getKnownWellLocations(RobotController rc) throws GameActionException {
-        MapLocation[] wells = new MapLocation[8];
-        for (int i = 0; i < 8; i++) {
-            int arrayWell = rc.readSharedArray(i+5);
-            if (hasLocation(arrayWell)) {
-                wells[i] = parseLocation(arrayWell);
-                // wells[j++] = new WellInfo(parseLocation(arrayWell), wellType(arrayWell), null, isUpgradedWell(arrayWell));
-            }
-        }
-        return wells;
-    }
     public static MapLocation[] getKnownOpponentLocations(RobotController rc) throws GameActionException {
         MapLocation[] opponentLocations = new MapLocation[4];
         for (int i = 0; i < 4; i++) {
@@ -101,6 +105,19 @@ public strictfp class GlobalArray {
             }
         }
         return opponentLocations;
+    }
+    
+    // headquarters
+    public static void storeHeadquarters(HeadQuarters hq) throws GameActionException {
+        int ratio = (hq.adamantium == 0 ? 0 : Math.min((int) ((hq.mana / (hq.adamantium*1.2) * 3) + 1), 3));
+        int adequateResources = (((hq.adamantium - hq.lastAdamantium) > adequateAdamantiumThreshold && (hq.mana - hq.lastMana) > adequateManaThreshold) ? 1 : 0);
+        hq.rc.writeSharedArray(hq.hqIndex, (ratio << 14) | (adequateResources << 13) | intifyLocation(hq.me));
+    }
+    public static int resourceRatio(int n) {
+        return n >> 14;
+    }
+    public static boolean adequateResources(int n) {
+        return ((n >> 13) & 0b1) == 1;
     }
     public static MapLocation[] getKnownHeadQuarterLocations(RobotController rc) throws GameActionException {
         MapLocation[] headquarters = new MapLocation[4];
@@ -113,17 +130,6 @@ public strictfp class GlobalArray {
             }
         }
         return Arrays.copyOf(headquarters, hqCount);
-    }
-    public static void storeHeadquarters(HeadQuarters hq) throws GameActionException {
-        int ratio = (hq.adamantium == 0 ? 0 : Math.min((int) ((hq.mana / (hq.adamantium*1.2) * 3) + 1), 3));
-        int adequateResources = (((hq.adamantium - hq.lastAdamantium) > adequateAdamantiumThreshold && (hq.mana - hq.lastMana) > adequateManaThreshold) ? 1 : 0);
-        hq.rc.writeSharedArray(hq.hqIndex, (ratio << 14) | (adequateResources << 13) | intifyLocation(hq.me));
-    }
-    public static int resourceRatio(int n) {
-        return n >> 14;
-    }
-    public static boolean adequateResources(int n) {
-        return ((n >> 13) & 0b1) == 1;
     }
 
     /*

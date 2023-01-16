@@ -46,10 +46,11 @@ public strictfp class HeadQuarters {
     protected int lastAdamantium = 0;
     protected int lastMana = 0;
 
+    private String indicatorString;
+
     public HeadQuarters(RobotController rc) {
         try {
             this.rc = rc;
-            rc.setIndicatorString("Initializing");
             // setting headquarter locations
             locInt = GlobalArray.intifyLocation(rc.getLocation());
             if (!GlobalArray.hasLocation(rc.readSharedArray(1))) {
@@ -75,15 +76,11 @@ public strictfp class HeadQuarters {
             System.out.println("Exception at HeadQuarters constructor");
             e.printStackTrace();
         } finally {
-            // Clock.yield();
+            run();
         }
-        run();
     }
 
     private void run() {
-        // for (int i = 0;i < 10;i++) {
-        //     Clock.yield();
-        // }
         while (true) {
             try {
                 turnCount++;
@@ -92,9 +89,7 @@ public strictfp class HeadQuarters {
                 adamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 mana = rc.getResourceAmount(ResourceType.MANA);
 
-                // if (turnCount > 1000) {
-                //     rc.resign();
-                // }
+                indicatorString = "";
 
                 if (isPrimaryHQ) {
                     for (int a = 14; a <= 18; a++) {
@@ -102,7 +97,7 @@ public strictfp class HeadQuarters {
                         if (GlobalArray.hasLocation(arrAmp)) {
                             if ((arrAmp >> 15) == round % 2) {
                                 rc.writeSharedArray(a,0);
-                                System.out.println("Amplifier " + a + " unalived");
+                                indicatorString += "AMP " + a + " die; ";
                             }
                         }
                     }
@@ -113,7 +108,7 @@ public strictfp class HeadQuarters {
                 if (anchorCooldown <= 0 && turnCount >= 200 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
                     if (adamantium >= 100 && mana >= 100) {
                         rc.buildAnchor(Anchor.STANDARD);
-                        System.out.println("Anchor Produced!");
+                        indicatorString += "PROD ANC; ";
                         anchorCooldown = 100;
                     }
                 }
@@ -122,21 +117,24 @@ public strictfp class HeadQuarters {
                     for (int a = 0;a < 4;a++) {
                         if (!GlobalArray.hasLocation(rc.readSharedArray(14 + a))) {
                             canProduceAmplifier = true;
-                            rc.setIndicatorString("canproduce amplifier");
                         }
                     }
                     if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
                         rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
-                        launchers += 1;
-                        rc.setIndicatorString("Produced Launcher!");
+                        launchers++;
+                        indicatorString += "PROD LAU; ";
+                        rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                     }
                     else if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && possibleSpawningLocations >= 6 && launchers > 10 && canProduceAmplifier) {
                         rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
+                        indicatorString += "PROD AMP; ";
+                        rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                     }
                     else if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
                         rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                         carriers += 1;
-                        rc.setIndicatorString("Produced Carrier!");
+                        indicatorString += "PROD CAR";
+                        rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                     }
                 }
                 anchorCooldown -= 1;
@@ -170,10 +168,13 @@ public strictfp class HeadQuarters {
                     int deviation = totalRatio - (2 * hqCount);
                     if (Math.abs(deviation) <= 1) {
                         globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE);
+                        indicatorString += "PR=NO; ";
                     } else if (deviation < 0) {
                         globalArray.setPrioritizedResource(ResourceType.MANA);
+                        indicatorString += "PR=MN; ";
                     } else {
                         globalArray.setPrioritizedResource(ResourceType.ADAMANTIUM);
+                        indicatorString += "PR=AD; ";
                     }
                     // set target elixir well
                     if (turnCount > 200 && !setTargetElixirWell) {
@@ -182,8 +183,6 @@ public strictfp class HeadQuarters {
                     // save game state
                     rc.writeSharedArray(0, globalArray.getGameStateNumber());
                 }
-                lastAdamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
-                lastMana = rc.getResourceAmount(ResourceType.MANA);
             } catch (GameActionException e) {
                 System.out.println("GameActionException at HeadQuarters");
                 e.printStackTrace();
@@ -191,6 +190,9 @@ public strictfp class HeadQuarters {
                 System.out.println("Exception at HeadQuarters");
                 e.printStackTrace();
             } finally {
+                lastAdamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
+                lastMana = rc.getResourceAmount(ResourceType.MANA);
+                rc.setIndicatorString(indicatorString);
                 Clock.yield();
             }
         }
@@ -219,7 +221,7 @@ public strictfp class HeadQuarters {
                 }
             }
             if (wellIndex > -1) {
-                System.out.println("SET ELIXIR-HQ TARGET PAIR: " + wells[wellIndex].toString() + " " + headQuarters[hqIndex].toString());
+                indicatorString += "EX-HQ=" + wells[wellIndex].toString() + "-" + headQuarters[hqIndex].toString() + "; ";
                 globalArray.setTargetElixirWellHQPair(wellIndex, hqIndex);
             }
         } catch (GameActionException e) {

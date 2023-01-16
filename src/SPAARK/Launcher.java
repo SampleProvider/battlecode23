@@ -68,10 +68,11 @@ public strictfp class Launcher {
     // 4 is pathfinding to opponent
     // 5 is bad
 
+    private String indicatorString;
+
     public Launcher(RobotController rc) {
         try {
             this.rc = rc;
-            rc.setIndicatorString("Initializing");
             int hqCount = 0;
             for (int i = 1; i <= 4; i++) {
                 if (GlobalArray.hasLocation(rc.readSharedArray(i)))
@@ -89,9 +90,8 @@ public strictfp class Launcher {
             System.out.println("Exception at Launcher constructor");
             e.printStackTrace();
         } finally {
-            // Clock.yield();
+            run();
         }
-        run();
     }
     
     private void run() {
@@ -101,6 +101,8 @@ public strictfp class Launcher {
                 round = rc.getRoundNum();
                 robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
                 prioritizedRobotInfoLocation = Attack.attack(rc, me, robotInfo, prioritizedRobotType, true);
+
+                indicatorString = "";
 
                 if (rc.canWriteSharedArray(0, 0)) {
                     for (int i = 0;i < 4;i++) {
@@ -113,6 +115,7 @@ public strictfp class Launcher {
                     if (opponentLocation != null) {
                         if (GlobalArray.storeOpponentLocation(rc, opponentLocation)) {
                             opponentLocation = null;
+                            indicatorString += "STO OPP " + opponentLocation.toString() + "; ";
                         }
                     }
                 }
@@ -163,7 +166,7 @@ public strictfp class Launcher {
                             }
                         }
                         // Motion.spreadRandomly(rc, me, prioritizedHeadquarters, true);
-                        rc.setIndicatorString("swarming");
+                        // indicatorString += "SWARM-CAR; ";
                         // if (rng.nextBoolean()) {
                         //     Motion.swarm(rc, me, RobotType.CARRIER);
                         // }
@@ -172,14 +175,16 @@ public strictfp class Launcher {
                         // }
                         if (prioritizedRobotInfoLocation != null) {
                             Motion.bug(rc, prioritizedRobotInfoLocation);
+                            indicatorString += "PATH->PINFO-" + prioritizedRobotInfoLocation.toString() + "; ";
                             rc.setIndicatorLine(me, prioritizedRobotInfoLocation, 255, 25, 125);
                         }
                         else if (arrivedAtCenter) {
+                            indicatorString += "SWARM-LAU; ";
                             Motion.swarm(rc, me, RobotType.LAUNCHER);
                         }
                         else if (me.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) >= centerRange) {
                             Motion.bug(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2));
-                            rc.setIndicatorString("moving to center");
+                            indicatorString += "PATH->CEN; ";
                         }
                         else {
                             arrivedAtCenter = true;
@@ -211,6 +216,7 @@ public strictfp class Launcher {
                         }
                     }
                     prioritizedAmplifierLocation = GlobalArray.parseLocation(amplifierArray);
+                    indicatorString += "AMP " + prioritizedAmplifierLocation.toString() + "; ";
                     rc.setIndicatorLine(me, prioritizedAmplifierLocation, 255, 175, 75);
                     if (me.distanceSquaredTo(prioritizedAmplifierLocation) <= amplifierCircleRange) {
                         clockwiseRotation = Motion.circleAroundTarget(rc, me, prioritizedAmplifierLocation, amplifierCircleRange, clockwiseRotation);
@@ -220,7 +226,7 @@ public strictfp class Launcher {
                     }
                 }
                 if (state == 2) {
-                    rc.setIndicatorString("Blocking HQ...");
+                    indicatorString += "BLK HQ; ";
                     if (me.distanceSquaredTo(prioritizedOpponentHeadquarters) <= 2) {
                         Motion.circleAroundTarget(rc, me, prioritizedOpponentHeadquarters);
                     }
@@ -243,7 +249,7 @@ public strictfp class Launcher {
                 }
                 if (state == 3) {
                     if (!detectAmplifier()) {
-                        rc.setIndicatorString("defense");
+                        indicatorString += "DEF; ";
                         prioritizedHeadquarters = headquarters[0];
                         for (MapLocation hq : headquarters) {
                             if (hq != null) {
@@ -336,7 +342,8 @@ public strictfp class Launcher {
                 }
                 if (state == 4) {
                     if (prioritizedRobotInfoLocation != null) {
-                        rc.setIndicatorLine(me, prioritizedRobotInfoLocation, 255, 25, 125);
+                        indicatorString += "ATK-" + prioritizedRobotInfoLocation.toString() + "; ";
+                        rc.setIndicatorLine(me, prioritizedRobotInfoLocation, 255, 125, 25);
                         clockwiseRotation = Motion.bug(rc, prioritizedRobotInfoLocation, clockwiseRotation);
                     }
                     else {
@@ -361,6 +368,7 @@ public strictfp class Launcher {
                 System.out.println("Exception at Launcher");
                 e.printStackTrace();
             } finally {
+                rc.setIndicatorString(indicatorString);
                 Clock.yield();
             }
         }
