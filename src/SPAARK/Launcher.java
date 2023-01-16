@@ -62,7 +62,7 @@ public strictfp class Launcher {
     // 2 is travelling with amplifier
     // 3 is defense
 
-    private String indicatorString;
+    protected StringBuilder indicatorString;
 
     public Launcher(RobotController rc) {
         try {
@@ -93,15 +93,16 @@ public strictfp class Launcher {
             try {
                 me = rc.getLocation();
                 round = rc.getRoundNum();
-                prioritizedRobotInfoLocation = Attack.attack(rc, me, prioritizedRobotType, true);
-
-                indicatorString = "";
+                
+                indicatorString = new StringBuilder();
+                
+                prioritizedRobotInfoLocation = Attack.attack(rc, me, prioritizedRobotType, true, indicatorString);
 
                 if (rc.canWriteSharedArray(0, 0)) {
                     if (opponentLocation != null) {
                         if (GlobalArray.storeOpponentLocation(rc, opponentLocation)) {
                             opponentLocation = null;
-                            indicatorString += "STO OPP " + opponentLocation.toString() + "; ";
+                            indicatorString.append("STO OPP " + opponentLocation.toString() + "; ");
                         }
                     }
                 }
@@ -132,7 +133,7 @@ public strictfp class Launcher {
                             }
                         }
                         // Motion.spreadRandomly(rc, me, prioritizedHeadquarters, true);
-                        // indicatorString += "SWARM-CAR; ";
+                        // indicatorString.append("SWARM-CAR; ";
                         // if (rng.nextBoolean()) {
                         //     Motion.swarm(rc, me, RobotType.CARRIER);
                         // }
@@ -140,17 +141,17 @@ public strictfp class Launcher {
                         //     Motion.spreadCenter(rc, me);
                         // }
                         if (prioritizedRobotInfoLocation != null) {
-                            Motion.bug(rc, prioritizedRobotInfoLocation);
-                            indicatorString += "PATH->PINFO-" + prioritizedRobotInfoLocation.toString() + "; ";
+                            indicatorString.append("PATH->PINFO-" + prioritizedRobotInfoLocation.toString() + "; ");
+                            Motion.bug(rc, prioritizedRobotInfoLocation, indicatorString);
                             rc.setIndicatorLine(me, prioritizedRobotInfoLocation, 255, 125, 25);
                         }
                         else if (arrivedAtCenter) {
-                            indicatorString += "SWARM-LAU; ";
                             Motion.swarm(rc, me, RobotType.LAUNCHER);
+                            indicatorString.append("SWARM-LAU; ");
                         }
                         else if (me.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) >= centerRange) {
-                            Motion.bug(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2));
-                            indicatorString += "PATH->CEN; ";
+                            indicatorString.append("PATH->CEN; ");
+                            Motion.bug(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), indicatorString);
                         }
                         else {
                             arrivedAtCenter = true;
@@ -168,7 +169,7 @@ public strictfp class Launcher {
                     }
                     updatePrioritizedOpponentHeadquarters();
                     if (prioritizedOpponentHeadquarters != null) {
-                        prioritizedRobotInfoLocation = Attack.attack(rc, me, prioritizedRobotType, true);
+                        prioritizedRobotInfoLocation = Attack.attack(rc, me, prioritizedRobotType, true, indicatorString);
                         boolean hasSpace = false;
                         for (Direction d : directions) {
                             if (rc.canSenseLocation(prioritizedOpponentHeadquarters.add(d))) {
@@ -183,17 +184,18 @@ public strictfp class Launcher {
                         }
                     }
                     prioritizedAmplifierLocation = GlobalArray.parseLocation(amplifierArray);
-                    indicatorString += "AMP " + prioritizedAmplifierLocation.toString() + "; ";
                     rc.setIndicatorLine(me, prioritizedAmplifierLocation, 255, 175, 75);
                     if (me.distanceSquaredTo(prioritizedAmplifierLocation) <= amplifierCircleRange) {
+                        indicatorString.append("CIRC-AMP " + prioritizedAmplifierLocation.toString() + "; ");
                         clockwiseRotation = Motion.circleAroundTarget(rc, me, prioritizedAmplifierLocation, amplifierCircleRange, clockwiseRotation);
                     }
                     else {
-                        clockwiseRotation = Motion.bug(rc, prioritizedAmplifierLocation, clockwiseRotation);
+                        indicatorString.append("PATH->AMP " + prioritizedAmplifierLocation.toString() + "; ");
+                        clockwiseRotation = Motion.bug(rc, prioritizedAmplifierLocation, clockwiseRotation, indicatorString);
                     }
                 }
                 if (state == 2) {
-                    indicatorString += "BLK HQ; ";
+                    indicatorString.append("BLK HQ; ");
                     if (me.distanceSquaredTo(prioritizedOpponentHeadquarters) <= 2) {
                         Motion.circleAroundTarget(rc, me, prioritizedOpponentHeadquarters);
                     }
@@ -207,7 +209,7 @@ public strictfp class Launcher {
                             }
                         }
                         if (hasSpace) {
-                            clockwiseRotation = Motion.bug(rc, prioritizedOpponentHeadquarters, clockwiseRotation);
+                            clockwiseRotation = Motion.bug(rc, prioritizedOpponentHeadquarters, clockwiseRotation, indicatorString);
                         }
                         else {
                             state = 0;
@@ -216,7 +218,7 @@ public strictfp class Launcher {
                 }
                 if (state == 3) {
                     if (!detectAmplifier()) {
-                        indicatorString += "DEF; ";
+                        indicatorString.append("DEF; ");
                         prioritizedHeadquarters = headquarters[0];
                         for (MapLocation hq : headquarters) {
                             if (hq != null) {
@@ -247,14 +249,14 @@ public strictfp class Launcher {
                         if (prioritizedOpponentLocation != null && prioritizedOpponentLocation.distanceSquaredTo(me) <= defenseRange) {
                             rc.setIndicatorLine(me, prioritizedOpponentLocation, 75, 255, 75);
                             if (invalidOpponentLocations[prioritizedOpponentLocationIndex] == true) {
-                                clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation);
+                                clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation, indicatorString);
                                 if (rc.canWriteSharedArray(0, 0)) {
                                     rc.writeSharedArray(22 + prioritizedOpponentLocationIndex, 0);
                                     invalidOpponentLocations[prioritizedOpponentLocationIndex] = false;
                                 }
                             }
                             else {
-                                clockwiseRotation = Motion.bug(rc, prioritizedOpponentLocation, clockwiseRotation);
+                                clockwiseRotation = Motion.bug(rc, prioritizedOpponentLocation, clockwiseRotation, indicatorString);
                                 RobotInfo[] opponentRobots = rc.senseNearbyRobots(RobotType.LAUNCHER.visionRadiusSquared,rc.getTeam().opponent());
                                 boolean allDead = true;
                                 for (RobotInfo r : opponentRobots) {
@@ -269,7 +271,7 @@ public strictfp class Launcher {
                         }
                         else {
                             if (opponentLocation != null) {
-                                clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation);
+                                clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation, indicatorString);
                             }
                             else if (me.distanceSquaredTo(prioritizedHeadquarters) <= headquarterCircleRange) {
                                 if (me.x <= edgeRange || me.x >= rc.getMapWidth() - edgeRange || me.y <= edgeRange || me.y >= rc.getMapHeight() - edgeRange) {
@@ -289,7 +291,7 @@ public strictfp class Launcher {
                                 }
                             }
                             else {
-                                clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation);
+                                clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation, indicatorString);
                             }
                             if (prioritizedRobotInfoLocation != null) {
                                 state = 4;
@@ -301,9 +303,9 @@ public strictfp class Launcher {
                 }
                 if (state == 4) {
                     if (prioritizedRobotInfoLocation != null) {
-                        indicatorString += "ATK-" + prioritizedRobotInfoLocation.toString() + "; ";
+                        indicatorString.append("ATK-" + prioritizedRobotInfoLocation.toString() + "; ");
                         rc.setIndicatorLine(me, prioritizedRobotInfoLocation, 255, 125, 25);
-                        clockwiseRotation = Motion.bug(rc, prioritizedRobotInfoLocation, clockwiseRotation);
+                        clockwiseRotation = Motion.bug(rc, prioritizedRobotInfoLocation, clockwiseRotation, indicatorString);
                     }
                     else {
                         state = 3;
@@ -315,7 +317,7 @@ public strictfp class Launcher {
                     }
                 }
                 me = rc.getLocation();
-                prioritizedRobotInfoLocation = Attack.attack(rc, me, prioritizedRobotType, true);
+                prioritizedRobotInfoLocation = Attack.attack(rc, me, prioritizedRobotType, true, indicatorString);
                 if (prioritizedRobotInfoLocation != null && state == 3) {
                     opponentLocation = prioritizedRobotInfoLocation;
                 }
@@ -326,7 +328,7 @@ public strictfp class Launcher {
                 System.out.println("Exception at Launcher");
                 e.printStackTrace();
             } finally {
-                rc.setIndicatorString(indicatorString);
+                rc.setIndicatorString(indicatorString.toString());
                 Clock.yield();
             }
         }

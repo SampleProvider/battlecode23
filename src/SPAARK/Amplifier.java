@@ -35,7 +35,7 @@ public strictfp class Amplifier {
     private int amplifierArray;
     protected int amplifierID = 0;
 
-    private String indicatorString;
+    protected StringBuilder indicatorString;
 
     public Amplifier(RobotController rc) {
         try {
@@ -92,10 +92,10 @@ public strictfp class Amplifier {
                     }
                 }
 
-                indicatorString = "";
+                indicatorString = new StringBuilder();
 
                 if (me.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) <= centerRange) {
-                    indicatorString += "CENT; ";
+                    indicatorString.append("CENT; ");
                     arrivedAtCenter = true;
                 }
                 RobotInfo[] robotInfo = rc.senseNearbyRobots();
@@ -134,13 +134,13 @@ public strictfp class Amplifier {
                             }
                         }
                     }
-                    indicatorString += "LAU=" + surroundingLaunchers + "; ";
+                    indicatorString.append("LAU=" + surroundingLaunchers + "; ");
                     if (prioritizedRobotInfoLocation != null) {
                         opponentLocation = prioritizedRobotInfoLocation;
                         if (surroundingLaunchers >= 15) {
                             if (rc.getMovementCooldownTurns() <= 5) {
-                                indicatorString += "PATH->OP-" + opponentLocation.toString() + "; ";
-                                Motion.bug(rc, opponentLocation);
+                                indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
+                                Motion.bug(rc, opponentLocation, indicatorString);
                             }
                         }
                         else {
@@ -150,8 +150,8 @@ public strictfp class Amplifier {
                     }
                     else {
                         if (arrivedAtCenter && opponentLocation != null && surroundingLaunchers >= 15) {
-                            indicatorString += "PATH->OP-" + opponentLocation.toString() + "; ";
-                            Motion.bug(rc, opponentLocation);
+                            indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
+                            Motion.bug(rc, opponentLocation, indicatorString);
                         }
                         else {
                             Motion.spreadCenter(rc, me);
@@ -178,8 +178,8 @@ public strictfp class Amplifier {
                 System.out.println("Exception at Amplifier");
                 e.printStackTrace();
             } finally {
-                indicatorString += "AMPID=" + amplifierID + "; ";
-                rc.setIndicatorString(indicatorString);
+                indicatorString.append("AMPID=" + amplifierID + "; ");
+                rc.setIndicatorString(indicatorString.toString());
                 Clock.yield();
             }
         }

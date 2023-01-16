@@ -8,7 +8,7 @@ public strictfp class Booster {
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
-    private String indicatorString;
+    protected StringBuilder indicatorString;
 
     public Booster(RobotController rc) {
         try {
@@ -29,7 +29,7 @@ public strictfp class Booster {
             try {
                 me = rc.getLocation();
                 round = rc.getRoundNum();
-                indicatorString = "";
+                indicatorString = new StringBuilder();
                 // code
             // } catch (GameActionException e) {
             //     System.out.println("GameActionException at Booster");
@@ -38,7 +38,7 @@ public strictfp class Booster {
                 System.out.println("Exception at Booster");
                 e.printStackTrace();
             } finally {
-                rc.setIndicatorString(indicatorString);
+                rc.setIndicatorString(indicatorString.toString());
                 Clock.yield();
             }
         }

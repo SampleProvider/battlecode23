@@ -16,6 +16,16 @@ public class Motion {
         Direction.NORTH,
         Direction.NORTHEAST,
     };
+    private static final String[] dirAbbrev = {
+        "SW",
+        "S",
+        "SE",
+        "W",
+        "E",
+        "NW",
+        "N",
+        "NE"
+    };
 
     protected static void moveRandomly(RobotController rc) throws GameActionException {
         while (rc.isMovementReady()) {
@@ -294,7 +304,7 @@ public class Motion {
         }
     }
 
-    protected static void bug(RobotController rc,MapLocation dest) throws GameActionException {
+    protected static void bug(RobotController rc, MapLocation dest, StringBuilder indicatorString) throws GameActionException {
         Direction lastDirection = Direction.CENTER;
         while (rc.isMovementReady()) {
             MapLocation me = rc.getLocation();
@@ -307,7 +317,7 @@ public class Motion {
                 lastDirection = direction;
             }
             else {
-                rc.setIndicatorString(direction.toString());
+                indicatorString.append("BUG-DIR=" + dirAbbrev[direction.getDirectionOrderNum()] + "; ");
                 if (rc.canMove(direction.rotateLeft()) && lastDirection != direction.rotateLeft().opposite()) {
                     rc.move(direction.rotateLeft());
                     lastDirection = direction.rotateLeft();
@@ -343,7 +353,7 @@ public class Motion {
             }
         }
     }
-    protected static boolean bug(RobotController rc,MapLocation dest, boolean clockwiseRotation) throws GameActionException {
+    protected static boolean bug(RobotController rc, MapLocation dest, boolean clockwiseRotation, StringBuilder indicatorString) throws GameActionException {
         Direction lastDirection = Direction.CENTER;
         while (rc.isMovementReady()) {
             MapLocation me = rc.getLocation();
@@ -356,7 +366,7 @@ public class Motion {
                 lastDirection = direction;
             }
             else {
-                rc.setIndicatorString(direction.toString() + " " + clockwiseRotation);
+                indicatorString.append("BUG-DIR=" + dirAbbrev[direction.getDirectionOrderNum()] + "; BUG-CW=" + clockwiseRotation + "; ");
                 if (clockwiseRotation) {
                     if (rc.canMove(direction.rotateLeft()) && lastDirection != direction.rotateLeft().opposite()) {
                         rc.move(direction.rotateLeft());

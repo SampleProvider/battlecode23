@@ -56,7 +56,7 @@ public strictfp class Carrier {
     // 3 is pathfinding to island
     // 4 is retreat
 
-    private String indicatorString;
+    protected StringBuilder indicatorString;
 
     public Carrier(RobotController rc) {
         try {
@@ -94,20 +94,20 @@ public strictfp class Carrier {
                 globalArray.parseGameState(rc.readSharedArray(0));
                 prioritizedResourceType = globalArray.prioritizedResource();
 
-                indicatorString = "";
+                indicatorString = new StringBuilder();
 
                 if (rc.canWriteSharedArray(0, 0)) {
                     for (int i = 0;i < 4;i++) {
                         if (seenWells[i] != null) {
                             if (GlobalArray.storeWell(rc, seenWells[i])) {
-                            indicatorString += "STO WELL " + opponentLocation.toString() + "; ";
+                            indicatorString.append("STO WELL " + opponentLocation.toString() + "; ");
                             seenWells[i] = null;
                             }
                         }
                     }
                     if (opponentLocation != null) {
                         if (GlobalArray.storeOpponentLocation(rc, opponentLocation)) {
-                            indicatorString += "STO OPP " + opponentLocation.toString() + "; ";
+                            indicatorString.append("STO OPP " + opponentLocation.toString() + "; ");
                             opponentLocation = null;
                         }
                     }
@@ -126,14 +126,14 @@ public strictfp class Carrier {
                 System.out.println("Exception at Carrier");
                 e.printStackTrace();
             } finally {
-                rc.setIndicatorString(indicatorString);
+                rc.setIndicatorString(indicatorString.toString());
                 Clock.yield();
             }
         }
     }
 
     private void runState() throws GameActionException {
-        MapLocation loc = Attack.attack(rc, me, prioritizedRobotType, false);
+        MapLocation loc = Attack.attack(rc, me, prioritizedRobotType, false, indicatorString);
         if (loc != null) {
             opponentLocation = loc;
         }
@@ -148,11 +148,11 @@ public strictfp class Carrier {
             }
 
             if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
-                Motion.bug(rc, prioritizedHeadquarters);
+                indicatorString.append("PATH->HQ; ");
+                Motion.bug(rc, prioritizedHeadquarters, indicatorString);
                 if (prioritizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
                     attemptTransfer();
                 }
-                indicatorString += "PATH->HQ; ";
                 rc.setIndicatorLine(me, prioritizedHeadquarters, 255, 255, 0);
                 return;
             } else {
@@ -195,7 +195,7 @@ public strictfp class Carrier {
                         }
                     }
                     if (fullSpots < emptySpots) {
-                        indicatorString += "WANDER-(NXT:PATH->WELL); ";
+                        indicatorString.append("WANDER-(NXT:PATH->WELL); ");
                         prioritizedWell = prioritizedWellInfoLocation;
                         state = 1;
                         runState();
@@ -232,7 +232,7 @@ public strictfp class Carrier {
                             }
                         }
                         if (fullSpots < emptySpots) {
-                            indicatorString += "WANDER-(NXT:PATH->WELL); ";
+                            indicatorString.append("WANDER-(NXT:PATH->WELL); ");
                             prioritizedWell = prioritizedWellLocation;
                             state = 1;
                             runState();
@@ -264,14 +264,14 @@ public strictfp class Carrier {
                 runState();
                 return;
             }
-            clockwiseRotation = Motion.bug(rc, prioritizedWell, clockwiseRotation);
+            indicatorString.append("PATH->WELL; ");
+            clockwiseRotation = Motion.bug(rc, prioritizedWell, clockwiseRotation, indicatorString);
             attemptCollection();
             me = rc.getLocation();
-            indicatorString += "PATH->WELL; ";
             rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
         }
         else if (state == 2) {
-            indicatorString += "COLLECT; ";
+            indicatorString.append("COLLECT; ");
             rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
             if (rc.canCollectResource(prioritizedWell, -1)
                     && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
@@ -300,12 +300,11 @@ public strictfp class Carrier {
                 }
             }
             if (prioritizedIslandLocation != null) {
-                clockwiseRotation = Motion.bug(rc, prioritizedIslandLocation, clockwiseRotation);
+                clockwiseRotation = Motion.bug(rc, prioritizedIslandLocation, clockwiseRotation, indicatorString);
                 me = rc.getLocation();
                 if (rc.canPlaceAnchor()) {
                     if (rc.senseTeamOccupyingIsland(rc.senseIsland(me)) == Team.NEUTRAL) {
-                        rc.setIndicatorString("Placed Anchor!");
-                        indicatorString += "PLAC ANC; ";
+                        indicatorString.append("PLAC ANC; ");
                         rc.placeAnchor();
                         state = 0;
                     }
@@ -318,15 +317,15 @@ public strictfp class Carrier {
             }
         }
         else if (state == 4) {
-            indicatorString += "RETREAT; ";
+            indicatorString.append("RETREAT; ");
             rc.setIndicatorLine(me, prioritizedHeadquarters, 255, 255, 0);
-            Motion.bug(rc, prioritizedHeadquarters);
+            Motion.bug(rc, prioritizedHeadquarters, indicatorString);
             if (prioritizedHeadquarters.distanceSquaredTo(me) <= RobotType.HEADQUARTERS.visionRadiusSquared) {
                 attemptTransfer();
                 state = 0;
             }
         }
-        loc = Attack.attack(rc, me, prioritizedRobotType, false);
+        loc = Attack.attack(rc, me, prioritizedRobotType, false, indicatorString);
         if (loc != null) {
             opponentLocation = loc;
         }
@@ -342,15 +341,15 @@ public strictfp class Carrier {
     private void attemptTransfer() throws GameActionException {
         if (rc.canTransferResource(prioritizedHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount)) {
             rc.transferResource(prioritizedHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount);
-            indicatorString += "DROP AD; ";
+            indicatorString.append("DROP AD; ");
         }
         if (rc.canTransferResource(prioritizedHeadquarters, ResourceType.MANA, manaAmount)) {
             rc.transferResource(prioritizedHeadquarters, ResourceType.MANA, manaAmount);
-            indicatorString += "DROP MN; ";
+            indicatorString.append("DROP MN; ");
         }
         if (rc.canTransferResource(prioritizedHeadquarters, ResourceType.ELIXIR, elixirAmount)) {
             rc.transferResource(prioritizedHeadquarters, ResourceType.ELIXIR, elixirAmount);
-            indicatorString += "DROP EX; ";
+            indicatorString.append("DROP EX; ");
         }
     }
 
