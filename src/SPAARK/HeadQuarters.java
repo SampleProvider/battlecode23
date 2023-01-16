@@ -10,19 +10,6 @@ public strictfp class HeadQuarters {
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
-    private static final Random rng = new Random(2023);
-
-    private static final Direction[] directions = {
-        Direction.SOUTHWEST,
-        Direction.SOUTH,
-        Direction.SOUTHEAST,
-        Direction.WEST,
-        Direction.EAST,
-        Direction.NORTHWEST,
-        Direction.NORTH,
-        Direction.NORTHEAST,
-    };
-
     protected int hqIndex;
     private int locInt;
     private int hqCount;
@@ -53,19 +40,19 @@ public strictfp class HeadQuarters {
             this.rc = rc;
             // setting headquarter locations
             locInt = GlobalArray.intifyLocation(rc.getLocation());
-            if (!GlobalArray.hasLocation(rc.readSharedArray(1))) {
-                rc.writeSharedArray(1, locInt);
-                hqIndex = 1;
+            if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS))) {
+                rc.writeSharedArray(GlobalArray.HEADQUARTERS, locInt);
+                hqIndex = GlobalArray.HEADQUARTERS;
                 isPrimaryHQ = true;
-            } else if (!GlobalArray.hasLocation(rc.readSharedArray(2))) {
-                rc.writeSharedArray(2, locInt);
-                hqIndex = 2;
-            } else if (!GlobalArray.hasLocation(rc.readSharedArray(3))) {
-                rc.writeSharedArray(3, locInt);
-                hqIndex = 3;
-            } else if (!GlobalArray.hasLocation(rc.readSharedArray(4))) {
-                rc.writeSharedArray(4, locInt);
-                hqIndex = 4;
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS + 1))) {
+                rc.writeSharedArray(GlobalArray.HEADQUARTERS + 1, locInt);
+                hqIndex = GlobalArray.HEADQUARTERS + 1;
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS + 2))) {
+                rc.writeSharedArray(GlobalArray.HEADQUARTERS + 2, locInt);
+                hqIndex = GlobalArray.HEADQUARTERS + 2;
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS + 3))) {
+                rc.writeSharedArray(GlobalArray.HEADQUARTERS + 3, locInt);
+                hqIndex = GlobalArray.HEADQUARTERS + 3;
             } else {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many HeadQuarters!");
             }
@@ -92,7 +79,7 @@ public strictfp class HeadQuarters {
                 indicatorString = new StringBuilder();
 
                 if (isPrimaryHQ) {
-                    for (int a = 14; a <= 18; a++) {
+                    for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
                         int arrAmp = rc.readSharedArray(a);
                         if (GlobalArray.hasLocation(arrAmp)) {
                             if ((arrAmp >> 15) == round % 2) {
@@ -133,8 +120,8 @@ public strictfp class HeadQuarters {
                 }
                 else {
                     boolean canProduceAmplifier = false;
-                    for (int a = 0;a < 4;a++) {
-                        if (!GlobalArray.hasLocation(rc.readSharedArray(14 + a))) {
+                    for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS_LENGTH; a++) {
+                        if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
                             canProduceAmplifier = true;
                         }
                     }
@@ -165,8 +152,8 @@ public strictfp class HeadQuarters {
                     e.printStackTrace();
                 }
                 if (isPrimaryHQ) {
-                    if (hqCount == 0) {
-                        for (int i = 1; i <= 4; i++) {
+                    if (round == 2) {
+                        for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
                             if (GlobalArray.hasLocation(rc.readSharedArray(i))) hqCount++;
                         }
                     }
@@ -174,7 +161,7 @@ public strictfp class HeadQuarters {
                     // set upgrade wells if resources adequate
                     boolean upgradeWells = true;
                     int totalRatio = 0;
-                    for (int i = 1; i <= hqCount+1; i++) {
+                    for (int i = GlobalArray.HEADQUARTERS; i <= GlobalArray.HEADQUARTERS + hqCount; i++) {
                         int arrayHQ = rc.readSharedArray(i);
                         if (!GlobalArray.adequateResources(arrayHQ)) {
                             upgradeWells = false;

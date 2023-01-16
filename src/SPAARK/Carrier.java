@@ -3,9 +3,6 @@ package SPAARK;
 import battlecode.common.*;
 
 import java.util.Random;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 public strictfp class Carrier {
     protected RobotController rc;
@@ -13,9 +10,7 @@ public strictfp class Carrier {
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
-    private static final Random rng = new Random(2023);
-    
-    private static final Direction[] directions = {
+    private static final Direction[] DIRECTIONS = {
         Direction.SOUTHWEST,
         Direction.SOUTH,
         Direction.SOUTHEAST,
@@ -62,13 +57,13 @@ public strictfp class Carrier {
         try {
             this.rc = rc;
             int hqCount = 0;
-            for (int i = 1; i <= 4; i++) {
+            for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
                 if (GlobalArray.hasLocation(rc.readSharedArray(i)))
                     hqCount++;
             }
             headquarters = new MapLocation[hqCount];
             for (int i = 0; i < hqCount; i++) {
-                headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + 1));
+                headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
             }
             lastHealth = rc.getHealth();
         } catch (GameActionException e) {
@@ -199,7 +194,7 @@ public strictfp class Carrier {
                     }
                     int emptySpots = 0;
                     int fullSpots = 0;
-                    for (Direction d : directions) {
+                    for (Direction d : DIRECTIONS) {
                         MapLocation adjSpot = prioritizedWellInfoLocation.add(d);
                         if (!rc.canSenseLocation(adjSpot)) {
                             continue;
@@ -236,7 +231,7 @@ public strictfp class Carrier {
                     if (prioritizedWellLocation != null) {
                         int emptySpots = 0;
                         int fullSpots = 0;
-                        for (Direction d : directions) {
+                        for (Direction d : DIRECTIONS) {
                             MapLocation adjSpot = prioritizedWellLocation.add(d);
                             if (!rc.canSenseLocation(adjSpot)) {
                                 continue;
@@ -264,7 +259,7 @@ public strictfp class Carrier {
         else if (state == 1) {
             int emptySpots = 0;
             int fullSpots = 0;
-            for (Direction d : directions) {
+            for (Direction d : DIRECTIONS) {
                 MapLocation adjSpot = prioritizedWell.add(d);
                 if (!rc.canSenseLocation(adjSpot)) {
                     continue;
