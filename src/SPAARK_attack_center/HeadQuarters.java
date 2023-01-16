@@ -1,4 +1,4 @@
-package SPAARK;
+package SPAARK_attack_center;
 
 import battlecode.common.*;
 
@@ -91,16 +91,15 @@ public strictfp class HeadQuarters {
                 adamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 mana = rc.getResourceAmount(ResourceType.MANA);
 
-                if (turnCount > 1000) {
-                    rc.resign();
-                }
+                // if (turnCount > 600) {
+                //     rc.resign();
+                // }
 
                 if (isPrimaryHQ) {
                     for (int a = 0;a < 4;a++) {
                         if (GlobalArray.hasLocation(rc.readSharedArray(14 + a))) {
                             if ((rc.readSharedArray(14 + a) >> 15) == rc.getRoundNum() % 2) {
                                 rc.writeSharedArray(14 + a,0);
-                                System.out.println("Amplifier " + a + " died...");
                             }
                         }
                     }
@@ -112,7 +111,7 @@ public strictfp class HeadQuarters {
                     if (adamantium >= 100 && mana >= 100) {
                         rc.buildAnchor(Anchor.STANDARD);
                         System.out.println("Anchor Produced!");
-                        anchorCooldown = 100;
+                        anchorCooldown = 50;
                     }
                 }
                 else {
@@ -120,7 +119,6 @@ public strictfp class HeadQuarters {
                     for (int a = 0;a < 4;a++) {
                         if (!GlobalArray.hasLocation(rc.readSharedArray(14 + a))) {
                             canProduceAmplifier = true;
-                            rc.setIndicatorString("canproduce amplifier");
                         }
                     }
                     if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {

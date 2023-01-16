@@ -1,4 +1,4 @@
-package SPAARK;
+package SPAARK_attack_center;
 
 import battlecode.common.*;
 
@@ -29,17 +29,14 @@ public strictfp class Launcher {
     private MapLocation prioritizedHeadquarters;
     private MapLocation prioritizedOpponentHeadquarters;
 
-    private MapLocation opponentLocation;
-
     private RobotType prioritizedRobotType = RobotType.LAUNCHER;
     private int amplifierSensingRange = 50;
     private int amplifierCircleRange = 10;
 
-    private int headquarterCircleRange = 36;
+    private int headquarterCircleRange = 16;
     private int headquarterCircleStuck = 0;
     
     private int defenseRange = 64;
-    private int edgeRange = 4;
     private boolean[] invalidOpponentLocations = new boolean[4];
 
     private int centerRange = 2;
@@ -74,7 +71,9 @@ public strictfp class Launcher {
             for (int i = 0; i < hqCount; i++) {
                 headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + 1));
             }
-            state = 3;
+            if (rc.getRoundNum() % 3 == 0) {
+                state = 3;
+            }
         } catch (GameActionException e) {
             System.out.println("GameActionException at Carrier constructor");
             e.printStackTrace();
@@ -92,14 +91,6 @@ public strictfp class Launcher {
             try {
                 me = rc.getLocation();
                 prioritizedRobotInfoLocation = Attack.attack(rc, me, prioritizedRobotType, true);
-
-                if (rc.canWriteSharedArray(0, 0)) {
-                    if (opponentLocation != null) {
-                        if (GlobalArray.storeOpponentLocation(rc, opponentLocation)) {
-                            opponentLocation = null;
-                        }
-                    }
-                }
                 
                 if (state == 0) {
                     updatePrioritizedOpponentHeadquarters();
@@ -207,7 +198,7 @@ public strictfp class Launcher {
                     }
                 }
                 if (state == 3) {
-                    if (!detectAmplifier()) {
+                    // if (!detectAmplifier()) {
                         rc.setIndicatorString("defense");
                         prioritizedHeadquarters = headquarters[0];
                         for (MapLocation hq : headquarters) {
@@ -260,15 +251,7 @@ public strictfp class Launcher {
                             }
                         }
                         else {
-                            if (opponentLocation != null) {
-                                clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation);
-                            }
-                            else if (me.distanceSquaredTo(prioritizedHeadquarters) <= headquarterCircleRange) {
-                                if (me.x <= edgeRange || me.x >= rc.getMapWidth() - edgeRange || me.y <= edgeRange || me.y >= rc.getMapHeight() - edgeRange) {
-                                    if (rc.isMovementReady()) {
-                                        clockwiseRotation = !clockwiseRotation;
-                                    }
-                                }
+                            if (me.distanceSquaredTo(prioritizedHeadquarters) <= headquarterCircleRange * 1.5) {
                                 clockwiseRotation = Motion.circleAroundTarget(rc, me, prioritizedHeadquarters, headquarterCircleRange, clockwiseRotation);
                                 if (me.equals(rc.getLocation())) {
                                     headquarterCircleStuck += 1;
@@ -289,7 +272,7 @@ public strictfp class Launcher {
                         }
                         me = rc.getLocation();
                         rc.setIndicatorDot(me, 75, 255, 75);
-                    }
+                    // }
                 }
                 if (state == 4) {
                     if (prioritizedRobotInfoLocation != null) {
@@ -307,9 +290,6 @@ public strictfp class Launcher {
                 }
                 me = rc.getLocation();
                 prioritizedRobotInfoLocation = Attack.attack(rc, me, prioritizedRobotType, true);
-                if (prioritizedRobotInfoLocation != null && state == 3) {
-                    opponentLocation = prioritizedRobotInfoLocation;
-                }
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Launcher");
                 e.printStackTrace();

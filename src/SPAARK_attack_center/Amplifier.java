@@ -1,4 +1,4 @@
-package SPAARK;
+package SPAARK_attack_center;
 
 import battlecode.common.*;
 
@@ -71,7 +71,7 @@ public strictfp class Amplifier {
             System.out.println("Exception at Amplifier constructor");
             e.printStackTrace();
         } finally {
-            // Clock.yield();
+            Clock.yield();
         }
         run();
     }
