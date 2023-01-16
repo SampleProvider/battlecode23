@@ -6,6 +6,7 @@ public strictfp class Destabilizer {
     protected RobotController rc;
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
+    private int round = 0;
 
     public Destabilizer(RobotController rc) {
         try {
@@ -26,6 +27,8 @@ public strictfp class Destabilizer {
     private void run() {
         while (true) {
             try {
+                me = rc.getLocation();
+                round = rc.getRoundNum();
                 // code
             // } catch (GameActionException e) {
             //     System.out.println("GameActionException at Destabilizer");
