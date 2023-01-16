@@ -47,7 +47,6 @@ public strictfp class HeadQuarters {
     public HeadQuarters(RobotController rc) {
         try {
             this.rc = rc;
-            rc.setIndicatorString("Initializing");
             // setting headquarter locations
             locInt = GlobalArray.intifyLocation(rc.getLocation());
             if (!GlobalArray.hasLocation(rc.readSharedArray(1))) {
@@ -66,6 +65,8 @@ public strictfp class HeadQuarters {
             } else {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many HeadQuarters!");
             }
+            lastAdamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
+            lastMana = rc.getResourceAmount(ResourceType.MANA);
         } catch (GameActionException e) {
             System.out.println("GameActionException at HeadQuarters constructor");
             e.printStackTrace();
@@ -73,15 +74,11 @@ public strictfp class HeadQuarters {
             System.out.println("Exception at HeadQuarters constructor");
             e.printStackTrace();
         } finally {
-            // Clock.yield();
+            run();
         }
-        run();
     }
 
     private void run() {
-        // for (int i = 0;i < 10;i++) {
-        //     Clock.yield();
-        // }
         while (true) {
             try {
                 me = rc.getLocation();
@@ -192,9 +189,6 @@ public strictfp class HeadQuarters {
                     // save game state
                     rc.writeSharedArray(0, globalArray.getGameStateNumber());
                 }
-                lastAdamantium = adamantium;
-                lastMana = mana;
-                rc.setIndicatorString(indicatorString);
             } catch (GameActionException e) {
                 System.out.println("GameActionException at HeadQuarters");
                 e.printStackTrace();
@@ -202,6 +196,9 @@ public strictfp class HeadQuarters {
                 System.out.println("Exception at HeadQuarters");
                 e.printStackTrace();
             } finally {
+                lastAdamantium = adamantium;
+                lastMana = mana;
+                rc.setIndicatorString(indicatorString);
                 Clock.yield();
             }
         }
@@ -230,7 +227,6 @@ public strictfp class HeadQuarters {
                 }
             }
             if (wellIndex > -1) {
-                System.out.println("SET ELIXIR-HQ TARGET PAIR: " + wells[wellIndex].toString() + " " + headQuarters[hqIndex].toString());
                 indicatorString += "EX-HQ=" + wells[wellIndex].toString() + "-" + headQuarters[hqIndex].toString() + "; ";
                 globalArray.setTargetElixirWellHQPair(wellIndex, hqIndex);
             }
