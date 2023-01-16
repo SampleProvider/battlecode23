@@ -152,7 +152,7 @@ public strictfp class HeadQuarters {
                     else if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
                         rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                         carriers += 1;
-                        indicatorString += "PROD CAR";
+                        indicatorString += "PROD CAR; ";
                         rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                     }
                 }
