@@ -92,9 +92,9 @@ public strictfp class HeadQuarters {
                 adamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 mana = rc.getResourceAmount(ResourceType.MANA);
 
-                if (turnCount > 1000) {
-                    rc.resign();
-                }
+                // if (turnCount > 1000) {
+                //     rc.resign();
+                // }
 
                 if (isPrimaryHQ) {
                     for (int a = 14; a <= 18; a++) {
