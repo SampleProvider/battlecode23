@@ -1,4 +1,4 @@
-package SPAARK;
+package betterspawning;
 
 import battlecode.common.*;
 
