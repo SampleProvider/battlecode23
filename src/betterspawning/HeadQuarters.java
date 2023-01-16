@@ -143,7 +143,8 @@ public strictfp class HeadQuarters {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                             indicatorString.append("PROD LAU; ");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                            launcherCooldown = 5;
+                            launchers++;
+                            launcherCooldown = 4;
                         }
                     }
                 }

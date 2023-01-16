@@ -1,4 +1,4 @@
-package SPAARK;
+package betterspawning;
 
 import java.util.Arrays;
 
@@ -16,6 +16,8 @@ public strictfp class GlobalArray {
     public static final int AMPLIFIERS_LENGTH = 4;
     public static final int OPPONENTS = 21;
     public static final int OPPONENTS_LENGTH = 4;
+    public static final int CARRIERCOUNT = 25;
+    public static final int LAUNCHERCOUNT = 26;
 
     public static final int PRIORITIZED_RESOURCE_HQ1 = 0;
     public static final int PRIORITIZED_RESOURCE_HQ2 = 1;
@@ -27,8 +29,6 @@ public strictfp class GlobalArray {
     public static final int CONVERSION_WELL_ID = 7;
 
     private static final ResourceType[] resourceTypes = new ResourceType[] {ResourceType.NO_RESOURCE, ResourceType.ADAMANTIUM, ResourceType.MANA, ResourceType.ELIXIR};
-    private static final int adequateManaThreshold = 15;
-    private static final int adequateAdamantiumThreshold = 24;
     
     private final int[] currentState = new int[8];
 
@@ -36,8 +36,12 @@ public strictfp class GlobalArray {
      * Bits 0-5     x coordinate
      * Bits 6-11    y coordinate
      * Bit 12       presence marker
-     * Bits 13-14   resource type (none is headquarters)
-     * Bit 15       upgraded well
+     * Wells:
+     *  Bits 13-14  resource type
+     *  Bit 15      upgraded marker
+     * Headquarters:
+     *  Bit 13      adequate materials
+     *  Bits 14-15  mana-adamantium ratio
      */
 
     // general location/data parsing/writing
@@ -59,8 +63,8 @@ public strictfp class GlobalArray {
         return ((n >> 13) & 0b1) == 1;
     }
     public static void storeHeadquarters(HeadQuarters hq) throws GameActionException {
-        int ratio = (hq.adamantium == 0 ? 0 : Math.min((int) ((hq.mana / (hq.adamantium*1.2) * 3) + 1), 3));
-        int adequateResources = (((hq.adamantium - hq.lastAdamantium) > adequateAdamantiumThreshold && (hq.mana - hq.lastMana) > adequateManaThreshold) ? 1 : 0);
+        int ratio = (hq.adamantium == 0 ? 0 : Math.min((int) ((hq.mana / hq.adamantium * 3) + 1), 3));
+        int adequateResources = (((hq.adamantium - hq.lastAdamantium) >= 0 && (hq.mana - hq.lastMana) >= 0) ? 1 : 0);
         hq.rc.writeSharedArray(hq.hqIndex, (ratio << 14) | (adequateResources << 13) | intifyLocation(hq.me));
     }
     public static MapLocation[] getKnownHeadQuarterLocations(RobotController rc) throws GameActionException {
@@ -147,20 +151,26 @@ public strictfp class GlobalArray {
     }
     
     /*
-     * Bits 0-1     prioritized resource
-     * Bit 2        convert well
-     * Bit 3        upgrade wells
-     * Bits 4-5     id of elixir hq (where to drop elixir)
-     * bits 6-9     id of well to convert to elixir
+     * Bits 0-1     prioritized resource hq 1
+     * Bits 2-3     prioritized resource hq 2
+     * Bits 4-5     prioritized resource hq 3
+     * Bits 6-7     prioritized resource hq 4
+     * Bit 8        convert well
+     * Bit 9        upgrade wells
+     * Bits 10-11   id of elixir hq (where to drop elixir)
+     * bits 12-13   id of well to convert to elixir
      */
 
     // read game state
     public int[] parseGameState(int n) {
-        currentState[PRIORITIZED_RESOURCE_HQ1] = n & 0b11; // bits 0-1
-        currentState[CONVERT_WELL] = n >> 2 & 0b1; // bit 2
-        currentState[UPGRADE_WELLS] = n >> 3 & 0b1; // bit 3
-        currentState[ELIXIR_HQ_ID] = n >> 4 & 0b11; // bits 4-5
-        currentState[CONVERSION_WELL_ID] = n >> 6 & 0b111; // bits 6-8
+        currentState[PRIORITIZED_RESOURCE_HQ1] = (n) & 0b11; // bits 0-1
+        currentState[PRIORITIZED_RESOURCE_HQ2] = (n >> 2) & 0b11; // bits 2-3
+        currentState[PRIORITIZED_RESOURCE_HQ3] = (n >> 4) & 0b11; // bits 4-5
+        currentState[PRIORITIZED_RESOURCE_HQ4] = (n >> 6) & 0b11; // bits 6-7
+        currentState[CONVERT_WELL] = (n >> 8) & 0b1; // bit 8
+        currentState[UPGRADE_WELLS] = (n >> 9) & 0b1; // bit 9
+        currentState[ELIXIR_HQ_ID] = (n >> 10) & 0b11; // bits 10-11
+        currentState[CONVERSION_WELL_ID] = (n >> 12) & 0b11; // bits 12-13
         return currentState;
     }
     public ResourceType prioritizedResource() {
@@ -178,7 +188,14 @@ public strictfp class GlobalArray {
 
     // write game state
     public int getGameStateNumber() {
-        return (currentState[PRIORITIZED_RESOURCE_HQ1]) | (currentState[CONVERT_WELL] << 2) | (currentState[UPGRADE_WELLS] << 3) | (currentState[ELIXIR_HQ_ID] << 4) |( currentState[CONVERSION_WELL_ID] << 6);
+        return (currentState[PRIORITIZED_RESOURCE_HQ1])
+            | (currentState[PRIORITIZED_RESOURCE_HQ2] << 2)
+            | (currentState[PRIORITIZED_RESOURCE_HQ3] << 4)
+            | (currentState[PRIORITIZED_RESOURCE_HQ4] << 6)
+            | (currentState[CONVERT_WELL] << 8)
+            | (currentState[UPGRADE_WELLS] << 9)
+            | (currentState[ELIXIR_HQ_ID] << 10)
+            | (currentState[CONVERSION_WELL_ID] << 12);
     }
     public void setPrioritizedResource(ResourceType resource) {
         currentState[PRIORITIZED_RESOURCE_HQ1] = resource.resourceID;
