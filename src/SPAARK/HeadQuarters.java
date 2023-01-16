@@ -8,6 +8,7 @@ public strictfp class HeadQuarters {
     protected RobotController rc;
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
+    private int round = 0;
 
     private static final Random rng = new Random(2023);
 
@@ -87,7 +88,7 @@ public strictfp class HeadQuarters {
             try {
                 turnCount++;
                 me = rc.getLocation();
-                
+                round = rc.getRoundNum();
                 adamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 mana = rc.getResourceAmount(ResourceType.MANA);
 
@@ -96,11 +97,12 @@ public strictfp class HeadQuarters {
                 }
 
                 if (isPrimaryHQ) {
-                    for (int a = 0;a < 4;a++) {
-                        if (GlobalArray.hasLocation(rc.readSharedArray(14 + a))) {
-                            if ((rc.readSharedArray(14 + a) >> 15) == rc.getRoundNum() % 2) {
-                                rc.writeSharedArray(14 + a,0);
-                                System.out.println("Amplifier " + a + " died...");
+                    for (int a = 14; a <= 18; a++) {
+                        int arrAmp = rc.readSharedArray(a);
+                        if (GlobalArray.hasLocation(arrAmp)) {
+                            if ((arrAmp >> 15) == round % 2) {
+                                rc.writeSharedArray(a,0);
+                                System.out.println("Amplifier " + a + " unalived");
                             }
                         }
                     }

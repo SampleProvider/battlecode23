@@ -8,6 +8,7 @@ public strictfp class HeadQuarters {
     protected RobotController rc;
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
+    private int round = 0;
 
     private static final Random rng = new Random(2023);
 
@@ -82,11 +83,25 @@ public strictfp class HeadQuarters {
         while (true) {
             try {
                 me = rc.getLocation();
+                round = rc.getRoundNum();
                 adamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 mana = rc.getResourceAmount(ResourceType.MANA);
+                deltaResources = (int) ((0.5 * deltaResources) + (0.5 * (adamantium-lastAdamantium+mana-lastMana)));
+                // amplifiers
+                if (isPrimaryHQ) {
+                    for (int a = 14; a <= 18; a++) {
+                        int arrAmp = rc.readSharedArray(a);
+                        if (GlobalArray.hasLocation(arrAmp)) {
+                            if ((arrAmp >> 15) == round % 2) {
+                                rc.writeSharedArray(a,0);
+                                System.out.println("Amplifier " + a + " unalived");
+                            }
+                        }
+                    }
+                }
                 // try build anchors, otherwise bots
-                if (anchorCooldown <= 0 && rc.getRoundNum() >= 200 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
-                    if (rc.canBuildAnchor(Anchor.STANDARD)) {
+                if (anchorCooldown <= 0 && round >= 200 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
+                    if (adamantium > 100 && mana > 100) {
                         rc.buildAnchor(Anchor.STANDARD);
                         rc.setIndicatorString("Produced Anchor");
                         anchorCooldown = 70;
@@ -94,13 +109,13 @@ public strictfp class HeadQuarters {
                 } else {
                     MapLocation optimalSpawningLocationWell = optimalSpawnLocation(rc, me, true);
                     MapLocation optimalSpawningLocation = optimalSpawnLocation(rc, me, false);
-                    deltaResources = (int) ((0.5 * deltaResources) + (0.5 * (adamantium-lastAdamantium+mana-lastMana)));
-                    if (optimalSpawningLocationWell != null && (deltaResources < 40 || carrierCooldown <= 0) && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations > 3) {
+                    System.out.println(deltaResources);
+                    if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && (deltaResources < 20 || carrierCooldown <= 0) && round >= 20 && possibleSpawningLocations >= 3) {
                         rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                         rc.setIndicatorString("Produced Carrier");
                         rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                         carrierCooldown = 10;
-                    } else if (optimalSpawningLocation != null && possibleSpawningLocations > 6) {
+                    } else if (optimalSpawningLocation != null && possibleSpawningLocations >= 5) {
                         boolean canProduceAmplifier = false;
                         for (int a = 14; a <= 18; a++) {
                             if (((rc.readSharedArray(a) >> 14) & 0b1) == 0) {
@@ -111,7 +126,7 @@ public strictfp class HeadQuarters {
                             rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                             rc.setIndicatorString("Produced Amplifier");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                        }  else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && (launchers < 30 || launcherCooldown <= 0)) {
+                        } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && (launchers < 30 || launcherCooldown <= 0)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                             rc.setIndicatorString("Produced Launcher");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
@@ -158,7 +173,7 @@ public strictfp class HeadQuarters {
                         globalArray.setPrioritizedResource(ResourceType.ADAMANTIUM);
                     }
                     // set target elixir well
-                    if (rc.getRoundNum() > 200 && !setTargetElixirWell) {
+                    if (round > 200 && !setTargetElixirWell) {
                         // setTargetElixirWell();
                     }
                     // save game state

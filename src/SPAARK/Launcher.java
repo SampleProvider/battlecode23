@@ -11,6 +11,7 @@ public strictfp class Launcher {
     protected RobotController rc;
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
+    private int round = 0;
 
     private static final Random rng = new Random(2023);
 
@@ -91,6 +92,7 @@ public strictfp class Launcher {
         while (true) {
             try {
                 me = rc.getLocation();
+                round = rc.getRoundNum();
                 prioritizedRobotInfoLocation = Attack.attack(rc, me, prioritizedRobotType, true);
 
                 if (rc.canWriteSharedArray(0, 0)) {

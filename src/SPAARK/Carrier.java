@@ -11,6 +11,7 @@ public strictfp class Carrier {
     protected RobotController rc;
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
+    private int round = 0;
 
     private static final Random rng = new Random(2023);
     
@@ -85,6 +86,7 @@ public strictfp class Carrier {
         while (true) {
             try {
                 me = rc.getLocation();
+                round = rc.getRoundNum();
                 adamantiumAmount = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 manaAmount = rc.getResourceAmount(ResourceType.MANA);
                 elixirAmount = rc.getResourceAmount(ResourceType.ELIXIR);
