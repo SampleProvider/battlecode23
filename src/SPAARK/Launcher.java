@@ -317,7 +317,6 @@ public strictfp class Launcher {
                             }
                             headquarterCircleRange = 16 + surroundingLaunchers / 3;
                             if (opponentLocation != null) {
-                                indicatorString.append("ATK-" + opponentLocation.toString() + "; ");
                                 rc.setIndicatorLine(me, opponentLocation, 255, 125, 25);
                                 clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation, indicatorString);
                                 me = rc.getLocation();

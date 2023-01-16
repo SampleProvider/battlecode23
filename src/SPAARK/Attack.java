@@ -34,7 +34,7 @@ public class Attack {
             }
             if (prioritizedRobotInfoLocation != null) {
                 if (rc.canAttack(prioritizedRobotInfoLocation)) {
-                    indicatorString.append("ATK");
+                    indicatorString.append("ATK-" + prioritizedRobotInfoLocation.toString() + "; ");
                     rc.attack(prioritizedRobotInfoLocation);
                 }
             }
