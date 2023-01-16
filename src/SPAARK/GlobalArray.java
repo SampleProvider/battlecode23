@@ -18,19 +18,19 @@ public strictfp class GlobalArray {
     public static final int OPPONENTS_LENGTH = 4;
 
     public static final int PRIORITIZED_RESOURCE_HQ1 = 0;
-    public static final int PRIORITIZED_RESOURCE_HQ2 = 2;
-    public static final int PRIORITIZED_RESOURCE_HQ3 = 4;
-    public static final int PRIORITIZED_RESOURCE_HQ4 = 6;
-    public static final int CONVERT_WELL = 8;
-    public static final int UPGRADE_WELLS = 9;
-    public static final int ELIXIR_HQ_ID = 10;
-    public static final int CONVERSION_WELL_ID = 12;
+    public static final int PRIORITIZED_RESOURCE_HQ2 = 1;
+    public static final int PRIORITIZED_RESOURCE_HQ3 = 2;
+    public static final int PRIORITIZED_RESOURCE_HQ4 = 3;
+    public static final int CONVERT_WELL = 4;
+    public static final int UPGRADE_WELLS = 5;
+    public static final int ELIXIR_HQ_ID = 6;
+    public static final int CONVERSION_WELL_ID = 7;
 
     private static final ResourceType[] resourceTypes = new ResourceType[] {ResourceType.NO_RESOURCE, ResourceType.ADAMANTIUM, ResourceType.MANA, ResourceType.ELIXIR};
     private static final int adequateManaThreshold = 15;
     private static final int adequateAdamantiumThreshold = 24;
     
-    private final int[] currentState = new int[5];
+    private final int[] currentState = new int[8];
 
     /*
      * Bits 0-5     x coordinate

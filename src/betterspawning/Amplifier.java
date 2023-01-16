@@ -10,8 +10,6 @@ public strictfp class Amplifier {
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
-    private final Random rng = new Random(2023);
-
     private final Direction[] directions = {
         Direction.SOUTHWEST,
         Direction.SOUTH,
@@ -35,32 +33,34 @@ public strictfp class Amplifier {
     private int amplifierArray;
     protected int amplifierID = 0;
 
+    protected StringBuilder indicatorString = new StringBuilder();
+
     public Amplifier(RobotController rc) {
         try {
             this.rc = rc;
-            rc.setIndicatorString("Initializing");
             int hqCount = 0;
-            for (int i = 1; i <= 4; i++) {
+            for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
                 if (GlobalArray.hasLocation(rc.readSharedArray(i)))
                     hqCount++;
             }
             headquarters = new MapLocation[hqCount];
             for (int i = 0; i < hqCount; i++) {
-                headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + 1));
+                headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
             }
+            round = rc.getRoundNum();
             int locInt = GlobalArray.intifyLocation(rc.getLocation());
-            if (!GlobalArray.hasLocation(rc.readSharedArray(14))) {
-                rc.writeSharedArray(14, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
-                amplifierID = 14;
-            } else if (!GlobalArray.hasLocation(rc.readSharedArray(15))) {
-                rc.writeSharedArray(15, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
-                amplifierID = 15;
-            } else if (!GlobalArray.hasLocation(rc.readSharedArray(16))) {
-                rc.writeSharedArray(16, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
-                amplifierID = 16;
-            } else if (!GlobalArray.hasLocation(rc.readSharedArray(17))) {
-                rc.writeSharedArray(17, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
-                amplifierID = 17;
+            if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.AMPLIFIERS))) {
+                rc.writeSharedArray(GlobalArray.AMPLIFIERS, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
+                amplifierID = GlobalArray.AMPLIFIERS;
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.AMPLIFIERS + 1))) {
+                rc.writeSharedArray(GlobalArray.AMPLIFIERS + 1, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
+                amplifierID = GlobalArray.AMPLIFIERS + 1;
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.AMPLIFIERS + 2))) {
+                rc.writeSharedArray(GlobalArray.AMPLIFIERS + 2, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
+                amplifierID = GlobalArray.AMPLIFIERS + 2;
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.AMPLIFIERS + 3))) {
+                rc.writeSharedArray(GlobalArray.AMPLIFIERS + 3, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
+                amplifierID = GlobalArray.AMPLIFIERS + 3;
             } else {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
             }
@@ -72,9 +72,8 @@ public strictfp class Amplifier {
             System.out.println("Exception at Amplifier constructor");
             e.printStackTrace();
         } finally {
-            // Clock.yield();
+            run();
         }
-        run();
     }
     
     public void run() {
@@ -91,7 +90,11 @@ public strictfp class Amplifier {
                         }
                     }
                 }
+
+                indicatorString = new StringBuilder();
+
                 if (me.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) <= centerRange) {
+                    indicatorString.append("CENT; ");
                     arrivedAtCenter = true;
                 }
                 RobotInfo[] robotInfo = rc.senseNearbyRobots();
@@ -130,11 +133,13 @@ public strictfp class Amplifier {
                             }
                         }
                     }
+                    indicatorString.append("LAU=" + surroundingLaunchers + "; ");
                     if (prioritizedRobotInfoLocation != null) {
                         opponentLocation = prioritizedRobotInfoLocation;
                         if (surroundingLaunchers >= 15) {
                             if (rc.getMovementCooldownTurns() <= 5) {
-                                Motion.bug(rc, opponentLocation);
+                                indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
+                                Motion.bug(rc, opponentLocation, indicatorString);
                             }
                         }
                         else {
@@ -144,7 +149,8 @@ public strictfp class Amplifier {
                     }
                     else {
                         if (arrivedAtCenter && opponentLocation != null && surroundingLaunchers >= 15) {
-                            Motion.bug(rc, opponentLocation);
+                            indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
+                            Motion.bug(rc, opponentLocation, indicatorString);
                         }
                         else {
                             Motion.spreadCenter(rc, me);
@@ -164,14 +170,15 @@ public strictfp class Amplifier {
                     rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(me), 15, round % 2));
                 }
                 // Motion.moveRandomly(rc);
-                rc.setIndicatorString("Amplifier " + amplifierID);
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Amplifier");
                 e.printStackTrace();
-            // } catch (Exception e) {
-            //     System.out.println("Exception at Amplifier");
-            //     e.printStackTrace();
+            } catch (Exception e) {
+                System.out.println("Exception at Amplifier");
+                e.printStackTrace();
             } finally {
+                indicatorString.append("AMPID=" + amplifierID + "; ");
+                rc.setIndicatorString(indicatorString.toString());
                 Clock.yield();
             }
         }
