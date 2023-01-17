@@ -150,7 +150,7 @@ public strictfp class Carrier {
 
             if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
                 indicatorString.append("PATH->HQ; ");
-                Motion.bug(rc, prioritizedHeadquarters, indicatorString);
+                clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation, indicatorString);
                 if (prioritizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
                     attemptTransfer();
                 }
@@ -420,7 +420,7 @@ public strictfp class Carrier {
         else if (state == 4) {
             updatePrioritizedHeadquarters();
             indicatorString.append("RETREAT; ");
-            Motion.bug(rc, prioritizedHeadquarters, indicatorString);
+            clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation, indicatorString);
             if (prioritizedHeadquarters.distanceSquaredTo(me) <= RobotType.HEADQUARTERS.visionRadiusSquared) {
                 attemptTransfer();
                 state = 0;
