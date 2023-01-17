@@ -2,8 +2,6 @@ package SPAARK;
 
 import battlecode.common.*;
 
-import java.util.Random;
-
 public strictfp class Amplifier {
     protected RobotController rc;
     protected MapLocation me;
