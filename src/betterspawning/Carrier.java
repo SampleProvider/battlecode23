@@ -32,6 +32,7 @@ public strictfp class Carrier {
     private MapLocation prioritizedWell;
     private MapLocation[] headquarters;
     private MapLocation prioritizedHeadquarters;
+    private int prioritizedHeadquarterIndex;
 
     private WellInfo[] seenWells = new WellInfo[4];
     private int seenWellIndex = 0;
@@ -86,8 +87,8 @@ public strictfp class Carrier {
                 manaAmount = rc.getResourceAmount(ResourceType.MANA);
                 elixirAmount = rc.getResourceAmount(ResourceType.ELIXIR);
 
-                // globalArray.parseGameState(rc.readSharedArray(0));
-                // prioritizedResourceType = globalArray.prioritizedResource();
+                globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
+                prioritizedResourceType = globalArray.prioritizedResource(prioritizedHeadquarterIndex);
 
                 indicatorString = new StringBuilder();
 
@@ -458,10 +459,11 @@ public strictfp class Carrier {
 
     private void updatePrioritizedHeadquarters() throws GameActionException {
         prioritizedHeadquarters = headquarters[0];
-        for (MapLocation hq : headquarters) {
-            if (hq != null) {
-                if (prioritizedHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
-                    prioritizedHeadquarters = hq;
+        for (int i = 0; i < 4; i++) {
+            if (headquarters[i] != null) {
+                if (prioritizedHeadquarters.distanceSquaredTo(me) > headquarters[i].distanceSquaredTo(me)) {
+                    prioritizedHeadquarters = headquarters[i];
+                    prioritizedHeadquarterIndex = i;
                 }
             }
         }

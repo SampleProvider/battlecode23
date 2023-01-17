@@ -108,7 +108,6 @@ public strictfp class Launcher {
                 }
 
                 if (rc.canWriteSharedArray(0, 0)) {
-                    rc.writeSharedArray(GlobalArray.LAUNCHERCOUNT, rc.readSharedArray(GlobalArray.LAUNCHERCOUNT)+1);
                     for (int i = 0;i < 4;i++) {
                         if (seenWells[i] != null) {
                             if (GlobalArray.storeWell(rc, seenWells[i])) {
