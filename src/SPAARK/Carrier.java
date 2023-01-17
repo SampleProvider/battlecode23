@@ -2,8 +2,6 @@ package SPAARK;
 
 import battlecode.common.*;
 
-import java.util.Random;
-
 public strictfp class Carrier {
     protected RobotController rc;
     protected MapLocation me;
@@ -87,7 +85,7 @@ public strictfp class Carrier {
                 manaAmount = rc.getResourceAmount(ResourceType.MANA);
                 elixirAmount = rc.getResourceAmount(ResourceType.ELIXIR);
 
-                // globalArray.parseGameState(rc.readSharedArray(0));
+                // globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
                 // prioritizedResourceType = globalArray.prioritizedResource();
 
                 indicatorString = new StringBuilder();

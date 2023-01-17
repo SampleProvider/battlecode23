@@ -2,8 +2,6 @@ package SPAARK;
 
 import battlecode.common.*;
 
-import java.util.Random;
-
 public strictfp class Amplifier {
     protected RobotController rc;
     protected MapLocation me;
@@ -68,7 +66,7 @@ public strictfp class Amplifier {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
             }
         } catch (GameActionException e) {
-            System.out.println("GameActionException at Carrier constructor");
+            System.out.println("GameActionException at Amplifier constructor");
             e.printStackTrace();
             return;
         } catch (Exception e) {

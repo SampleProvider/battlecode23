@@ -125,6 +125,7 @@ public strictfp class HeadQuarters {
                                 canProduceAmplifier = true;
                             }
                         }
+                        indicatorString.append("CAN-PROD-AMP=" + canProduceAmplifier + "; ");
                         if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && launchers > 20 && canProduceAmplifier) {
                             rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                             indicatorString.append("PROD AMP; ");
