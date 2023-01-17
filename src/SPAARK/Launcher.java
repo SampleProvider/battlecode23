@@ -38,7 +38,7 @@ public strictfp class Launcher {
     
     private int defenseRange = 64;
     private int edgeRange = 4;
-    private boolean[] invalidOpponentLocations = new boolean[4];
+    private boolean[] invalidOpponentLocations = new boolean[GlobalArray.OPPONENTS_LENGTH];
 
     private int centerRange = 2;
     private boolean arrivedAtCenter = false;
@@ -78,7 +78,6 @@ public strictfp class Launcher {
                 headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
             }
             state = 3;
-            state = 0;
         } catch (GameActionException e) {
             System.out.println("GameActionException at Launcher constructor");
             e.printStackTrace();
