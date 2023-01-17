@@ -10,19 +10,6 @@ public strictfp class HeadQuarters {
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
-    private static final Random rng = new Random(2023);
-
-    private static final Direction[] directions = {
-        Direction.SOUTHWEST,
-        Direction.SOUTH,
-        Direction.SOUTHEAST,
-        Direction.WEST,
-        Direction.EAST,
-        Direction.NORTHWEST,
-        Direction.NORTH,
-        Direction.NORTHEAST,
-    };
-
     protected int hqIndex;
     private int locInt;
     private int hqCount;
@@ -30,6 +17,7 @@ public strictfp class HeadQuarters {
     private int anchorCooldown = 0;
     private int carrierCooldown = 0;
     private int launcherCooldown = 0;
+    private int carriers = 0;
     private int launchers = 0;
 
     private int possibleSpawningLocations = 0;
@@ -83,7 +71,7 @@ public strictfp class HeadQuarters {
                 round = rc.getRoundNum();
                 adamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 mana = rc.getResourceAmount(ResourceType.MANA);
-                deltaResources = (int) ((0.5 * deltaResources) + (0.5 * (adamantium-lastAdamantium+mana-lastMana)));
+                deltaResources = (int) ((0.8 * deltaResources) + (0.2 * (adamantium-lastAdamantium+mana-lastMana)));
 
                 indicatorString = new StringBuilder();
 
@@ -95,7 +83,7 @@ public strictfp class HeadQuarters {
                         if (GlobalArray.hasLocation(arrAmp)) {
                             if ((arrAmp >> 15) == round % 2) {
                                 rc.writeSharedArray(a,0);
-                                indicatorString.append("AMP " + a + " die; ");
+                                indicatorString.append("AMP " + (a - GlobalArray.AMPLIFIERS) + " die; ");
                             }
                         }
                     }
@@ -110,7 +98,7 @@ public strictfp class HeadQuarters {
                         anchorCooldown = 70;
                     } else {
                         indicatorString.append("TRY PROD ANC; ");
-                        if (adamantium > 160 && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && (deltaResources < 20 || carrierCooldown <= 0) && possibleSpawningLocations >= 3) {
+                        if (adamantium > 160 && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && (deltaResources < 20 || carriers < 30 || carrierCooldown <= 0) && possibleSpawningLocations >= 3) {
                             rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                             indicatorString.append("PROD CAR; ");
                             rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
@@ -123,15 +111,15 @@ public strictfp class HeadQuarters {
                         }
                     }
                 } else {
-                    if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && (deltaResources < 20 || carrierCooldown <= 0) && round >= 5 && possibleSpawningLocations >= 3) {
+                    if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && (deltaResources < 5 || carrierCooldown <= 0) && round > 3 && possibleSpawningLocations >= 3) {
                         rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                         indicatorString.append("PROD CAR; ");
                         rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
-                        carrierCooldown = 10;
+                        carrierCooldown = 20;
                     } else if (optimalSpawningLocation != null && possibleSpawningLocations >= 5) {
                         boolean canProduceAmplifier = false;
-                        for (int a = 14; a <= 18; a++) {
-                            if (((rc.readSharedArray(a) >> 14) & 0b1) == 0) {
+                        for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS_LENGTH; a++) {
+                            if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
                                 canProduceAmplifier = true;
                             }
                         }

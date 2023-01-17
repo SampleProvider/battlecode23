@@ -17,15 +17,15 @@ public class Motion {
         Direction.NORTHEAST,
     };
     private static final String[] DIRABBREV = {
-        "SW",
-        "S",
-        "SE",
+        "C",
         "W",
-        "E",
         "NW",
         "N",
         "NE",
-        "C"
+        "E",
+        "SE",
+        "S",
+        "SW",
     };
 
     protected static void moveRandomly(RobotController rc) throws GameActionException {
