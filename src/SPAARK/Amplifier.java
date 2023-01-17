@@ -33,6 +33,9 @@ public strictfp class Amplifier {
     private int amplifierArray;
     protected int amplifierID = 0;
 
+    private boolean clockwiseRotation = true;
+    private Direction lastDirection = Direction.CENTER;
+
     protected StringBuilder indicatorString = new StringBuilder();
 
     public Amplifier(RobotController rc) {
@@ -139,7 +142,11 @@ public strictfp class Amplifier {
                         if (surroundingLaunchers >= 15) {
                             if (rc.getMovementCooldownTurns() <= 5) {
                                 indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
-                                Motion.bug(rc, opponentLocation, indicatorString);
+                                Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
+                                lastDirection = bug2array[0];
+                                if (bug2array[1] == Direction.CENTER) {
+                                    clockwiseRotation = !clockwiseRotation;
+                                }
                             }
                         }
                         else {
@@ -150,7 +157,11 @@ public strictfp class Amplifier {
                     else {
                         if (arrivedAtCenter && opponentLocation != null && surroundingLaunchers >= 15) {
                             indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
-                            Motion.bug(rc, opponentLocation, indicatorString);
+                            Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
+                            lastDirection = bug2array[0];
+                            if (bug2array[1] == Direction.CENTER) {
+                                clockwiseRotation = !clockwiseRotation;
+                            }
                         }
                         else {
                             Motion.spreadCenter(rc, me);
@@ -161,7 +172,11 @@ public strictfp class Amplifier {
                 }
                 else {
                     // if (arrivedAtCenter && opponentLocation != null) {
-                    //     Motion.bug(rc, opponentLocation);
+                    // Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
+                    // lastDirection = bug2array[0];
+                    // if (bug2array[1] == Direction.CENTER) {
+                    //     clockwiseRotation = !clockwiseRotation;
+                    // }
                     // }
                     // else {
                     Motion.spreadCenter(rc, me);

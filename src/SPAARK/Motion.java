@@ -330,55 +330,6 @@ public class Motion {
         }
     }
 
-    protected static void bug(RobotController rc, MapLocation dest, StringBuilder indicatorString) throws GameActionException {
-        Direction lastDirection = Direction.CENTER;
-        while (rc.isMovementReady()) {
-            MapLocation me = rc.getLocation();
-            if (me.equals(dest)) {
-                return;
-            }
-            Direction direction = me.directionTo(dest);
-            if (rc.canMove(direction)) {
-                rc.move(direction);
-                lastDirection = direction;
-            }
-            else {
-                indicatorString.append("BUG-DIR=" + DIRABBREV[direction.getDirectionOrderNum()] + "; ");
-                if (rc.canMove(direction.rotateLeft()) && lastDirection != direction.rotateLeft().opposite()) {
-                    rc.move(direction.rotateLeft());
-                    lastDirection = direction.rotateLeft();
-                }
-                else if (rc.canMove(direction.rotateLeft().rotateLeft()) && lastDirection != direction.rotateLeft().rotateLeft().opposite()) {
-                    rc.move(direction.rotateLeft().rotateLeft());
-                    lastDirection = direction.rotateLeft().rotateLeft();
-                }
-                else if (rc.canMove(direction.rotateLeft().rotateLeft().rotateLeft()) && lastDirection != direction.rotateLeft().rotateLeft().rotateLeft().opposite()) {
-                    rc.move(direction.rotateLeft().rotateLeft().rotateLeft());
-                    lastDirection = direction.rotateLeft().rotateLeft().rotateLeft();
-                }
-                else if (rc.canMove(direction.rotateLeft().rotateLeft().rotateLeft().rotateLeft()) && lastDirection != direction.rotateLeft().rotateLeft().rotateLeft().rotateLeft().opposite()) {
-                    rc.move(direction.rotateLeft().rotateLeft().rotateLeft().rotateLeft());
-                    lastDirection = direction.rotateLeft().rotateLeft().rotateLeft().rotateLeft();
-                }
-                else if (rc.canMove(direction.rotateRight()) && lastDirection != direction.rotateRight().opposite()) {
-                    rc.move(direction.rotateRight());
-                    lastDirection = direction.rotateRight();
-                }
-                else if (rc.canMove(direction.rotateRight().rotateRight()) && lastDirection != direction.rotateRight().rotateRight().opposite()) {
-                    rc.move(direction.rotateRight().rotateRight());
-                    lastDirection = direction.rotateRight().rotateRight();
-                }
-                else if (rc.canMove(direction.rotateRight().rotateRight().rotateRight()) && lastDirection != direction.rotateRight().rotateRight().rotateRight().opposite()) {
-                    rc.move(direction.rotateRight().rotateRight().rotateRight());
-                    lastDirection = direction.rotateRight().rotateRight().rotateRight();
-                }
-                else if (rc.canMove(direction.opposite()) && lastDirection != direction) {
-                    rc.move(direction.opposite());
-                    lastDirection = direction.opposite();
-                }
-            }
-        }
-    }
     protected static boolean bug(RobotController rc, MapLocation dest, boolean clockwiseRotation, StringBuilder indicatorString) throws GameActionException {
         Direction lastDirection = Direction.CENTER;
         while (rc.isMovementReady()) {
@@ -409,10 +360,22 @@ public class Motion {
                     else if (rc.canMove(direction.opposite()) && lastDirection != direction) {
                         rc.move(direction.opposite());
                         lastDirection = direction.opposite();
-                        clockwiseRotation = !clockwiseRotation;
+                        // clockwiseRotation = !clockwiseRotation;
                     }
                     else {
                         clockwiseRotation = !clockwiseRotation;
+                        if (rc.canMove(direction.rotateRight()) && lastDirection != direction.rotateRight().opposite()) {
+                            rc.move(direction.rotateRight());
+                            lastDirection = direction.rotateRight();
+                        }
+                        else if (rc.canMove(direction.rotateRight().rotateRight()) && lastDirection != direction.rotateRight().rotateRight().opposite()) {
+                            rc.move(direction.rotateRight().rotateRight());
+                            lastDirection = direction.rotateRight().rotateRight();
+                        }
+                        else if (rc.canMove(direction.rotateRight().rotateRight().rotateRight()) && lastDirection != direction.rotateRight().rotateRight().rotateRight().opposite()) {
+                            rc.move(direction.rotateRight().rotateRight().rotateRight());
+                            lastDirection = direction.rotateRight().rotateRight().rotateRight();
+                        }
                     }
                 }
                 else {
@@ -435,10 +398,114 @@ public class Motion {
                     }
                     else {
                         clockwiseRotation = !clockwiseRotation;
+                        if (rc.canMove(direction.rotateLeft()) && lastDirection != direction.rotateLeft().opposite()) {
+                            rc.move(direction.rotateLeft());
+                            lastDirection = direction.rotateLeft();
+                        }
+                        else if (rc.canMove(direction.rotateLeft().rotateLeft()) && lastDirection != direction.rotateLeft().rotateLeft().opposite()) {
+                            rc.move(direction.rotateLeft().rotateLeft());
+                            lastDirection = direction.rotateLeft().rotateLeft();
+                        }
+                        else if (rc.canMove(direction.rotateLeft().rotateLeft().rotateLeft()) && lastDirection != direction.rotateLeft().rotateLeft().rotateLeft().opposite()) {
+                            rc.move(direction.rotateLeft().rotateLeft().rotateLeft());
+                            lastDirection = direction.rotateLeft().rotateLeft().rotateLeft();
+                        }
                     }
                 }
             }
         }
         return clockwiseRotation;
+    }
+    protected static Direction[] bug2(RobotController rc, MapLocation dest, Direction lastDirection, boolean clockwiseRotation, StringBuilder indicatorString) throws GameActionException {
+        boolean oldClockwiseRotation = clockwiseRotation;
+        while (rc.isMovementReady()) {
+            MapLocation me = rc.getLocation();
+            if (me.equals(dest)) {
+                return new Direction[]{Direction.CENTER,null};
+            }
+            Direction direction = me.directionTo(dest);
+            boolean moved = false;
+            if (rc.canMove(direction) && lastDirection != direction.opposite()) {
+                boolean touchingTheWallBefore = false;
+                for (int i = -1;i <= 1;i++) {
+                    for (int j = -1;j <= 1;j++) {
+                        if (rc.onTheMap(me.translate(i,j))) {
+                            if (rc.sensePassability(me.translate(i,j)) == false) {
+                                touchingTheWallBefore = true;
+                            }
+                        }
+                    }
+                }
+                rc.move(direction);
+                lastDirection = direction;
+                // boolean touchingTheWallAfter = false;
+                // for (int i = -1;i <= 1;i++) {
+                //     for (int j = -1;j <= 1;j++) {
+                //         if (rc.onTheMap(me.translate(i,j))) {
+                //             if (rc.sensePassability(me.translate(i,j)) == false) {
+                //                 touchingTheWallAfter = true;
+                //             }
+                //         }
+                //     }
+                // }
+                if (touchingTheWallBefore) {
+                    clockwiseRotation = !clockwiseRotation;
+                }
+                continue;
+            }
+            if (clockwiseRotation) {
+                for (int i = 0;i < 7;i++) {
+                    direction = direction.rotateLeft();
+                    int f = bug2f(rc, direction, lastDirection);
+                    if (f == 1) {
+                        lastDirection = direction;
+                        moved = true;
+                        break;
+                    }
+                    else if (f == 2) {
+                        lastDirection = Direction.CENTER;
+                        clockwiseRotation = !clockwiseRotation;
+                        moved = true;
+                        break;
+                    }
+                }
+            }
+            else {
+                for (int i = 0;i < 7;i++) {
+                    direction = direction.rotateRight();
+                    int f = bug2f(rc, direction, lastDirection);
+                    if (f == 1) {
+                        lastDirection = direction;
+                        moved = true;
+                        break;
+                    }
+                    else if (f == 2) {
+                        lastDirection = Direction.CENTER;
+                        clockwiseRotation = !clockwiseRotation;
+                        moved = true;
+                        break;
+                    }
+                }
+            }
+            if (moved == false) {
+                lastDirection = Direction.CENTER;
+                break;
+            }
+        }
+        indicatorString.append("BUG-LAST-DIR=" + DIRABBREV[lastDirection.getDirectionOrderNum()] + "; BUG-CW=" + clockwiseRotation + "; ");
+        if (oldClockwiseRotation != clockwiseRotation) {
+            return new Direction[]{lastDirection,Direction.CENTER};
+        }
+        return new Direction[]{lastDirection,null};
+    }
+    private static int bug2f(RobotController rc, Direction direction, Direction lastDirection) throws GameActionException {
+        if (rc.canMove(direction) && lastDirection != direction.opposite()) {
+            rc.move(direction);
+            return 1;
+        }
+        if (!rc.onTheMap(rc.getLocation().translate(direction.dx, direction.dy))) {
+            return 2;
+        }
+        return 0;
     }
 }

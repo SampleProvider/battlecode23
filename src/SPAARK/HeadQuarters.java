@@ -89,6 +89,16 @@ public strictfp class HeadQuarters {
 
                 MapLocation optimalSpawningLocationWell = optimalSpawnLocation(rc, me, true);
                 MapLocation optimalSpawningLocation = optimalSpawnLocation(rc, me, false);
+                // if (round > 500) {
+                //     rc.resign();
+                // }
+                // if (round == 1) {
+                //     rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
+                // }
+                // else {
+                //     Clock.yield();
+                //     continue;
+                // }
                 if (anchorCooldown <= 0 && round >= 200 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
                     if (adamantium >= 100 && mana >= 100) {
                         rc.buildAnchor(Anchor.STANDARD);

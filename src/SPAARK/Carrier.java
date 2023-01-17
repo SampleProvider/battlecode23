@@ -40,6 +40,7 @@ public strictfp class Carrier {
     private MapLocation opponentLocation;
 
     private boolean clockwiseRotation = true;
+    private Direction lastDirection = Direction.CENTER;
 
     private int lastHealth = 0;
 
@@ -150,7 +151,11 @@ public strictfp class Carrier {
 
             if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
                 indicatorString.append("PATH->HQ; ");
-                clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation, indicatorString);
+                Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, indicatorString);
+                lastDirection = bug2array[0];
+                if (bug2array[1] == Direction.CENTER) {
+                    clockwiseRotation = !clockwiseRotation;
+                }
                 if (prioritizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
                     attemptTransfer();
                 }
@@ -365,7 +370,11 @@ public strictfp class Carrier {
                 return;
             }
             indicatorString.append("PATH->WELL; ");
-            clockwiseRotation = Motion.bug(rc, prioritizedWell, clockwiseRotation, indicatorString);
+            Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, indicatorString);
+            lastDirection = bug2array[0];
+            if (bug2array[1] == Direction.CENTER) {
+                clockwiseRotation = !clockwiseRotation;
+            }
             attemptCollection();
             me = rc.getLocation();
             rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
@@ -400,7 +409,11 @@ public strictfp class Carrier {
                 }
             }
             if (prioritizedIslandLocation != null) {
-                clockwiseRotation = Motion.bug(rc, prioritizedIslandLocation, clockwiseRotation, indicatorString);
+                Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, indicatorString);
+                lastDirection = bug2array[0];
+                if (bug2array[1] == Direction.CENTER) {
+                    clockwiseRotation = !clockwiseRotation;
+                }
                 me = rc.getLocation();
                 if (rc.canPlaceAnchor()) {
                     if (rc.senseTeamOccupyingIsland(rc.senseIsland(me)) == Team.NEUTRAL) {
@@ -420,7 +433,11 @@ public strictfp class Carrier {
         else if (state == 4) {
             updatePrioritizedHeadquarters();
             indicatorString.append("RETREAT; ");
-            clockwiseRotation = Motion.bug(rc, prioritizedHeadquarters, clockwiseRotation, indicatorString);
+            Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, indicatorString);
+            lastDirection = bug2array[0];
+            if (bug2array[1] == Direction.CENTER) {
+                clockwiseRotation = !clockwiseRotation;
+            }
             if (prioritizedHeadquarters.distanceSquaredTo(me) <= RobotType.HEADQUARTERS.visionRadiusSquared) {
                 attemptTransfer();
                 state = 0;
