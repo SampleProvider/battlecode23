@@ -87,6 +87,8 @@ public strictfp class HeadQuarters {
                             }
                         }
                     }
+                    rc.writeSharedArray(GlobalArray.CARRIERCOUNT, 0);
+                    rc.writeSharedArray(GlobalArray.LAUNCHERCOUNT, 0);
                 }
                 // try build anchors, otherwise bots
                 MapLocation optimalSpawningLocationWell = optimalSpawnLocation(rc, me, true);

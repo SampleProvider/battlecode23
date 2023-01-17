@@ -92,6 +92,7 @@ public strictfp class Carrier {
                 indicatorString = new StringBuilder();
 
                 if (rc.canWriteSharedArray(0, 0)) {
+                    rc.writeSharedArray(GlobalArray.CARRIERCOUNT, rc.readSharedArray(GlobalArray.CARRIERCOUNT)+1);
                     for (int i = 0;i < 4;i++) {
                         if (seenWells[i] != null) {
                             if (GlobalArray.storeWell(rc, seenWells[i])) {
