@@ -1,17 +1,18 @@
-package SPAARK_1_13_2023;
+package SPAARK_1_16_2023;
 
 import battlecode.common.*;
 
 public strictfp class Destabilizer {
-    private RobotController rc;
-    private MapLocation me;
+    protected RobotController rc;
+    protected MapLocation me;
+    private GlobalArray globalArray = new GlobalArray();
+    private int round = 0;
 
-    private static int turnCount = 0;
+    protected StringBuilder indicatorString = new StringBuilder();
 
     public Destabilizer(RobotController rc) {
         try {
             this.rc = rc;
-            rc.setIndicatorString("Initializing");
         // } catch (GameActionException e) {
         //     System.out.println("GameActionException at Destabilizer constructor");
         //     e.printStackTrace();
@@ -19,16 +20,17 @@ public strictfp class Destabilizer {
             System.out.println("Exception at Destabilizer constructor");
             e.printStackTrace();
         } finally {
-            Clock.yield();
+            run();
         }
-        run();
     }
 
-    public void run() {
+    private void run() {
         while (true) {
             try {
+                me = rc.getLocation();
+                round = rc.getRoundNum();
+                indicatorString = new StringBuilder();
                 // code
-                turnCount++;
             // } catch (GameActionException e) {
             //     System.out.println("GameActionException at Destabilizer");
             //     e.printStackTrace();
@@ -36,6 +38,7 @@ public strictfp class Destabilizer {
                 System.out.println("Exception at Destabilizer");
                 e.printStackTrace();
             } finally {
+                rc.setIndicatorString(indicatorString.toString());
                 Clock.yield();
             }
         }

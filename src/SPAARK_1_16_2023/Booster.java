@@ -1,18 +1,18 @@
-package SPORK;
+package SPAARK_1_16_2023;
 
 import battlecode.common.*;
 
 public strictfp class Booster {
-    private RobotController rc;
-    private MapLocation me;
-    GlobalArray gArray = new GlobalArray();
+    protected RobotController rc;
+    protected MapLocation me;
+    private GlobalArray globalArray = new GlobalArray();
+    private int round = 0;
 
-    private static int turnCount = 0;
+    protected StringBuilder indicatorString = new StringBuilder();
 
     public Booster(RobotController rc) {
         try {
             this.rc = rc;
-            rc.setIndicatorString("Initializing");
         // } catch (GameActionException e) {
         //     System.out.println("GameActionException at Booster constructor");
         //     e.printStackTrace();
@@ -20,16 +20,17 @@ public strictfp class Booster {
             System.out.println("Exception at Booster constructor");
             e.printStackTrace();
         } finally {
-            Clock.yield();
+            run();
         }
-        run();
     }
     
-    public void run() {
+    private void run() {
         while (true) {
             try {
+                me = rc.getLocation();
+                round = rc.getRoundNum();
+                indicatorString = new StringBuilder();
                 // code
-                turnCount++;
             // } catch (GameActionException e) {
             //     System.out.println("GameActionException at Booster");
             //     e.printStackTrace();
@@ -37,6 +38,7 @@ public strictfp class Booster {
                 System.out.println("Exception at Booster");
                 e.printStackTrace();
             } finally {
+                rc.setIndicatorString(indicatorString.toString());
                 Clock.yield();
             }
         }
