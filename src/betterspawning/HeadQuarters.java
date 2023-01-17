@@ -2,8 +2,6 @@ package betterspawning;
 
 import battlecode.common.*;
 
-import java.util.Random;
-
 public strictfp class HeadQuarters {
     protected RobotController rc;
     protected MapLocation me;
