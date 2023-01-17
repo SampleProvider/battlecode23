@@ -438,7 +438,6 @@ public class Motion {
                     }
                 }
             }
-            break;
         }
         return clockwiseRotation;
     }
