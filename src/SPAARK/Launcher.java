@@ -226,6 +226,15 @@ public strictfp class Launcher {
                                                     clockwiseRotation = !clockwiseRotation;
                                                 }
                                             }
+                                            boolean stuck = true;
+                                            for (Direction d : Direction.allDirections()) {
+                                                if (rc.canMove(d)) {
+                                                    stuck = false;
+                                                }
+                                            }
+                                            if (stuck) {
+                                                break;
+                                            }
                                         }
                                     }
                                 }
