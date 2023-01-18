@@ -30,6 +30,7 @@ public strictfp class Carrier {
     private MapLocation prioritizedWell;
     private MapLocation[] headquarters;
     private MapLocation prioritizedHeadquarters;
+    private int prioritizedHeadquarterIndex;
 
     private WellInfo[] seenWells = new WellInfo[4];
     private int seenWellIndex = 0;
@@ -81,14 +82,17 @@ public strictfp class Carrier {
             try {
                 me = rc.getLocation();
                 round = rc.getRoundNum();
+                globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
                 adamantiumAmount = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 manaAmount = rc.getResourceAmount(ResourceType.MANA);
                 elixirAmount = rc.getResourceAmount(ResourceType.ELIXIR);
 
-                // globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
-                // prioritizedResourceType = globalArray.prioritizedResource();
+                prioritizedResourceType = globalArray.prioritizedResource(prioritizedHeadquarterIndex);
 
                 indicatorString = new StringBuilder();
+
+                indicatorString.append(prioritizedHeadquarterIndex + "; ");
+                indicatorString.append("PR=" + (prioritizedResourceType == ResourceType.MANA ? "MN" : prioritizedResourceType.toString().substring(0, 2)) + "; ");
 
                 if (rc.canWriteSharedArray(0, 0)) {
                     for (int i = 0;i < 4;i++) {
@@ -145,6 +149,8 @@ public strictfp class Carrier {
 
             if (rc.getAnchor() != null) {
                 state = 3;
+                runState();
+                return;
             }
 
             if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
@@ -242,6 +248,7 @@ public strictfp class Carrier {
                         for (Direction d : DIRECTIONS) {
                             MapLocation adjSpot = prioritizedWellLocation.add(d);
                             if (!rc.canSenseLocation(adjSpot)) {
+                                fullSpots += 1;
                                 continue;
                             }
                             if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null) {
@@ -262,7 +269,7 @@ public strictfp class Carrier {
                 }
             }
             
-            Motion.spreadRandomly(rc, me, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2));
+            Motion.spreadRandomly(rc, me, prioritizedHeadquarters);
         }
         else if (state == 1) {
             WellInfo[] wellInfo = rc.senseNearbyWells();
@@ -483,10 +490,11 @@ public strictfp class Carrier {
 
     private void updatePrioritizedHeadquarters() throws GameActionException {
         prioritizedHeadquarters = headquarters[0];
-        for (MapLocation hq : headquarters) {
-            if (hq != null) {
-                if (prioritizedHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
-                    prioritizedHeadquarters = hq;
+        for (int i = 0; i < headquarters.length; i++) {
+            if (headquarters[i] != null) {
+                if (prioritizedHeadquarters.distanceSquaredTo(me) > headquarters[i].distanceSquaredTo(me)) {
+                    prioritizedHeadquarters = headquarters[i];
+                    prioritizedHeadquarterIndex = i;
                 }
             }
         }
