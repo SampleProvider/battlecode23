@@ -168,8 +168,8 @@ public strictfp class GlobalArray {
         currentState[CONVERSION_WELL_ID] = (n >> 12) & 0b11; // bits 12-13
         return currentState;
     }
-    public ResourceType prioritizedResource(int hqIndex) {
-        return resourceTypes[currentState[hqIndex + HEADQUARTERS]];
+    public ResourceType prioritizedResource(int hqID) {
+        return resourceTypes[currentState[hqID + PRIORITIZED_RESOURCE_HQ1]];
     }
     public boolean convertWell() {
         return currentState[CONVERT_WELL] == 1;
@@ -193,7 +193,7 @@ public strictfp class GlobalArray {
             | (currentState[CONVERSION_WELL_ID] << 12);
     }
     public void setPrioritizedResource(ResourceType resource, int hqIndex) {
-        currentState[hqIndex - HEADQUARTERS] = resource.resourceID;
+        currentState[hqIndex - PRIORITIZED_RESOURCE_HQ1 - HEADQUARTERS] = resource.resourceID;
     }
     public void setTargetElixirWellHQPair(int wellIndex, int hqIndex) {
         currentState[CONVERT_WELL] = 1;
