@@ -242,6 +242,7 @@ public strictfp class Carrier {
                         for (Direction d : DIRECTIONS) {
                             MapLocation adjSpot = prioritizedWellLocation.add(d);
                             if (!rc.canSenseLocation(adjSpot)) {
+                                fullSpots += 1;
                                 continue;
                             }
                             if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null) {
@@ -262,7 +263,7 @@ public strictfp class Carrier {
                 }
             }
             
-            Motion.spreadRandomly(rc, me, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2));
+            Motion.spreadRandomly(rc, me, prioritizedHeadquarters);
         }
         else if (state == 1) {
             WellInfo[] wellInfo = rc.senseNearbyWells();
