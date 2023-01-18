@@ -265,7 +265,7 @@ public strictfp class HeadQuarters {
         if (wellInfo.length > 0 && well) {
             WellInfo prioritizedWellInfo = wellInfo[0];
             MapLocation prioritizedWellInfoLocation = wellInfo[0].getMapLocation();
-            ResourceType prioritizedResourceType = ResourceType.ADAMANTIUM;
+            ResourceType prioritizedResourceType = ResourceType.ELIXIR;
             // if (turnCount < 15) {
             //     prioritizedResourceType = ResourceType.ADAMANTIUM;
             // }
@@ -299,16 +299,32 @@ public strictfp class HeadQuarters {
             }
         }
         else {
-            for (MapLocation m : spawningLocations) {
-                if (rc.sensePassability(m) == false || rc.isLocationOccupied(m)) {
-                    continue;
+            if (well) {
+                for (MapLocation m : spawningLocations) {
+                    if (rc.sensePassability(m) == false || rc.isLocationOccupied(m)) {
+                        continue;
+                    }
+                    possibleSpawningLocations += 1;
+                    if (optimalSpawningLocation == null) {
+                        optimalSpawningLocation = m;
+                    }
+                    else if (optimalSpawningLocation.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) < m.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))) {
+                        optimalSpawningLocation = m;
+                    }
                 }
-                possibleSpawningLocations += 1;
-                if (optimalSpawningLocation == null) {
-                    optimalSpawningLocation = m;
-                }
-                else if (optimalSpawningLocation.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) > m.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))) {
-                    optimalSpawningLocation = m;
+            }
+            else {
+                for (MapLocation m : spawningLocations) {
+                    if (rc.sensePassability(m) == false || rc.isLocationOccupied(m)) {
+                        continue;
+                    }
+                    possibleSpawningLocations += 1;
+                    if (optimalSpawningLocation == null) {
+                        optimalSpawningLocation = m;
+                    }
+                    else if (optimalSpawningLocation.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) > m.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))) {
+                        optimalSpawningLocation = m;
+                    }
                 }
             }
         }
