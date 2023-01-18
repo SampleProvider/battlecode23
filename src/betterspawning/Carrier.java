@@ -82,15 +82,16 @@ public strictfp class Carrier {
             try {
                 me = rc.getLocation();
                 round = rc.getRoundNum();
+                globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
                 adamantiumAmount = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 manaAmount = rc.getResourceAmount(ResourceType.MANA);
                 elixirAmount = rc.getResourceAmount(ResourceType.ELIXIR);
 
-                globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
                 prioritizedResourceType = globalArray.prioritizedResource(prioritizedHeadquarterIndex);
                 
                 indicatorString = new StringBuilder();
 
+                indicatorString.append(prioritizedHeadquarterIndex + "; ");
                 indicatorString.append("PR=" + (prioritizedResourceType == ResourceType.MANA ? "MN" : prioritizedResourceType.toString().substring(0, 2)) + "; ");
 
                 if (rc.canWriteSharedArray(0, 0)) {
@@ -480,10 +481,11 @@ public strictfp class Carrier {
 
     private void updatePrioritizedHeadquarters() throws GameActionException {
         prioritizedHeadquarters = headquarters[0];
-        for (MapLocation hq : headquarters) {
-            if (hq != null) {
-                if (prioritizedHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
-                    prioritizedHeadquarters = hq;
+        for (int i = 0; i < headquarters.length; i++) {
+            if (headquarters[i] != null) {
+                if (prioritizedHeadquarters.distanceSquaredTo(me) > headquarters[i].distanceSquaredTo(me)) {
+                    prioritizedHeadquarters = headquarters[i];
+                    prioritizedHeadquarterIndex = i;
                 }
             }
         }

@@ -15,6 +15,7 @@ public strictfp class HeadQuarters {
     private int anchorCooldown = 0;
     private int carrierCooldown = 0;
     private int launcherCooldown = 0;
+    private int amplifierCooldown = 0;
     private int carriers = 0;
     private int launchers = 0;
     private int nearbyCarriers = 0;
@@ -69,11 +70,14 @@ public strictfp class HeadQuarters {
             try {
                 me = rc.getLocation();
                 round = rc.getRoundNum();
+                globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
                 adamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 mana = rc.getResourceAmount(ResourceType.MANA);
                 deltaResources = (int) ((0.8 * deltaResources) + (0.2 * (adamantium-lastAdamantium+mana-lastMana)));
 
                 indicatorString = new StringBuilder();
+
+                indicatorString.append(hqIndex - GlobalArray.HEADQUARTERS + "; ");
 
                 indicatorString.append("DR=" + deltaResources + "; ");
 
@@ -203,9 +207,9 @@ public strictfp class HeadQuarters {
                     if (round > 200 && !setTargetElixirWell) {
                         // setTargetElixirWell();
                     }
-                    // save game state
-                    rc.writeSharedArray(GlobalArray.GAMESTATE, globalArray.getGameStateNumber());
                 }
+                // save game state
+                rc.writeSharedArray(GlobalArray.GAMESTATE, globalArray.getGameStateNumber());
             } catch (GameActionException e) {
                 System.out.println("GameActionException at HeadQuarters");
                 e.printStackTrace();
