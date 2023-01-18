@@ -34,6 +34,15 @@ public class Motion {
             if (rc.canMove(direction)) {
                 rc.move(direction);
             }
+            boolean stuck = true;
+            for (Direction d : Direction.allDirections()) {
+                if (rc.canMove(d)) {
+                    stuck = false;
+                }
+            }
+            if (stuck) {
+                break;
+            }
         }
     }
     protected static void spreadRandomly(RobotController rc, MapLocation me, MapLocation target) throws GameActionException {
@@ -76,9 +85,15 @@ public class Motion {
                 }
             }
             if (moved == false) {
-                Direction d = DIRECTIONS[rng.nextInt(DIRECTIONS.length)];
-                if (rc.canMove(d)) {
-                    rc.move(d);
+                moveRandomly(rc);
+                boolean stuck = true;
+                for (Direction d : Direction.allDirections()) {
+                    if (rc.canMove(d)) {
+                        stuck = false;
+                    }
+                }
+                if (stuck) {
+                    break;
                 }
             }
         }
@@ -98,6 +113,15 @@ public class Motion {
                 if (rc.canMove(direction.rotateRight())) {
                     rc.move(direction.rotateRight());
                     continue;
+                }
+                boolean stuck = true;
+                for (Direction d : Direction.allDirections()) {
+                    if (rc.canMove(d)) {
+                        stuck = false;
+                    }
+                }
+                if (stuck) {
+                    break;
                 }
             }
             return;
@@ -141,9 +165,15 @@ public class Motion {
                 }
             }
             if (moved == false) {
-                Direction d = DIRECTIONS[rng.nextInt(DIRECTIONS.length)];
-                if (rc.canMove(d)) {
-                    rc.move(d);
+                moveRandomly(rc);
+                boolean stuck = true;
+                for (Direction d : Direction.allDirections()) {
+                    if (rc.canMove(d)) {
+                        stuck = false;
+                    }
+                }
+                if (stuck) {
+                    break;
                 }
             }
         }
@@ -172,11 +202,16 @@ public class Motion {
                     moved = true;
                 }
             }
-            while (moved == false) {
-                Direction d = DIRECTIONS[rng.nextInt(DIRECTIONS.length)];
-                if (rc.canMove(d)) {
-                    rc.move(d);
-                    moved = true;
+            if (moved == false) {
+                moveRandomly(rc);
+                boolean stuck = true;
+                for (Direction d : Direction.allDirections()) {
+                    if (rc.canMove(d)) {
+                        stuck = false;
+                    }
+                }
+                if (stuck) {
+                    break;
                 }
             }
         }
@@ -204,11 +239,16 @@ public class Motion {
                     moved = true;
                 }
             }
-            while (moved == false) {
-                Direction d = DIRECTIONS[rng.nextInt(DIRECTIONS.length)];
-                if (rc.canMove(d)) {
-                    rc.move(d);
-                    moved = true;
+            if (moved == false) {
+                moveRandomly(rc);
+                boolean stuck = true;
+                for (Direction d : Direction.allDirections()) {
+                    if (rc.canMove(d)) {
+                        stuck = false;
+                    }
+                }
+                if (stuck) {
+                    break;
                 }
             }
         }
@@ -309,6 +349,7 @@ public class Motion {
                         rc.move(direction.opposite());
                         continue;
                     }
+                    break;
                 }
             }
             else {
@@ -401,6 +442,15 @@ public class Motion {
                             lastDirection = direction.rotateLeft().rotateLeft().rotateLeft();
                         }
                     }
+                }
+                boolean stuck = true;
+                for (Direction d : Direction.allDirections()) {
+                    if (rc.canMove(d)) {
+                        stuck = false;
+                    }
+                }
+                if (stuck) {
+                    break;
                 }
             }
         }

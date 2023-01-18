@@ -145,6 +145,8 @@ public strictfp class Carrier {
 
             if (rc.getAnchor() != null) {
                 state = 3;
+                runState();
+                return;
             }
 
             if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
