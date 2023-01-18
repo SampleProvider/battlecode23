@@ -88,9 +88,10 @@ public strictfp class Carrier {
 
                 globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
                 prioritizedResourceType = globalArray.prioritizedResource(prioritizedHeadquarterIndex);
-                indicatorString.append("PR=" + prioritizedResourceType + "; ");
-
+                
                 indicatorString = new StringBuilder();
+
+                indicatorString.append("PR=" + (prioritizedResourceType == ResourceType.MANA ? "MN" : prioritizedResourceType.toString().substring(0, 2)) + "; ");
 
                 if (rc.canWriteSharedArray(0, 0)) {
                     if (round % 2 == 0) {
