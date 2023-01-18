@@ -258,32 +258,22 @@ public class Motion {
     public static void swarm(RobotController rc, MapLocation me, RobotType robotType) throws GameActionException {
         RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
         if (robotInfo.length > 0) {
-            int adjacentRobots = 0;
-            MapLocation closestRobotInfoLocation = null;
-            MapLocation adjacentRobotInfoLocation = null;
+            RobotInfo prioritizedRobotInfo = null;
             for (RobotInfo w : robotInfo) {
                 if (w.getType() != robotType) {
                     continue;
                 }
-                if (me.isAdjacentTo(w.getLocation())) {
-                    adjacentRobots += 1;
-                    adjacentRobotInfoLocation = w.getLocation();
+                if (prioritizedRobotInfo == null) {
+                    prioritizedRobotInfo = w;
                     continue;
                 }
-                if (closestRobotInfoLocation == null) {
-                    closestRobotInfoLocation = w.getLocation();
-                    continue;
-                }
-                if (closestRobotInfoLocation.distanceSquaredTo(me) > w.getLocation().distanceSquaredTo(me)) {
-                    closestRobotInfoLocation = w.getLocation();
+                if (prioritizedRobotInfo.ID > w.ID) {
+                    prioritizedRobotInfo = w;
                 }
             }
             Direction direction = null;
-            if (closestRobotInfoLocation != null) {
-                direction = me.directionTo(closestRobotInfoLocation);
-            }
-            if (adjacentRobots >= 2) {
-                direction = me.directionTo(adjacentRobotInfoLocation).opposite();
+            if (prioritizedRobotInfo != null) {
+                direction = me.directionTo(prioritizedRobotInfo.getLocation());
             }
             if (direction != null){
                 while (rc.isMovementReady()) {
