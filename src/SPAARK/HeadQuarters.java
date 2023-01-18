@@ -125,7 +125,7 @@ public strictfp class HeadQuarters {
                 }
                 else {
                     boolean canProduceAmplifier = false;
-                    for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS_LENGTH; a++) {
+                    for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
                         if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
                             canProduceAmplifier = true;
                         }
