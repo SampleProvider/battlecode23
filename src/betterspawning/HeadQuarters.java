@@ -120,12 +120,12 @@ public strictfp class HeadQuarters {
                         anchorCooldown = 70;
                     } else {
                         indicatorString.append("TRYP ANC; ");
-                        if (adamantium > 160 && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
-                                && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 5*hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 6) {
+                        if (adamantium > 150 && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
+                                && ((deltaResources < 0 && nearbyCarriers < 20) || carriers < 10*hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 6) {
                             rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                             indicatorString.append("PROD CAR; ");
                             rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
-                            carrierCooldown = 20;
+                            carrierCooldown = 10;
                         } else if (mana > 160 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
                                 && (launchers < 20*hqCount || nearbyLaunchers < 5 || launcherCooldown <= 0) && possibleSpawningLocations >= 4) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
@@ -134,13 +134,13 @@ public strictfp class HeadQuarters {
                             launcherCooldown = 5;
                         }
                     }
-                } else if (possibleSpawningLocations >= 3) {
+                } else if (possibleSpawningLocations >= 2) {
                     if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
-                            && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 5*hqCount || carrierCooldown <= 0) && round > 3) {
+                            && ((deltaResources < 0 && nearbyCarriers < 20) || carriers < 10*hqCount || carrierCooldown <= 0) && round > 3) {
                         rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                         indicatorString.append("PROD CAR; ");
                         rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
-                        carrierCooldown = 20;
+                        carrierCooldown = 10;
                     } else if (optimalSpawningLocation != null) {
                         boolean canProduceAmplifier = false;
                         for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
@@ -155,7 +155,7 @@ public strictfp class HeadQuarters {
                             indicatorString.append("PROD AMP; ");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                         } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
-                                && (launchers < 20*hqCount || nearbyLaunchers < 5 || launcherCooldown <= 0)) {
+                                && (launchers < 25*hqCount || nearbyLaunchers < 10 || launcherCooldown <= 0)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                             indicatorString.append("PROD LAU; ");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
@@ -174,7 +174,7 @@ public strictfp class HeadQuarters {
                     e.printStackTrace();
                 }
                 // prioritized resources
-                double deviation = (mana - (adamantium * 3.0)) / (mana + (adamantium * 3.0));
+                double deviation = (mana - (adamantium * 1.5)) / (mana + (adamantium * 1.5));
                 if (Math.abs(deviation) < 0.2) {
                     globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE, hqIndex);
                     indicatorString.append("PR=NO; ");
