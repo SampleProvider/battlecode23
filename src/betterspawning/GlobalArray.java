@@ -17,6 +17,7 @@ public strictfp class GlobalArray {
     public static final int OPPONENTS = 23;
     public static final int OPPONENTS_LENGTH = 8;
     public static final int CARRIERCOUNT = 31;
+    public static final int LAUNCHERCOUNT = 32;
 
     public static final int PRIORITIZED_RESOURCE_HQ1 = 0;
     public static final int PRIORITIZED_RESOURCE_HQ2 = 1;

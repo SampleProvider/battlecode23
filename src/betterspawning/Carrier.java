@@ -88,11 +88,14 @@ public strictfp class Carrier {
 
                 globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
                 prioritizedResourceType = globalArray.prioritizedResource(prioritizedHeadquarterIndex);
+                indicatorString.append("PR=" + prioritizedResourceType + "; ");
 
                 indicatorString = new StringBuilder();
 
                 if (rc.canWriteSharedArray(0, 0)) {
-                    rc.writeSharedArray(GlobalArray.CARRIERCOUNT, rc.readSharedArray(GlobalArray.CARRIERCOUNT)+1);
+                    if (round % 2 == 0) {
+                        rc.writeSharedArray(GlobalArray.CARRIERCOUNT, rc.readSharedArray(GlobalArray.CARRIERCOUNT)+1);
+                    }
                     for (int i = 0;i < 4;i++) {
                         if (seenWells[i] != null) {
                             if (GlobalArray.storeWell(rc, seenWells[i])) {
@@ -170,8 +173,7 @@ public strictfp class Carrier {
                     for (WellInfo w : wellInfo) {
                         if (prioritizedWellInfo.getResourceType() == prioritizedResourceType) {
                             if (w.getResourceType() == prioritizedResourceType
-                                    && prioritizedWellInfo.getMapLocation().distanceSquaredTo(me) > w
-                                            .getMapLocation().distanceSquaredTo(me)) {
+                                    && prioritizedWellInfo.getMapLocation().distanceSquaredTo(me) > w.getMapLocation().distanceSquaredTo(me)) {
                                 prioritizedWellInfo = w;
                                 prioritizedWellInfoLocation = w.getMapLocation();
                             }
