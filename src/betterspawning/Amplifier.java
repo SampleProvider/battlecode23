@@ -2,8 +2,6 @@ package betterspawning;
 
 import battlecode.common.*;
 
-import java.util.Random;
-
 public strictfp class Amplifier {
     protected RobotController rc;
     protected MapLocation me;
@@ -32,6 +30,9 @@ public strictfp class Amplifier {
     
     private int amplifierArray;
     protected int amplifierID = 0;
+
+    private boolean clockwiseRotation = true;
+    private Direction lastDirection = Direction.CENTER;
 
     protected StringBuilder indicatorString = new StringBuilder();
 
@@ -65,7 +66,7 @@ public strictfp class Amplifier {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
             }
         } catch (GameActionException e) {
-            System.out.println("GameActionException at Carrier constructor");
+            System.out.println("GameActionException at Amplifier constructor");
             e.printStackTrace();
             return;
         } catch (Exception e) {
@@ -139,7 +140,11 @@ public strictfp class Amplifier {
                         if (surroundingLaunchers >= 15) {
                             if (rc.getMovementCooldownTurns() <= 5) {
                                 indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
-                                Motion.bug(rc, opponentLocation, indicatorString);
+                                Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
+                                lastDirection = bug2array[0];
+                                if (bug2array[1] == Direction.CENTER) {
+                                    clockwiseRotation = !clockwiseRotation;
+                                }
                             }
                         }
                         else {
@@ -150,7 +155,11 @@ public strictfp class Amplifier {
                     else {
                         if (arrivedAtCenter && opponentLocation != null && surroundingLaunchers >= 15) {
                             indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
-                            Motion.bug(rc, opponentLocation, indicatorString);
+                            Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
+                            lastDirection = bug2array[0];
+                            if (bug2array[1] == Direction.CENTER) {
+                                clockwiseRotation = !clockwiseRotation;
+                            }
                         }
                         else {
                             Motion.spreadCenter(rc, me);
@@ -161,7 +170,11 @@ public strictfp class Amplifier {
                 }
                 else {
                     // if (arrivedAtCenter && opponentLocation != null) {
-                    //     Motion.bug(rc, opponentLocation);
+                    // Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
+                    // lastDirection = bug2array[0];
+                    // if (bug2array[1] == Direction.CENTER) {
+                    //     clockwiseRotation = !clockwiseRotation;
+                    // }
                     // }
                     // else {
                     Motion.spreadCenter(rc, me);

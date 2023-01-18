@@ -50,19 +50,15 @@ public strictfp class Amplifier {
             }
             round = rc.getRoundNum();
             int locInt = GlobalArray.intifyLocation(rc.getLocation());
-            if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.AMPLIFIERS))) {
-                rc.writeSharedArray(GlobalArray.AMPLIFIERS, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
-                amplifierID = GlobalArray.AMPLIFIERS;
-            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.AMPLIFIERS + 1))) {
-                rc.writeSharedArray(GlobalArray.AMPLIFIERS + 1, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
-                amplifierID = GlobalArray.AMPLIFIERS + 1;
-            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.AMPLIFIERS + 2))) {
-                rc.writeSharedArray(GlobalArray.AMPLIFIERS + 2, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
-                amplifierID = GlobalArray.AMPLIFIERS + 2;
-            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.AMPLIFIERS + 3))) {
-                rc.writeSharedArray(GlobalArray.AMPLIFIERS + 3, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
-                amplifierID = GlobalArray.AMPLIFIERS + 3;
-            } else {
+            amplifierID = GlobalArray.AMPLIFIERS;
+            while (amplifierID <= GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH) {
+                if (!GlobalArray.hasLocation(rc.readSharedArray(amplifierID))) {
+                    rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
+                    break;
+                }
+                amplifierID++;
+            }
+            if (amplifierID > GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH) {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
             }
         } catch (GameActionException e) {
