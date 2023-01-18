@@ -427,6 +427,7 @@ public strictfp class Launcher {
         }
         return false;
     }
+    
     private void updatePrioritizedOpponentHeadquarters() throws GameActionException {
         prioritizedOpponentHeadquarters = null;
         for (RobotInfo r : robotInfo) {
