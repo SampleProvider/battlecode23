@@ -211,6 +211,10 @@ public strictfp class Launcher {
                         state = 0;
                         continue;
                     }
+                    if (!detectAmplifier()) {
+                        state = 0;
+                        continue;
+                    }
                     updatePrioritizedOpponentHeadquarters();
                     if (prioritizedOpponentHeadquarters != null) {
                         boolean hasSpace = false;
