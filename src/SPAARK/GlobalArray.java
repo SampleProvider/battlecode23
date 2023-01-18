@@ -13,11 +13,9 @@ public strictfp class GlobalArray {
     public static final int ADAMANTIUM_WELLS = 11;
     public static final int ADAMANTIUM_WELLS_LENGTH = 6;
     public static final int AMPLIFIERS = 17;
-    public static final int AMPLIFIERS_LENGTH = 4;
-    public static final int OPPONENTS = 21;
-    public static final int OPPONENTS_LENGTH = 4;
-    public static final int CARRIERCOUNT = 25;
-    public static final int LAUNCHERCOUNT = 26;
+    public static final int AMPLIFIERS_LENGTH = 6;
+    public static final int OPPONENTS = 23;
+    public static final int OPPONENTS_LENGTH = 8;
 
     public static final int PRIORITIZED_RESOURCE_HQ1 = 0;
     public static final int PRIORITIZED_RESOURCE_HQ2 = 1;
@@ -41,7 +39,6 @@ public strictfp class GlobalArray {
      *  Bit 15      upgraded marker
      * Headquarters:
      *  Bit 13      adequate materials
-     *  Bits 14-15  mana-adamantium ratio
      */
 
     // general location/data parsing/writing
@@ -56,16 +53,12 @@ public strictfp class GlobalArray {
     }
     
     // headquarters
-    public static int resourceRatio(int n) {
-        return n >> 14;
-    }
     public static boolean adequateResources(int n) {
         return ((n >> 13) & 0b1) == 1;
     }
     public static void storeHeadquarters(HeadQuarters hq) throws GameActionException {
-        int ratio = (hq.adamantium == 0 ? 0 : Math.min((int) ((hq.mana / hq.adamantium * 3) + 1), 3));
         int adequateResources = (((hq.adamantium - hq.lastAdamantium) >= 0 && (hq.mana - hq.lastMana) >= 0) ? 1 : 0);
-        hq.rc.writeSharedArray(hq.hqIndex, (ratio << 14) | (adequateResources << 13) | intifyLocation(hq.me));
+        hq.rc.writeSharedArray(hq.hqIndex, (adequateResources << 13) | intifyLocation(hq.me));
     }
     public static MapLocation[] getKnownHeadQuarterLocations(RobotController rc) throws GameActionException {
         MapLocation[] headquarters = new MapLocation[HEADQUARTERS_LENGTH];
@@ -173,8 +166,8 @@ public strictfp class GlobalArray {
         currentState[CONVERSION_WELL_ID] = (n >> 12) & 0b11; // bits 12-13
         return currentState;
     }
-    public ResourceType prioritizedResource() {
-        return resourceTypes[currentState[PRIORITIZED_RESOURCE_HQ1]];
+    public ResourceType prioritizedResource(int hqID) {
+        return resourceTypes[currentState[hqID + PRIORITIZED_RESOURCE_HQ1]];
     }
     public boolean convertWell() {
         return currentState[CONVERT_WELL] == 1;
@@ -197,15 +190,16 @@ public strictfp class GlobalArray {
             | (currentState[ELIXIR_HQ_ID] << 10)
             | (currentState[CONVERSION_WELL_ID] << 12);
     }
-    public void setPrioritizedResource(ResourceType resource) {
-        currentState[PRIORITIZED_RESOURCE_HQ1] = resource.resourceID;
+    public void setPrioritizedResource(ResourceType resource, int hqIndex) {
+        currentState[hqIndex - PRIORITIZED_RESOURCE_HQ1 - HEADQUARTERS] = resource.resourceID;
+    }
+    public void setTargetElixirWellHQPair(int wellIndex, int hqIndex) {
+        currentState[CONVERT_WELL] = 1;
+        currentState[CONVERSION_WELL_ID] = wellIndex;
+        currentState[ELIXIR_HQ_ID] = hqIndex;
     }
     public void setUpgradeWells(boolean set) {
         currentState[UPGRADE_WELLS] = set ? 1 : 0;
-    }
-    public void setTargetElixirWellHQPair(int wellIndex, int hqIndex) {
-        currentState[CONVERSION_WELL_ID] = wellIndex;
-        currentState[ELIXIR_HQ_ID] = hqIndex;
     }
 
     // bit operations

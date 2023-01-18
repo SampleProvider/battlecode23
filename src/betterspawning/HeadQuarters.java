@@ -167,12 +167,7 @@ public strictfp class HeadQuarters {
                 carrierCooldown--;
                 launcherCooldown--;
                 // store
-                try {
-                    GlobalArray.storeHeadquarters(this);
-                } catch (GameActionException e) {
-                    System.out.println("Error storing HeadQuarters");
-                    e.printStackTrace();
-                }
+                GlobalArray.storeHeadquarters(this);
                 // prioritized resources
                 double deviation = (mana - (adamantium * 1.5)) / (mana + (adamantium * 1.5));
                 if (Math.abs(deviation) < 0.2) {
