@@ -12,10 +12,10 @@ public strictfp class HeadQuarters {
     private int locInt;
     private int hqCount;
 
-    private int anchorCooldown = 0;
+    private int anchorCooldown = 200;
     private int carrierCooldown = 0;
     private int launcherCooldown = 0;
-    private int amplifierCooldown = 0;
+    private int amplifierCooldown = 100;
     private int carriers = 0;
     private int launchers = 0;
     private int nearbyCarriers = 0;
@@ -113,7 +113,7 @@ public strictfp class HeadQuarters {
                 // try build anchors, otherwise bots
                 MapLocation optimalSpawningLocationWell = optimalSpawnLocation(rc, me, true);
                 MapLocation optimalSpawningLocation = optimalSpawnLocation(rc, me, false);
-                if (anchorCooldown <= 0 && round >= 200 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
+                if (anchorCooldown <= 0 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
                     if (adamantium > 100 && mana > 100) {
                         rc.buildAnchor(Anchor.STANDARD);
                         indicatorString.append("PROD ANC; ");
@@ -146,14 +146,16 @@ public strictfp class HeadQuarters {
                         for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
                             if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
                                 canProduceAmplifier = true;
+                                break;
                             }
                         }
                         indicatorString.append("CANP-AMP=" + canProduceAmplifier + "; ");
                         if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
-                                && launchers > 20 && canProduceAmplifier) {
+                                && launchers > 20 && canProduceAmplifier && amplifierCooldown <= 0) {
                             rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                             indicatorString.append("PROD AMP; ");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                            amplifierCooldown = 100;
                         } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
                                 && (launchers < 25*hqCount || nearbyLaunchers < 10 || launcherCooldown <= 0)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
@@ -166,6 +168,7 @@ public strictfp class HeadQuarters {
                 anchorCooldown--;
                 carrierCooldown--;
                 launcherCooldown--;
+                amplifierCooldown--;
                 // store
                 GlobalArray.storeHeadquarters(this);
                 // prioritized resources
