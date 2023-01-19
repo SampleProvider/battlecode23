@@ -259,7 +259,7 @@ public strictfp class Launcher {
                 if (state == 1) {
                     int amplifierArray = rc.readSharedArray(amplifierID);
                     rc.setIndicatorString(amplifierID + " " + amplifierArray);
-                    if (amplifierArray >> 14 == 0) {
+                    if (amplifierArray == 0) {
                         state = 0;
                         arrivedAtCenter = true;
                         continue;
@@ -463,7 +463,7 @@ public strictfp class Launcher {
     private boolean detectAmplifier() throws GameActionException {
         prioritizedAmplifierLocation = null;
         for (int a = 0; a < GlobalArray.AMPLIFIERS_LENGTH; a++) {
-            int amplifierArray = rc.readSharedArray(14 + a);
+            int amplifierArray = rc.readSharedArray(GlobalArray.AMPLIFIERS + a);
             if (amplifierArray != 0) {
                 MapLocation amplifierLocation = GlobalArray.parseLocation(amplifierArray);
                 if (amplifierLocation.distanceSquaredTo(me) < amplifierSensingRange) {
