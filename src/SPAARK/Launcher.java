@@ -205,12 +205,13 @@ public strictfp class Launcher {
                                 }
                                 if (prioritizedFriendlyRobotInfo != null) {
                                     if (prioritizedFriendlyRobotInfo.ID > rc.getID()) {
-                                        indicatorString.append("PATH->CEN; ");
-                                        Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, indicatorString);
-                                        lastDirection = bug2array[0];
-                                        if (bug2array[1] == Direction.CENTER) {
-                                            clockwiseRotation = !clockwiseRotation;
-                                        }
+                                        Motion.moveRandomly(rc);
+                                        // indicatorString.append("PATH->CEN; ");
+                                        // Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, indicatorString);
+                                        // lastDirection = bug2array[0];
+                                        // if (bug2array[1] == Direction.CENTER) {
+                                        //     clockwiseRotation = !clockwiseRotation;
+                                        // }
                                     }
                                     else {
                                         rc.setIndicatorLine(me, prioritizedFriendlyRobotInfo.getLocation(), 255, 125, 125);
