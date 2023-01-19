@@ -49,16 +49,15 @@ public strictfp class Amplifier {
                 headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
             }
             round = rc.getRoundNum();
-            int locInt = GlobalArray.intifyLocation(rc.getLocation());
-            amplifierID = GlobalArray.AMPLIFIERS;
-            while (amplifierID < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH) {
-                if (!GlobalArray.hasLocation(rc.readSharedArray(amplifierID))) {
-                    rc.writeSharedArray(amplifierID, GlobalArray.setBit(locInt, 15, round % 2));
+            amplifierID = 0;
+            for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
+                if (!GlobalArray.hasLocation(rc.readSharedArray(a)) || rc.readSharedArray(a) >> 14 == 1) {
+                    amplifierID = a;
+                    rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(rc.getLocation()), 15, round % 2));
                     break;
                 }
-                amplifierID++;
             }
-            if (amplifierID >= GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH) {
+            if (amplifierID == 0) {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
             }
         } catch (GameActionException e) {
@@ -133,7 +132,7 @@ public strictfp class Amplifier {
                     indicatorString.append("LAU=" + surroundingLaunchers + "; ");
                     if (prioritizedRobotInfoLocation != null) {
                         opponentLocation = prioritizedRobotInfoLocation;
-                        if (surroundingLaunchers >= 10) {
+                        if (surroundingLaunchers >= 15) {
                             if (rc.getMovementCooldownTurns() <= 5) {
                                 indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
                                 Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
