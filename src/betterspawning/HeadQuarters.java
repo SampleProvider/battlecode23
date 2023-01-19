@@ -155,7 +155,7 @@ public strictfp class HeadQuarters {
                             rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                             indicatorString.append("PROD AMP; ");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                            amplifierCooldown = 100;
+                            amplifierCooldown = 10;
                         } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
                                 && (launchers < 25*hqCount || nearbyLaunchers < 10 || launcherCooldown <= 0)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);

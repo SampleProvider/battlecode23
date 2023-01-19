@@ -30,7 +30,7 @@ public strictfp class Launcher {
     private MapLocation opponentLocation;
 
     private RobotType prioritizedRobotType = RobotType.LAUNCHER;
-    private int amplifierSensingRange = 50;
+    private int amplifierSensingRange = 25;
     private int amplifierCircleRange = 7;
     
     private int launcherCircleRange = 4;
@@ -208,12 +208,13 @@ public strictfp class Launcher {
                                 }
                                 if (prioritizedFriendlyRobotInfo != null) {
                                     if (prioritizedFriendlyRobotInfo.ID > rc.getID()) {
-                                        indicatorString.append("PATH->CEN; ");
-                                        Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, indicatorString);
-                                        lastDirection = bug2array[0];
-                                        if (bug2array[1] == Direction.CENTER) {
-                                            clockwiseRotation = !clockwiseRotation;
-                                        }
+                                        // indicatorString.append("PATH->CEN; ");
+                                        // Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, indicatorString);
+                                        // lastDirection = bug2array[0];
+                                        // if (bug2array[1] == Direction.CENTER) {
+                                        //     clockwiseRotation = !clockwiseRotation;
+                                        // }
+                                        Motion.moveRandomly(rc);
                                     }
                                     else {
                                         rc.setIndicatorLine(me, prioritizedFriendlyRobotInfo.getLocation(), 255, 125, 125);
@@ -228,6 +229,15 @@ public strictfp class Launcher {
                                                 if (bug2array[1] == Direction.CENTER) {
                                                     clockwiseRotation = !clockwiseRotation;
                                                 }
+                                            }
+                                            boolean stuck = true;
+                                            for (Direction d : Direction.allDirections()) {
+                                                if (rc.canMove(d)) {
+                                                    stuck = false;
+                                                }
+                                            }
+                                            if (stuck) {
+                                                break;
                                             }
                                         }
                                     }
@@ -253,12 +263,14 @@ public strictfp class Launcher {
                 if (state == 1) {
                     int amplifierArray = rc.readSharedArray(amplifierID);
                     rc.setIndicatorString(amplifierID + " " + amplifierArray);
-                    if (amplifierArray >> 14 == 0) {
+                    if (amplifierArray == 0) {
                         state = 0;
+                        arrivedAtCenter = true;
                         continue;
                     }
                     if (!detectAmplifier()) {
                         state = 0;
+                        arrivedAtCenter = true;
                         continue;
                     }
                     updatePrioritizedOpponentHeadquarters();
@@ -455,8 +467,8 @@ public strictfp class Launcher {
     private boolean detectAmplifier() throws GameActionException {
         prioritizedAmplifierLocation = null;
         for (int a = 0; a < GlobalArray.AMPLIFIERS_LENGTH; a++) {
-            int amplifierArray = rc.readSharedArray(14 + a);
-            if (amplifierArray >> 14 != 0) {
+            int amplifierArray = rc.readSharedArray(GlobalArray.AMPLIFIERS + a);
+            if (amplifierArray != 0) {
                 MapLocation amplifierLocation = GlobalArray.parseLocation(amplifierArray);
                 if (amplifierLocation.distanceSquaredTo(me) < amplifierSensingRange) {
                     if (prioritizedAmplifierLocation == null) {

@@ -88,7 +88,7 @@ public strictfp class Carrier {
                 elixirAmount = rc.getResourceAmount(ResourceType.ELIXIR);
 
                 prioritizedResourceType = globalArray.prioritizedResource(prioritizedHeadquarterIndex);
-                
+
                 indicatorString = new StringBuilder();
 
                 indicatorString.append(prioritizedHeadquarterIndex + "; ");
@@ -152,6 +152,8 @@ public strictfp class Carrier {
 
             if (rc.getAnchor() != null) {
                 state = 3;
+                runState();
+                return;
             }
 
             if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
@@ -249,6 +251,7 @@ public strictfp class Carrier {
                         for (Direction d : DIRECTIONS) {
                             MapLocation adjSpot = prioritizedWellLocation.add(d);
                             if (!rc.canSenseLocation(adjSpot)) {
+                                fullSpots += 1;
                                 continue;
                             }
                             if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null) {
@@ -397,7 +400,7 @@ public strictfp class Carrier {
             if (rc.canCollectResource(prioritizedWell, -1)
                     && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
                 rc.collectResource(prioritizedWell, -1);
-                Motion.circleAroundTarget(rc, me, prioritizedWell);
+                // Motion.circleAroundTarget(rc, me, prioritizedWell);
                 me = rc.getLocation();
                 rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
             } else {
