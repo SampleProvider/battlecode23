@@ -159,12 +159,20 @@ public strictfp class Amplifier {
                                 clockwiseRotation = !clockwiseRotation;
                             }
                         }
+                        else if (arrivedAtCenter) {
+                            Motion.moveRandomly(rc);
+                        }
                         else {
                             Motion.spreadCenter(rc, me);
                         }
                         me = rc.getLocation();
                         rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(me), 15, round % 2));
                     }
+                }
+                else if (arrivedAtCenter) {
+                    Motion.moveRandomly(rc);
+                    me = rc.getLocation();
+                    rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(me), 15, round % 2));
                 }
                 else {
                     // if (arrivedAtCenter && opponentLocation != null) {
@@ -176,6 +184,7 @@ public strictfp class Amplifier {
                     // }
                     // else {
                     Motion.spreadCenter(rc, me);
+                    // Motion.moveRandomly(rc);
                     // }
                     me = rc.getLocation();
                     rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(me), 15, round % 2));
