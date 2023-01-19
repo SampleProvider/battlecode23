@@ -59,7 +59,7 @@ public strictfp class Amplifier {
                 amplifierID++;
             }
             if (amplifierID >= GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH) {
-                throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
+                System.out.println("Too many Amplifiers!");
             }
         } catch (GameActionException e) {
             System.out.println("GameActionException at Amplifier constructor");

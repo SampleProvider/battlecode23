@@ -153,12 +153,12 @@ public strictfp class HeadQuarters {
                         }
                         indicatorString.append("CANP-AMP=" + (nextAmplifierIndex > 0) + "; ");
                         if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
-                                && launchers > 10 && (nextAmplifierIndex > 0) && amplifierCooldown <= 0) {
+                                && (nextAmplifierIndex > 0) && amplifierCooldown <= 0) {
                             rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                             indicatorString.append("PROD AMP; ");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                            rc.writeSharedArray(nextAmplifierIndex, GlobalArray.setBit(locInt, 14, 1));
-                            amplifierCooldown = 10;
+                            rc.writeSharedArray(nextAmplifierIndex, GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 14, 1));
+                            amplifierCooldown = 30;
                         } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
                                 && (launchers < 20*hqCount*mapSizeFactor || nearbyLaunchers < 10 || launcherCooldown <= 0)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
