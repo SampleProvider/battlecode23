@@ -15,7 +15,7 @@ public strictfp class HeadQuarters {
     private int anchorCooldown = 200;
     private int carrierCooldown = 0;
     private int launcherCooldown = 0;
-    private int amplifierCooldown = 100;
+    private int amplifierCooldown = 0;
     private int carriers = 0;
     private int launchers = 0;
     private int nearbyCarriers = 0;
@@ -142,19 +142,20 @@ public strictfp class HeadQuarters {
                         rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                         carrierCooldown = 10;
                     } else if (optimalSpawningLocation != null) {
-                        boolean canProduceAmplifier = false;
+                        int nextAmplifierIndex = 0;
                         for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
                             if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
-                                canProduceAmplifier = true;
+                                nextAmplifierIndex = a;
                                 break;
                             }
                         }
-                        indicatorString.append("CANP-AMP=" + canProduceAmplifier + "; ");
+                        indicatorString.append("CANP-AMP=" + (nextAmplifierIndex > 0) + "; ");
                         if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
-                                && launchers > 20 && canProduceAmplifier && amplifierCooldown <= 0) {
+                                && launchers > 20 && (nextAmplifierIndex > 0) && amplifierCooldown <= 0) {
                             rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                             indicatorString.append("PROD AMP; ");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                            rc.writeSharedArray(nextAmplifierIndex, GlobalArray.setBit(locInt, 14, 1));
                             amplifierCooldown = 10;
                         } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
                                 && (launchers < 25*hqCount || nearbyLaunchers < 10 || launcherCooldown <= 0)) {
