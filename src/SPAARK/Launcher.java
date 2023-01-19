@@ -30,7 +30,7 @@ public strictfp class Launcher {
     private MapLocation opponentLocation;
 
     private RobotType prioritizedRobotType = RobotType.LAUNCHER;
-    private int amplifierSensingRange = 50;
+    private int amplifierSensingRange = 25;
     private int amplifierCircleRange = 7;
     
     private int launcherCircleRange = 4;
@@ -82,7 +82,7 @@ public strictfp class Launcher {
                 headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
             }
             state = 3;
-            // state = 0;
+            state = 0;
         } catch (GameActionException e) {
             System.out.println("GameActionException at Launcher constructor");
             e.printStackTrace();
@@ -259,12 +259,14 @@ public strictfp class Launcher {
                 if (state == 1) {
                     int amplifierArray = rc.readSharedArray(amplifierID);
                     rc.setIndicatorString(amplifierID + " " + amplifierArray);
-                    if (amplifierArray >> 14 == 0) {
+                    if (amplifierArray == 0) {
                         state = 0;
+                        arrivedAtCenter = true;
                         continue;
                     }
                     if (!detectAmplifier()) {
                         state = 0;
+                        arrivedAtCenter = true;
                         continue;
                     }
                     updatePrioritizedOpponentHeadquarters();
@@ -461,8 +463,8 @@ public strictfp class Launcher {
     private boolean detectAmplifier() throws GameActionException {
         prioritizedAmplifierLocation = null;
         for (int a = 0; a < GlobalArray.AMPLIFIERS_LENGTH; a++) {
-            int amplifierArray = rc.readSharedArray(14 + a);
-            if (amplifierArray >> 14 != 0) {
+            int amplifierArray = rc.readSharedArray(GlobalArray.AMPLIFIERS + a);
+            if (amplifierArray != 0) {
                 MapLocation amplifierLocation = GlobalArray.parseLocation(amplifierArray);
                 if (amplifierLocation.distanceSquaredTo(me) < amplifierSensingRange) {
                     if (prioritizedAmplifierLocation == null) {

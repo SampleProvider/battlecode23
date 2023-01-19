@@ -51,7 +51,7 @@ public strictfp class Amplifier {
             round = rc.getRoundNum();
             int locInt = GlobalArray.intifyLocation(rc.getLocation());
             amplifierID = GlobalArray.AMPLIFIERS;
-            while (amplifierID <= GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH) {
+            while (amplifierID < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH) {
                 if (!GlobalArray.hasLocation(rc.readSharedArray(amplifierID))) {
                     rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
                     break;
@@ -133,7 +133,7 @@ public strictfp class Amplifier {
                     indicatorString.append("LAU=" + surroundingLaunchers + "; ");
                     if (prioritizedRobotInfoLocation != null) {
                         opponentLocation = prioritizedRobotInfoLocation;
-                        if (surroundingLaunchers >= 15) {
+                        if (surroundingLaunchers >= 10) {
                             if (rc.getMovementCooldownTurns() <= 5) {
                                 indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
                                 Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
@@ -146,7 +146,9 @@ public strictfp class Amplifier {
                         else {
                             Motion.spreadRandomly(rc, me, opponentLocation);
                         }
-                        rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(prioritizedRobotInfoLocation), 15, round % 2));
+                        me = rc.getLocation();
+                        rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(me), 15, round % 2));
+                        // rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(prioritizedRobotInfoLocation), 15, round % 2));
                     }
                     else {
                         if (arrivedAtCenter && opponentLocation != null && surroundingLaunchers >= 15) {
