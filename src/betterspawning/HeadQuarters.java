@@ -15,13 +15,15 @@ public strictfp class HeadQuarters {
     private int anchorCooldown = 200;
     private int carrierCooldown = 0;
     private int launcherCooldown = 0;
-    private int amplifierCooldown = 0;
+    private int amplifierCooldown = 100;
     private int carriers = 0;
     private int launchers = 0;
     private int nearbyCarriers = 0;
     private int nearbyLaunchers = 0;
 
     private int possibleSpawningLocations = 0;
+
+    private int mapSizeFactor = 100;
 
     private boolean isPrimaryHQ = false;
     private boolean setTargetElixirWell = false;
@@ -127,7 +129,7 @@ public strictfp class HeadQuarters {
                             rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                             carrierCooldown = 10;
                         } else if (mana > 160 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
-                                && (launchers < 20*hqCount || nearbyLaunchers < 5 || launcherCooldown <= 0) && possibleSpawningLocations >= 4) {
+                                && (launchers < 20*hqCount*mapSizeFactor || nearbyLaunchers < 10 || launcherCooldown <= 0) && possibleSpawningLocations >= 4) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                             indicatorString.append("PROD LAU; ");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
@@ -151,14 +153,14 @@ public strictfp class HeadQuarters {
                         }
                         indicatorString.append("CANP-AMP=" + (nextAmplifierIndex > 0) + "; ");
                         if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
-                                && launchers > 20 && (nextAmplifierIndex > 0) && amplifierCooldown <= 0) {
+                                && (nextAmplifierIndex > 0) && amplifierCooldown <= 0) {
                             rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                             indicatorString.append("PROD AMP; ");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                            rc.writeSharedArray(nextAmplifierIndex, GlobalArray.setBit(locInt, 14, 1));
-                            amplifierCooldown = 10;
+                            rc.writeSharedArray(nextAmplifierIndex, GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 14, 1));
+                            amplifierCooldown = 30;
                         } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
-                                && (launchers < 25*hqCount || nearbyLaunchers < 10 || launcherCooldown <= 0)) {
+                                && (launchers < 20*hqCount*mapSizeFactor || nearbyLaunchers < 10 || launcherCooldown <= 0)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                             indicatorString.append("PROD LAU; ");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
@@ -190,6 +192,7 @@ public strictfp class HeadQuarters {
                         for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
                             if (GlobalArray.hasLocation(rc.readSharedArray(i))) hqCount++;
                         }
+                        mapSizeFactor = (rc.getMapWidth() + rc.getMapHeight()) / (hqCount * 10);
                     }
                     // set prioritized resource
                     // set upgrade wells if resources adequate
