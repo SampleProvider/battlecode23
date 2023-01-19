@@ -51,7 +51,7 @@ public strictfp class Amplifier {
             round = rc.getRoundNum();
             int locInt = GlobalArray.intifyLocation(rc.getLocation());
             amplifierID = GlobalArray.AMPLIFIERS;
-            while (amplifierID <= GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH) {
+            while (amplifierID < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH) {
                 if (!GlobalArray.hasLocation(rc.readSharedArray(amplifierID))) {
                     rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
                     break;
