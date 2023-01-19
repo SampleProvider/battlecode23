@@ -58,7 +58,7 @@ public strictfp class Amplifier {
                 }
                 amplifierID++;
             }
-            if (amplifierID > GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH) {
+            if (amplifierID >= GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH) {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
             }
         } catch (GameActionException e) {
@@ -133,7 +133,7 @@ public strictfp class Amplifier {
                     indicatorString.append("LAU=" + surroundingLaunchers + "; ");
                     if (prioritizedRobotInfoLocation != null) {
                         opponentLocation = prioritizedRobotInfoLocation;
-                        if (surroundingLaunchers >= 15) {
+                        if (surroundingLaunchers >= 10) {
                             if (rc.getMovementCooldownTurns() <= 5) {
                                 indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
                                 Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
@@ -146,7 +146,9 @@ public strictfp class Amplifier {
                         else {
                             Motion.spreadRandomly(rc, me, opponentLocation);
                         }
-                        rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(prioritizedRobotInfoLocation), 15, round % 2));
+                        me = rc.getLocation();
+                        rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(me), 15, round % 2));
+                        // rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(prioritizedRobotInfoLocation), 15, round % 2));
                     }
                     else {
                         if (arrivedAtCenter && opponentLocation != null && surroundingLaunchers >= 15) {
@@ -157,12 +159,20 @@ public strictfp class Amplifier {
                                 clockwiseRotation = !clockwiseRotation;
                             }
                         }
+                        else if (arrivedAtCenter) {
+                            Motion.moveRandomly(rc);
+                        }
                         else {
                             Motion.spreadCenter(rc, me);
                         }
                         me = rc.getLocation();
                         rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(me), 15, round % 2));
                     }
+                }
+                else if (arrivedAtCenter) {
+                    Motion.moveRandomly(rc);
+                    me = rc.getLocation();
+                    rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(me), 15, round % 2));
                 }
                 else {
                     // if (arrivedAtCenter && opponentLocation != null) {
@@ -174,6 +184,7 @@ public strictfp class Amplifier {
                     // }
                     // else {
                     Motion.spreadCenter(rc, me);
+                    // Motion.moveRandomly(rc);
                     // }
                     me = rc.getLocation();
                     rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(me), 15, round % 2));
