@@ -125,10 +125,11 @@ public strictfp class HeadQuarters {
                     }
                 }
                 else {
-                    boolean canProduceAmplifier = false;
+                    int amplifierIndex = 0;
                     for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
                         if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
-                            canProduceAmplifier = true;
+                            amplifierIndex = a;
+                            break;
                         }
                     }
                     if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
@@ -139,6 +140,7 @@ public strictfp class HeadQuarters {
                     }
                     else if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && possibleSpawningLocations >= 6 && launchers > 10 && canProduceAmplifier) {
                         rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
+                        rc.writeSharedArray(amplifierIndex, GlobalArray.intifyLocation(optimalSpawningLocation));
                         indicatorString.append("PROD AMP; ");
                         rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                     }

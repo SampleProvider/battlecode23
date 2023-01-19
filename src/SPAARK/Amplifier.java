@@ -53,7 +53,7 @@ public strictfp class Amplifier {
             amplifierID = GlobalArray.AMPLIFIERS;
             while (amplifierID < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH) {
                 if (!GlobalArray.hasLocation(rc.readSharedArray(amplifierID))) {
-                    rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 1), 15, round % 2));
+                    rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.setBit(locInt, 14, 0), 15, round % 2));
                     break;
                 }
                 amplifierID++;
@@ -147,8 +147,8 @@ public strictfp class Amplifier {
                             Motion.spreadRandomly(rc, me, opponentLocation);
                         }
                         me = rc.getLocation();
-                        rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(me), 15, round % 2));
-                        // rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(prioritizedRobotInfoLocation), 15, round % 2));
+                        rc.writeSharedArray(amplifierID, GlobalArray.setBit(amplifierArray | GlobalArray.intifyLocation(me), 15, round % 2));
+                        // rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1000000000000000) | GlobalArray.intifyLocation(prioritizedRobotInfoLocation), 15, round % 2));
                     }
                     else {
                         if (arrivedAtCenter && opponentLocation != null && surroundingLaunchers >= 15) {
@@ -166,13 +166,13 @@ public strictfp class Amplifier {
                             Motion.spreadCenter(rc, me);
                         }
                         me = rc.getLocation();
-                        rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(me), 15, round % 2));
+                        rc.writeSharedArray(amplifierID, GlobalArray.setBit(amplifierArray | GlobalArray.intifyLocation(me), 15, round % 2));
                     }
                 }
                 else if (arrivedAtCenter) {
                     Motion.moveRandomly(rc);
                     me = rc.getLocation();
-                    rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(me), 15, round % 2));
+                    rc.writeSharedArray(amplifierID, GlobalArray.setBit(amplifierArray | GlobalArray.intifyLocation(me), 15, round % 2));
                 }
                 else {
                     // if (arrivedAtCenter && opponentLocation != null) {
@@ -187,7 +187,7 @@ public strictfp class Amplifier {
                     // Motion.moveRandomly(rc);
                     // }
                     me = rc.getLocation();
-                    rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1100000000000000) | GlobalArray.intifyLocation(me), 15, round % 2));
+                    rc.writeSharedArray(amplifierID, GlobalArray.setBit(amplifierArray | GlobalArray.intifyLocation(me), 15, round % 2));
                 }
                 // Motion.moveRandomly(rc);
             } catch (GameActionException e) {
