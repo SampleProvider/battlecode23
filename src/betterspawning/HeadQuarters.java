@@ -144,7 +144,7 @@ public strictfp class HeadQuarters {
                     } else if (optimalSpawningLocation != null) {
                         int nextAmplifierIndex = 0;
                         for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
-                            if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
+                            if (rc.readSharedArray(a) >> 14 == 0) {
                                 nextAmplifierIndex = a;
                                 break;
                             }
