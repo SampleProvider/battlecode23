@@ -240,6 +240,9 @@ public strictfp class Launcher {
                                     }
                                 }
                             }
+                            else {
+                                Motion.moveRandomly(rc);
+                            }
                             indicatorString.append("SWARM-LAU; ");
                         }
                         else if (me.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) >= centerRange) {
