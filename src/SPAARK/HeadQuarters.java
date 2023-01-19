@@ -138,7 +138,7 @@ public strictfp class HeadQuarters {
                         indicatorString.append("PROD LAU; ");
                         rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                     }
-                    else if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && possibleSpawningLocations >= 6 && launchers > 10 && canProduceAmplifier) {
+                    else if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && possibleSpawningLocations >= 6 && launchers > 10 && amplifierIndex != 0) {
                         rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                         rc.writeSharedArray(amplifierIndex, GlobalArray.intifyLocation(optimalSpawningLocation));
                         indicatorString.append("PROD AMP; ");
