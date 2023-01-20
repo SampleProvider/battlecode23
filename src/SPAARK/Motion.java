@@ -157,15 +157,7 @@ public class Motion {
                     rc.move(direction.rotateRight());
                     continue;
                 }
-                boolean stuck = true;
-                for (Direction d : Direction.allDirections()) {
-                    if (rc.canMove(d)) {
-                        stuck = false;
-                    }
-                }
-                if (stuck) {
-                    break;
-                }
+                break;
             }
             return;
         }
@@ -207,84 +199,82 @@ public class Motion {
                     moved = true;
                 }
             }
-            if (moved == false) {
-                moveRandomly(rc);
-                boolean stuck = true;
-                for (Direction d : Direction.allDirections()) {
-                    if (rc.canMove(d)) {
-                        stuck = false;
-                    }
-                }
-                if (stuck) {
-                    break;
-                }
-            }
+            break;
+            // if (moved == false) {
+            //     moveRandomly(rc);
+            //     boolean stuck = true;
+            //     for (Direction d : Direction.allDirections()) {
+            //         if (rc.canMove(d)) {
+            //             stuck = false;
+            //         }
+            //     }
+            //     if (stuck) {
+            //         break;
+            //     }
+            // }
         }
     }
     
     protected static void spreadCenter(RobotController rc, MapLocation me) throws GameActionException {
         Direction direction = me.directionTo(new MapLocation(rc.getMapWidth() / 2,rc.getMapHeight() / 2));
         while (rc.isMovementReady()) {
-            boolean moved = false;
             int random = rng.nextInt(6);
             if (random == 0) {
                 if (rc.canMove(direction.rotateLeft())) {
                     rc.move(direction.rotateLeft());
-                    moved = true;
+                    continue;
                 }
             }
             else if (random == 3) {
                 if (rc.canMove(direction.rotateRight())) {
                     rc.move(direction.rotateRight());
-                    moved = true;
+                    continue;
                 }
             }
             else if (random == 1 || random == 2) {
                 if (rc.canMove(direction)) {
                     rc.move(direction);
-                    moved = true;
+                    continue;
                 }
             }
-            if (moved == false) {
-                break;
-            }
+            break;
         }
     }
     protected static void spreadEdges(RobotController rc, MapLocation me) throws GameActionException {
         Direction direction = me.directionTo(new MapLocation(rc.getMapWidth() / 2,rc.getMapHeight() / 2)).opposite();
         while (rc.isMovementReady()) {
-            boolean moved = false;
             int random = rng.nextInt(6);
             if (random == 0) {
                 if (rc.canMove(direction.rotateLeft().rotateLeft())) {
                     rc.move(direction.rotateLeft().rotateLeft());
-                    moved = true;
+                    continue;
                 }
             }
             else if (random == 3) {
                 if (rc.canMove(direction.rotateRight().rotateRight())) {
                     rc.move(direction.rotateRight().rotateRight());
-                    moved = true;
+                    continue;
                 }
             }
             else if (random == 1 || random == 2) {
                 if (rc.canMove(direction)) {
                     rc.move(direction);
-                    moved = true;
+                    continue;
                 }
             }
-            if (moved == false) {
-                moveRandomly(rc);
-                boolean stuck = true;
-                for (Direction d : Direction.allDirections()) {
-                    if (rc.canMove(d)) {
-                        stuck = false;
-                    }
-                }
-                if (stuck) {
-                    break;
-                }
-            }
+            break;
+            // if (moved == false) {
+            //     moveRandomly(rc);
+            //     boolean stuck = true;
+            //     for (Direction d : Direction.allDirections()) {
+            //         if (rc.canMove(d)) {
+            //             stuck = false;
+            //         }
+            //     }
+            //     if (stuck) {
+            //         break;
+            //     }
+            // }
         }
     }
     protected static void circleAroundTarget(RobotController rc, MapLocation me, MapLocation target) throws GameActionException {
@@ -296,7 +286,9 @@ public class Motion {
             rc.move(direction);
         }
     }
+    
     protected static boolean circleAroundTarget(RobotController rc, MapLocation me, MapLocation target, int distance, boolean clockwiseRotation) throws GameActionException {
+        boolean stuck = false;
         while (rc.isMovementReady()) {
             Direction direction = me.directionTo(target);
             if (me.distanceSquaredTo(target) > (int) distance * 1.25) {
@@ -320,18 +312,14 @@ public class Motion {
             }
             if (rc.canMove(direction)) {
                 rc.move(direction);
+                stuck = false;
             }
             else {
                 clockwiseRotation = !clockwiseRotation;
-            }
-            boolean stuck = true;
-            for (Direction d : Direction.allDirections()) {
-                if (rc.canMove(d)) {
-                    stuck = false;
+                if (stuck == true) {
+                    break;
                 }
-            }
-            if (stuck) {
-                break;
+                stuck = true;
             }
         }
         return clockwiseRotation;
