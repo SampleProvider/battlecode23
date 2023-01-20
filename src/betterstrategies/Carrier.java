@@ -1,4 +1,4 @@
-package betterspawning;
+package betterstrategies;
 
 import battlecode.common.*;
 

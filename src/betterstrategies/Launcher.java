@@ -1,4 +1,4 @@
-package betterspawning;
+package betterstrategies;
 
 import battlecode.common.*;
 
@@ -71,6 +71,7 @@ public strictfp class Launcher {
     // 3 is defense
     // 4 is pathfinding to opponent
     // 5 is bad
+    // 6 is random exploring
 
     protected StringBuilder indicatorString = new StringBuilder();
 
@@ -441,6 +442,7 @@ public strictfp class Launcher {
                         Motion.spreadEdges(rc, me);
                     }
                 }
+
                 me = rc.getLocation();
                 robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
                 prioritizedRobotInfoLocation = Attack.attack(rc, me, robotInfo, prioritizedRobotType, true, indicatorString);

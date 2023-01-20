@@ -1,4 +1,4 @@
-package betterspawning;
+package betterstrategies;
 
 import java.util.Arrays;
 

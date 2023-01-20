@@ -1,6 +1,7 @@
-package betterspawning;
+package betterstrategies;
 
 import battlecode.common.*;
+import java.util.Random;
 
 public strictfp class Amplifier {
     protected RobotController rc;
@@ -19,6 +20,8 @@ public strictfp class Amplifier {
         Direction.NORTHEAST,
     };
 
+    private final Random rng = new Random(2023);
+
     private MapLocation[] headquarters;
     private MapLocation prioritizedHeadquarters;
     private RobotType prioritizedRobotType = RobotType.LAUNCHER;
@@ -33,6 +36,9 @@ public strictfp class Amplifier {
 
     private boolean clockwiseRotation = true;
     private Direction lastDirection = Direction.CENTER;
+
+    private MapLocation randomExploreLocation;
+    private int randomExploreTime = 0;
 
     protected StringBuilder indicatorString = new StringBuilder();
 
@@ -206,6 +212,15 @@ public strictfp class Amplifier {
                 rc.setIndicatorString(indicatorString.toString());
                 Clock.yield();
             }
+        }
+    }
+
+    private void updateRandomExploreLocation() throws GameActionException {
+        if (randomExploreLocation != null) return;
+        MapLocation[] knownWells = GlobalArray.getKnownWellLocations(rc);
+        while (randomExploreLocation == null) {
+            randomExploreLocation = new MapLocation(rng.nextInt(rc.getMapWidth()), rng.nextInt(rc.getMapHeight()));
+
         }
     }
 }
