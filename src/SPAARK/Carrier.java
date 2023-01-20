@@ -269,7 +269,7 @@ public strictfp class Carrier {
                 }
             }
             
-            Motion.spreadRandomly(rc, me, prioritizedHeadquarters);
+            Motion.spreadRandomly(rc, me);
         }
         else if (state == 1) {
             WellInfo[] wellInfo = rc.senseNearbyWells();
