@@ -1,4 +1,4 @@
-package SPAARK;
+package SPAARK_TEST;
 
 import battlecode.common.*;
 
@@ -82,7 +82,7 @@ public strictfp class Launcher {
                 headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
             }
             state = 3;
-            // state = 0;
+            state = 4;
         } catch (GameActionException e) {
             System.out.println("GameActionException at Launcher constructor");
             e.printStackTrace();
@@ -244,30 +244,32 @@ public strictfp class Launcher {
                     int amplifierArray = rc.readSharedArray(amplifierID);
                     rc.setIndicatorString(amplifierID + " " + amplifierArray);
                     if (amplifierArray == 0) {
-                        state = 0;
+                        rc.setIndicatorString("a");
+                        state = 4;
                         arrivedAtCenter = true;
                         continue;
                     }
                     if (!detectAmplifier()) {
-                        state = 0;
+                        rc.setIndicatorString("b");
+                        state = 4;
                         arrivedAtCenter = true;
                         continue;
                     }
-                    updatePrioritizedOpponentHeadquarters();
-                    if (prioritizedOpponentHeadquarters != null) {
-                        boolean hasSpace = false;
-                        for (Direction d : DIRECTIONS) {
-                            if (rc.canSenseLocation(prioritizedOpponentHeadquarters.add(d))) {
-                                if (rc.senseRobotAtLocation(prioritizedOpponentHeadquarters.add(d)) == null && rc.sensePassability(prioritizedOpponentHeadquarters.add(d))) {
-                                    hasSpace = true;
-                                }
-                            }
-                        }
-                        if (hasSpace) {
-                            state = 2;
-                            continue;
-                        }
-                    }
+                    // updatePrioritizedOpponentHeadquarters();
+                    // if (prioritizedOpponentHeadquarters != null) {
+                    //     boolean hasSpace = false;
+                    //     for (Direction d : DIRECTIONS) {
+                    //         if (rc.canSenseLocation(prioritizedOpponentHeadquarters.add(d))) {
+                    //             if (rc.senseRobotAtLocation(prioritizedOpponentHeadquarters.add(d)) == null && rc.sensePassability(prioritizedOpponentHeadquarters.add(d))) {
+                    //                 hasSpace = true;
+                    //             }
+                    //         }
+                    //     }
+                    //     if (hasSpace) {
+                    //         state = 2;
+                    //         continue;
+                    //     }
+                    // }
                     prioritizedAmplifierLocation = GlobalArray.parseLocation(amplifierArray);
                     rc.setIndicatorLine(me, prioritizedAmplifierLocation, 255, 175, 75);
                     if (me.distanceSquaredTo(prioritizedAmplifierLocation) <= amplifierCircleRange * 1.25) {
@@ -422,6 +424,14 @@ public strictfp class Launcher {
                 }
                 if (state == 4) {
                     if (!detectAmplifier()) {
+                        prioritizedHeadquarters = headquarters[0];
+                        for (MapLocation hq : headquarters) {
+                            if (hq != null) {
+                                if (prioritizedHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
+                                    prioritizedHeadquarters = hq;
+                                }
+                            }
+                        }
                         MapLocation[] opponentLocations = GlobalArray.getKnownOpponentLocations(rc);
                         MapLocation prioritizedOpponentLocation = null;
                         int prioritizedOpponentLocationIndex = -1;
@@ -505,14 +515,6 @@ public strictfp class Launcher {
                                         }
                                     }
                                     else {
-                                        prioritizedHeadquarters = headquarters[0];
-                                        for (MapLocation hq : headquarters) {
-                                            if (hq != null) {
-                                                if (prioritizedHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
-                                                    prioritizedHeadquarters = hq;
-                                                }
-                                            }
-                                        }
                                         if (prioritizedHeadquarters.distanceSquaredTo(me) <= 100) {
                                             Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, indicatorString);
                                             lastDirection = bug2array[0];
@@ -539,64 +541,55 @@ public strictfp class Launcher {
                                     me = rc.getLocation();
                                     rc.setIndicatorLine(me, prioritizedFriendlyRobotInfo.getLocation(), 255, 125, 125);
                                 }
+                                continue;
                             }
                         }
-                        else {
-                            indicatorString.append("DEF; ");
-                            prioritizedHeadquarters = headquarters[0];
-                            for (MapLocation hq : headquarters) {
-                                if (hq != null) {
-                                    if (prioritizedHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
-                                        prioritizedHeadquarters = hq;
-                                    }
-                                }
+                        indicatorString.append("DEF; ");
+                        int surroundingLaunchers = 0;
+                        for (RobotInfo w : friendlyRobotInfo) {
+                            if (w.getType() == RobotType.LAUNCHER) {
+                                surroundingLaunchers += 1;
                             }
-                            int surroundingLaunchers = 0;
-                            for (RobotInfo w : friendlyRobotInfo) {
-                                if (w.getType() == RobotType.LAUNCHER) {
-                                    surroundingLaunchers += 1;
-                                }
+                        }
+                        headquarterCircleRange = 16 + surroundingLaunchers / 3;
+                        if (opponentLocation != null) {
+                            rc.setIndicatorLine(me, opponentLocation, 255, 125, 25);
+                            Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
+                            lastDirection = bug2array[0];
+                            if (bug2array[1] == Direction.CENTER) {
+                                clockwiseRotation = !clockwiseRotation;
                             }
-                            headquarterCircleRange = 16 + surroundingLaunchers / 3;
-                            if (opponentLocation != null) {
-                                rc.setIndicatorLine(me, opponentLocation, 255, 125, 25);
-                                Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
-                                lastDirection = bug2array[0];
-                                if (bug2array[1] == Direction.CENTER) {
+                            me = rc.getLocation();
+                            if (me.distanceSquaredTo(opponentLocation) <= 2) {
+                                opponentLocation = null;
+                            }
+                        }
+                        else if (me.distanceSquaredTo(prioritizedHeadquarters) <= headquarterCircleRange * 1.25) {
+                            if (me.x <= edgeRange || me.x >= rc.getMapWidth() - edgeRange || me.y <= edgeRange || me.y >= rc.getMapHeight() - edgeRange) {
+                                if (rc.isMovementReady()) {
                                     clockwiseRotation = !clockwiseRotation;
                                 }
-                                me = rc.getLocation();
-                                if (me.distanceSquaredTo(opponentLocation) <= 2) {
-                                    opponentLocation = null;
-                                }
                             }
-                            else if (me.distanceSquaredTo(prioritizedHeadquarters) <= headquarterCircleRange * 1.25) {
-                                if (me.x <= edgeRange || me.x >= rc.getMapWidth() - edgeRange || me.y <= edgeRange || me.y >= rc.getMapHeight() - edgeRange) {
-                                    if (rc.isMovementReady()) {
-                                        clockwiseRotation = !clockwiseRotation;
-                                    }
-                                }
-                                clockwiseRotation = Motion.circleAroundTarget(rc, me, prioritizedHeadquarters, headquarterCircleRange, clockwiseRotation);
-                                if (me.equals(rc.getLocation())) {
-                                    headquarterCircleStuck += 1;
-                                    if (headquarterCircleStuck == 10) {
-                                        state = 0;
-                                    }
-                                }
-                                else {
-                                    headquarterCircleStuck = 0;
+                            clockwiseRotation = Motion.circleAroundTarget(rc, me, prioritizedHeadquarters, headquarterCircleRange, clockwiseRotation);
+                            if (me.equals(rc.getLocation())) {
+                                headquarterCircleStuck += 1;
+                                if (headquarterCircleStuck == 10) {
+                                    state = 0;
                                 }
                             }
                             else {
-                                Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, indicatorString);
-                                lastDirection = bug2array[0];
-                                if (bug2array[1] == Direction.CENTER) {
-                                    clockwiseRotation = !clockwiseRotation;
-                                }
+                                headquarterCircleStuck = 0;
                             }
-                            me = rc.getLocation();
-                            rc.setIndicatorDot(me, 75, 255, 75);
                         }
+                        else {
+                            Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, indicatorString);
+                            lastDirection = bug2array[0];
+                            if (bug2array[1] == Direction.CENTER) {
+                                clockwiseRotation = !clockwiseRotation;
+                            }
+                        }
+                        me = rc.getLocation();
+                        rc.setIndicatorDot(me, 75, 255, 75);
                     }
                 }
                 me = rc.getLocation();
