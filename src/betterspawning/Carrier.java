@@ -205,7 +205,7 @@ public strictfp class Carrier {
                                 prioritizedWellInfoLocation = w.getMapLocation();
                             }
                         }
-                        if (seenWellIndex < maxSeenWells) {
+                        if (seenWellIndex < 4) {
                             boolean newWell = true;
                             for (int i = 0;i < seenWellIndex; i++) {
                                 if (seenWells[i] == null) {
@@ -284,7 +284,7 @@ public strictfp class Carrier {
                 }
             }
             
-            Motion.spreadRandomly(rc, me, prioritizedHeadquarters);
+            Motion.spreadRandomly(rc, me);
         }
         else if (state == 1) {
             WellInfo[] wellInfo = rc.senseNearbyWells();
@@ -310,7 +310,7 @@ public strictfp class Carrier {
                             prioritizedWellInfoLocation = w.getMapLocation();
                         }
                     }
-                    if (seenWellIndex < maxSeenWells) {
+                    if (seenWellIndex < 4) {
                         boolean newWell = true;
                         for (int i = 0;i < seenWellIndex; i++) {
                             if (seenWells[i] == null) {
