@@ -356,7 +356,7 @@ public strictfp class Launcher {
                                     clockwiseRotation = !clockwiseRotation;
                                 }
                                 if (rc.canWriteSharedArray(0, 0)) {
-                                    rc.writeSharedArray(22 + prioritizedOpponentLocationIndex, 0);
+                                    rc.writeSharedArray(GlobalArray.OPPONENTS + prioritizedOpponentLocationIndex, 0);
                                     invalidOpponentLocations[prioritizedOpponentLocationIndex] = false;
                                 }
                             }

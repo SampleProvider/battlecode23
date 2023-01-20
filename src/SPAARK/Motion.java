@@ -45,6 +45,61 @@ public class Motion {
             }
         }
     }
+    protected static void spreadRandomly(RobotController rc, MapLocation me) throws GameActionException {
+        RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
+        if (robotInfo.length > 0) {
+            RobotInfo prioritizedRobotInfo = null;
+            for (RobotInfo w : robotInfo) {
+                if (w.getType() != rc.getType()) {
+                    continue;
+                }
+                if (me.distanceSquaredTo(w.getLocation()) > 9) {
+                    continue;
+                }
+                if (prioritizedRobotInfo == null) {
+                    prioritizedRobotInfo = w;
+                    continue;
+                }
+                if (me.distanceSquaredTo(prioritizedRobotInfo.getLocation()) > me.distanceSquaredTo(w.getLocation())) {
+                    prioritizedRobotInfo = w;
+                }
+            }
+            Direction direction = null;
+            if (prioritizedRobotInfo != null) {
+                direction = me.directionTo(prioritizedRobotInfo.getLocation()).opposite();
+                while (rc.isMovementReady()) {
+                    if (rc.canMove(direction)) {
+                        rc.move(direction);
+                        continue;
+                    }
+                    if (rc.canMove(direction.rotateLeft())) {
+                        rc.move(direction.rotateLeft());
+                        continue;
+                    }
+                    if (rc.canMove(direction.rotateLeft().rotateLeft())) {
+                        rc.move(direction.rotateLeft().rotateLeft());
+                        continue;
+                    }
+                    if (rc.canMove(direction.rotateRight())) {
+                        rc.move(direction.rotateRight());
+                        continue;
+                    }
+                    if (rc.canMove(direction.rotateRight().rotateRight())) {
+                        rc.move(direction.rotateRight().rotateRight());
+                        continue;
+                    }
+                    break;
+                }
+            }
+            else {
+                moveRandomly(rc);
+            }
+        }
+        else {
+            Motion.moveRandomly(rc);
+        }
+    }
+    
     protected static void spreadRandomly(RobotController rc, MapLocation me, MapLocation target) throws GameActionException {
         Direction direction = me.directionTo(target).opposite();
         while (rc.isMovementReady()) {
