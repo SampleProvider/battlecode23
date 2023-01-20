@@ -80,6 +80,7 @@ public strictfp class HeadQuarters {
                         if (GlobalArray.hasLocation(arrAmp)) {
                             if ((arrAmp >> 15) == round % 2) {
                                 rc.writeSharedArray(a,0);
+                                System.out.println("AMPLIFIER " + a + " died");
                                 indicatorString.append("AMP " + a + " die; ");
                             }
                         }
@@ -88,16 +89,22 @@ public strictfp class HeadQuarters {
 
                 MapLocation optimalSpawningLocationWell = optimalSpawnLocation(rc, me, true);
                 MapLocation optimalSpawningLocation = optimalSpawnLocation(rc, me, false);
-                // if (round > 500) {
+                // if (round > 1000) {
                 //     rc.resign();
                 // }
-                // if (round == 1) {
-                //     rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
+                // int amplifierIndex = 0;
+                // for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
+                //     if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
+                //         amplifierIndex = a;
+                //         break;
+                //     }
                 // }
-                // else {
-                //     Clock.yield();
-                //     continue;
+                // if (amplifierIndex != 0) {
+                //     rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
+                //     rc.writeSharedArray(amplifierIndex, GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 14, 1));
                 // }
+                // Clock.yield();
+                // continue;
                 if (anchorCooldown <= 0 && round >= 200 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
                     if (adamantium >= 100 && mana >= 100) {
                         rc.buildAnchor(Anchor.STANDARD);
@@ -107,7 +114,7 @@ public strictfp class HeadQuarters {
                     else {
                         indicatorString.append("TRY PROD ANC; ");
                         if (adamantium >= 150) {
-                            if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
+                            while (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
                                 rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                                 carriers += 1;
                                 indicatorString.append("PROD CAR; ");
@@ -115,7 +122,7 @@ public strictfp class HeadQuarters {
                             }
                         }
                         if (mana >= 160) {
-                            if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
+                            while (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
                                 rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                                 launchers++;
                                 indicatorString.append("PROD LAU; ");
@@ -132,19 +139,28 @@ public strictfp class HeadQuarters {
                             break;
                         }
                     }
-                    if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
+                    while (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
                         rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                         launchers++;
                         indicatorString.append("PROD LAU; ");
                         rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                     }
-                    else if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && possibleSpawningLocations >= 6 && launchers > 10 && amplifierIndex != 0) {
+                    while (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && possibleSpawningLocations >= 6 && launchers > 10 && amplifierIndex != 0) {
                         rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
-                        rc.writeSharedArray(amplifierIndex, GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 14, 1));
+                        rc.writeSharedArray(amplifierIndex, GlobalArray.setBit(GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 14, 1), 15, round % 2));
+                        System.out.println(amplifierIndex);
+                        System.out.println(rc.readSharedArray(amplifierIndex) >> 13);
                         indicatorString.append("PROD AMP; ");
                         rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                        amplifierIndex = 0;
+                        for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
+                            if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
+                                amplifierIndex = a;
+                                break;
+                            }
+                        }
                     }
-                    else if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
+                    while (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
                         rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                         carriers += 1;
                         indicatorString.append("PROD CAR; ");
