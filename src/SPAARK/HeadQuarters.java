@@ -86,107 +86,130 @@ public strictfp class HeadQuarters {
                     }
                 }
 
-                MapLocation optimalSpawningLocationWell = optimalSpawnLocation(rc, me, true);
-                MapLocation optimalSpawningLocation = optimalSpawnLocation(rc, me, false);
-                // if (round > 500) {
+                // if (round > 1000) {
                 //     rc.resign();
                 // }
-                // if (round == 1) {
-                //     rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
+                // int amplifierIndex = 0;
+                // for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
+                //     if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
+                //         amplifierIndex = a;
+                //         break;
+                //     }
                 // }
-                // else {
-                //     Clock.yield();
-                //     continue;
+                // if (amplifierIndex != 0) {
+                //     rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
+                //     rc.writeSharedArray(amplifierIndex, GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 14, 1));
                 // }
-                if (anchorCooldown <= 0 && round >= 200 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
-                    if (adamantium >= 100 && mana >= 100) {
-                        rc.buildAnchor(Anchor.STANDARD);
-                        indicatorString.append("PROD ANC; ");
-                        anchorCooldown = 100;
+                // Clock.yield();
+                // continue;
+                while (rc.isActionReady()) {
+                    MapLocation optimalSpawningLocationWell = optimalSpawnLocation(rc, me, true);
+                    MapLocation optimalSpawningLocation = optimalSpawnLocation(rc, me, false);
+                    boolean builtRobot = false;
+                    if (anchorCooldown <= 0 && round >= 200 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
+                        if (adamantium >= 100 && mana >= 100) {
+                            rc.buildAnchor(Anchor.STANDARD);
+                            indicatorString.append("PROD ANC; ");
+                            anchorCooldown = 100;
+                        }
+                        else {
+                            indicatorString.append("TRY PROD ANC; ");
+                            if (adamantium >= 150) {
+                                if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
+                                    rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
+                                    carriers += 1;
+                                    builtRobot = true;
+                                    indicatorString.append("PROD CAR; ");
+                                    rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
+                                }
+                            }
+                            if (mana >= 160) {
+                                if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
+                                    rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
+                                    launchers++;
+                                    builtRobot = true;
+                                    indicatorString.append("PROD LAU; ");
+                                    rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                                }
+                            }
+                        }
                     }
                     else {
-                        indicatorString.append("TRY PROD ANC; ");
-                        if (adamantium >= 150) {
-                            if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
-                                rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
-                                carriers += 1;
-                                indicatorString.append("PROD CAR; ");
-                                rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
+                        int amplifierIndex = 0;
+                        for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
+                            if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
+                                if (round == 1274) {
+                                    System.out.println(a + " " + rc.readSharedArray(a));
+                                }
+                                amplifierIndex = a;
+                                break;
                             }
                         }
-                        if (mana >= 160) {
-                            if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
-                                rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
-                                launchers++;
-                                indicatorString.append("PROD LAU; ");
-                                rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                            }
+                        if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
+                            rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
+                            launchers++;
+                            builtRobot = true;
+                            indicatorString.append("PROD LAU; ");
+                            rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                        }
+                        else if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && possibleSpawningLocations >= 6 && launchers > 10 && amplifierIndex != 0) {
+                            rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
+                            launchers = 5;
+                            builtRobot = true;
+                            rc.writeSharedArray(amplifierIndex, GlobalArray.setBit(GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 14, 1), 15, round % 2));
+                            indicatorString.append("PROD AMP; ");
+                            rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                        }
+                        else if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
+                            rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
+                            carriers += 1;
+                            builtRobot = true;
+                            indicatorString.append("PROD CAR; ");
+                            rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                         }
                     }
-                }
-                else {
-                    boolean canProduceAmplifier = false;
-                    for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
-                        if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
-                            canProduceAmplifier = true;
-                        }
-                    }
-                    if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
-                        rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
-                        launchers++;
-                        indicatorString.append("PROD LAU; ");
-                        rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                    }
-                    else if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && possibleSpawningLocations >= 6 && launchers > 10 && canProduceAmplifier) {
-                        rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
-                        indicatorString.append("PROD AMP; ");
-                        rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                    }
-                    else if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
-                        rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
-                        carriers += 1;
-                        indicatorString.append("PROD CAR; ");
-                        rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
+                    if (!builtRobot) {
+                        break;
                     }
                 }
                 anchorCooldown -= 1;
                 // store
-                GlobalArray.storeHeadquarters(this);
-                // prioritized resources
-                double deviation = (mana - (adamantium * 1.5)) / (mana + (adamantium * 1.5));
-                if (Math.abs(deviation) < 0.2) {
-                    globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE, hqIndex);
-                    indicatorString.append("PR=NO; ");
-                } else if (deviation < 0) {
-                    globalArray.setPrioritizedResource(ResourceType.MANA, hqIndex);
-                    indicatorString.append("PR=MN; ");
-                } else {
-                    globalArray.setPrioritizedResource(ResourceType.ADAMANTIUM, hqIndex);
-                    indicatorString.append("PR=AD; ");
-                }
-                if (isPrimaryHQ) {
-                    if (round == 2) {
-                        for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
-                            if (GlobalArray.hasLocation(rc.readSharedArray(i))) hqCount++;
-                        }
-                    }
-                    // set upgrade wells if resources adequate
-                    boolean upgradeWells = true;
-                    for (int i = GlobalArray.HEADQUARTERS; i <= GlobalArray.HEADQUARTERS + hqCount; i++) {
-                        int arrayHQ = rc.readSharedArray(i);
-                        if (!GlobalArray.adequateResources(arrayHQ)) {
-                            upgradeWells = false;
-                        }
-                    }
-                    // upgrade wells
-                    globalArray.setUpgradeWells(upgradeWells);
-                    // set target elixir well
-                    if (round > 200 && !setTargetElixirWell) {
-                        // setTargetElixirWell();
-                    }
-                }
-                // save game state
-                rc.writeSharedArray(0, globalArray.getGameStateNumber());
+                // GlobalArray.storeHeadquarters(this);
+                // // prioritized resources
+                // double deviation = (mana - (adamantium * 1.5)) / (mana + (adamantium * 1.5));
+                // if (Math.abs(deviation) < 0.2) {
+                //     globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE, hqIndex);
+                //     indicatorString.append("PR=NO; ");
+                // } else if (deviation < 0) {
+                //     globalArray.setPrioritizedResource(ResourceType.MANA, hqIndex);
+                //     indicatorString.append("PR=MN; ");
+                // } else {
+                //     globalArray.setPrioritizedResource(ResourceType.ADAMANTIUM, hqIndex);
+                //     indicatorString.append("PR=AD; ");
+                // }
+                // if (isPrimaryHQ) {
+                //     if (round == 2) {
+                //         for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
+                //             if (GlobalArray.hasLocation(rc.readSharedArray(i))) hqCount++;
+                //         }
+                //     }
+                //     // set upgrade wells if resources adequate
+                //     boolean upgradeWells = true;
+                //     for (int i = GlobalArray.HEADQUARTERS; i <= GlobalArray.HEADQUARTERS + hqCount; i++) {
+                //         int arrayHQ = rc.readSharedArray(i);
+                //         if (!GlobalArray.adequateResources(arrayHQ)) {
+                //             upgradeWells = false;
+                //         }
+                //     }
+                //     // upgrade wells
+                //     globalArray.setUpgradeWells(upgradeWells);
+                //     // set target elixir well
+                //     if (round > 200 && !setTargetElixirWell) {
+                //         // setTargetElixirWell();
+                //     }
+                // }
+                // // save game state
+                // rc.writeSharedArray(0, globalArray.getGameStateNumber());
             } catch (GameActionException e) {
                 System.out.println("GameActionException at HeadQuarters");
                 e.printStackTrace();

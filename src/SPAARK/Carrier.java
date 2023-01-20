@@ -269,7 +269,7 @@ public strictfp class Carrier {
                 }
             }
             
-            Motion.spreadRandomly(rc, me, prioritizedHeadquarters);
+            Motion.spreadRandomly(rc, me);
         }
         else if (state == 1) {
             WellInfo[] wellInfo = rc.senseNearbyWells();
@@ -397,7 +397,7 @@ public strictfp class Carrier {
             if (rc.canCollectResource(prioritizedWell, -1)
                     && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
                 rc.collectResource(prioritizedWell, -1);
-                Motion.circleAroundTarget(rc, me, prioritizedWell);
+                // Motion.circleAroundTarget(rc, me, prioritizedWell);
                 me = rc.getLocation();
                 rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
             } else {
