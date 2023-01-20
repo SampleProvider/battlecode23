@@ -149,7 +149,7 @@ public strictfp class Amplifier {
                             }
                         }
                         else {
-                            indicatorString.append("1 ");
+                            indicatorString.append("RAND-1; ");
                             Motion.spreadRandomly(rc, me, opponentLocation);
                         }
                         me = rc.getLocation();
@@ -166,11 +166,11 @@ public strictfp class Amplifier {
                             }
                         }
                         else if (arrivedAtCenter) {
-                            indicatorString.append("2 ");
+                            indicatorString.append("RAND-2; ");
                             Motion.moveRandomly(rc);
                         }
                         else {
-                            indicatorString.append("3 ");
+                            indicatorString.append("RAND-3; ");
                             Motion.spreadCenter(rc, me);
                         }
                         me = rc.getLocation();

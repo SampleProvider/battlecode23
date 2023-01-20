@@ -16,8 +16,10 @@ public strictfp class GlobalArray {
     public static final int AMPLIFIERS_LENGTH = 6;
     public static final int OPPONENTS = 23;
     public static final int OPPONENTS_LENGTH = 8;
-    public static final int CARRIERCOUNT = 31;
-    public static final int LAUNCHERCOUNT = 32;
+    public static final int ISLANDS = 31;
+    public static final int ISLANDS_LENGTH = 16;
+    public static final int CARRIERCOUNT = 47;
+    public static final int LAUNCHERCOUNT = 48;
 
     public static final int PRIORITIZED_RESOURCE_HQ1 = 0;
     public static final int PRIORITIZED_RESOURCE_HQ2 = 1;
@@ -36,11 +38,14 @@ public strictfp class GlobalArray {
      * Bits 0-5     x coordinate
      * Bits 6-11    y coordinate
      * Bit 12       presence marker
+     * Headquarters:
+     *  Bit 13      adequate materials
      * Wells:
      *  Bits 13-14  resource type
      *  Bit 15      upgraded marker
-     * Headquarters:
-     *  Bit 13      adequate materials
+     * Opponents:
+     *  No extra bits
+     * Islands
      */
 
     // general location/data parsing/writing

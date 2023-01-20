@@ -23,8 +23,13 @@ public strictfp class Launcher {
     private MapLocation prioritizedHeadquarters;
     private MapLocation prioritizedOpponentHeadquarters;
 
-    private WellInfo[] seenWells = new WellInfo[4];
+    private final int maxSeenWells = 8;
+    private WellInfo[] seenWells = new WellInfo[maxSeenWells];
     private int seenWellIndex = 0;
+
+    private final int maxSeenIslands = 8;
+    private WellInfo[] seenIslands = new WellInfo[maxSeenIslands];
+    private int seenIslandIndex = 0;
 
     private RobotInfo[] robotInfo;
     private MapLocation opponentLocation;
@@ -112,7 +117,7 @@ public strictfp class Launcher {
                     if (round % 2 == 0) {
                         rc.writeSharedArray(GlobalArray.LAUNCHERCOUNT, rc.readSharedArray(GlobalArray.LAUNCHERCOUNT)+1);
                     }
-                    for (int i = 0;i < 4;i++) {
+                    for (int i = 0;i < maxSeenWells;i++) {
                         if (seenWells[i] != null) {
                             if (GlobalArray.storeWell(rc, seenWells[i])) {
                                 indicatorString.append("STO WELL " + seenWells[i].toString() + "; ");
@@ -130,7 +135,7 @@ public strictfp class Launcher {
                 WellInfo[] wellInfo = rc.senseNearbyWells();
                 if (wellInfo.length > 0) {
                     for (WellInfo w : wellInfo) {
-                        if (seenWellIndex < 4) {
+                        if (seenWellIndex < maxSeenWells) {
                             boolean newWell = true;
                             for (int i = 0;i < seenWellIndex; i++) {
                                 if (seenWells[i] == null) {

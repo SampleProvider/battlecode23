@@ -51,14 +51,16 @@ public strictfp class Amplifier {
             round = rc.getRoundNum();
             amplifierID = 0;
             for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
-                if (!GlobalArray.hasLocation(rc.readSharedArray(a)) || rc.readSharedArray(a) >> 14 == 1) {
+                if (((rc.readSharedArray(a) >> 14) & 0b1) == 1) {
                     amplifierID = a;
                     rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(rc.getLocation()), 15, round % 2));
                     break;
                 }
             }
+            // indicatorString.append("AMPID=" + amplifierID + "; ");
+            // rc.setIndicatorString(indicatorString.toString());
             if (amplifierID == 0) {
-                throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
+                System.out.println("[!] Too many Amplifiers! [!]");
             }
         } catch (GameActionException e) {
             System.out.println("GameActionException at Amplifier constructor");
@@ -75,6 +77,9 @@ public strictfp class Amplifier {
     public void run() {
         while (true) {
             try {
+                // if (amplifierID == 0) {
+                //     throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
+                // }
                 // amplifierArray = rc.readSharedArray(amplifierID);
                 me = rc.getLocation();
                 round = rc.getRoundNum();
@@ -133,16 +138,15 @@ public strictfp class Amplifier {
                     if (prioritizedRobotInfoLocation != null) {
                         opponentLocation = prioritizedRobotInfoLocation;
                         if (surroundingLaunchers >= 15) {
-                            if (rc.getMovementCooldownTurns() <= 5) {
-                                indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
-                                Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
-                                lastDirection = bug2array[0];
-                                if (bug2array[1] == Direction.CENTER) {
-                                    clockwiseRotation = !clockwiseRotation;
-                                }
+                            indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
+                            Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
+                            lastDirection = bug2array[0];
+                            if (bug2array[1] == Direction.CENTER) {
+                                clockwiseRotation = !clockwiseRotation;
                             }
                         }
                         else {
+                            indicatorString.append("RAND-1; ");
                             Motion.spreadRandomly(rc, me, opponentLocation);
                         }
                         me = rc.getLocation();
@@ -159,9 +163,11 @@ public strictfp class Amplifier {
                             }
                         }
                         else if (arrivedAtCenter) {
+                            indicatorString.append("RAND-2; ");
                             Motion.moveRandomly(rc);
                         }
                         else {
+                            indicatorString.append("RAND-3; ");
                             Motion.spreadCenter(rc, me);
                         }
                         me = rc.getLocation();
