@@ -129,7 +129,7 @@ public strictfp class HeadQuarters {
                             rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                             carrierCooldown = 10;
                         } else if (mana > 160 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
-                                && (launchers < 20*hqCount*mapSizeFactor || nearbyLaunchers < 10 || launcherCooldown <= 0) && possibleSpawningLocations >= 4) {
+                                && (launchers < 30*hqCount*mapSizeFactor || nearbyLaunchers < 10 || launcherCooldown <= 0) && possibleSpawningLocations >= 4) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                             indicatorString.append("PROD LAU; ");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
@@ -160,7 +160,7 @@ public strictfp class HeadQuarters {
                             rc.writeSharedArray(nextAmplifierIndex, GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 14, 1));
                             amplifierCooldown = 30;
                         } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
-                                && (launchers < 20*hqCount*mapSizeFactor || nearbyLaunchers < 10 || launcherCooldown <= 0)) {
+                                && (launchers < 30*hqCount*mapSizeFactor || nearbyLaunchers < 10 || launcherCooldown <= 0)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                             indicatorString.append("PROD LAU; ");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
@@ -175,7 +175,7 @@ public strictfp class HeadQuarters {
                 // store
                 GlobalArray.storeHeadquarters(this);
                 // prioritized resources
-                double deviation = (mana - (adamantium * 1.5)) / (mana + (adamantium * 1.5));
+                double deviation = (mana - (adamantium * 1.8)) / (mana + (adamantium * 1.8));
                 if (Math.abs(deviation) < 0.2) {
                     globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE, hqIndex);
                     indicatorString.append("PR=NO; ");
@@ -192,7 +192,7 @@ public strictfp class HeadQuarters {
                         for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
                             if (GlobalArray.hasLocation(rc.readSharedArray(i))) hqCount++;
                         }
-                        mapSizeFactor = (rc.getMapWidth() + rc.getMapHeight()) / (hqCount * 10);
+                        mapSizeFactor = (rc.getMapWidth() + rc.getMapHeight()) / (hqCount * 5);
                     }
                     // set prioritized resource
                     // set upgrade wells if resources adequate
