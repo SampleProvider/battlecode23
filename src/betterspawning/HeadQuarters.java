@@ -153,7 +153,7 @@ public strictfp class HeadQuarters {
                         }
                         indicatorString.append("CANP-AMP=" + (nextAmplifierIndex > 0) + "; ");
                         if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
-                                && (nextAmplifierIndex > 0) && amplifierCooldown <= 0) {
+                                && launchers > 10 && carriers > 0 && nextAmplifierIndex > 0 && amplifierCooldown <= 0) {
                             rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                             indicatorString.append("PROD AMP; ");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
@@ -192,7 +192,7 @@ public strictfp class HeadQuarters {
                         for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
                             if (GlobalArray.hasLocation(rc.readSharedArray(i))) hqCount++;
                         }
-                        mapSizeFactor = (rc.getMapWidth() + rc.getMapHeight()) / (hqCount * 5);
+                        mapSizeFactor = (rc.getMapWidth() + rc.getMapHeight()) / 10;
                     }
                     // set prioritized resource
                     // set upgrade wells if resources adequate
