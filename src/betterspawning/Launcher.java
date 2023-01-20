@@ -156,14 +156,14 @@ public strictfp class Launcher {
                 if (state == 0) {
                     updatePrioritizedOpponentHeadquarters();
                     if (prioritizedOpponentHeadquarters != null) {
-                        boolean hasSpace = false;
-                        for (Direction d : DIRECTIONS) {
-                            if (rc.canSenseLocation(prioritizedOpponentHeadquarters.add(d))) {
-                                if (rc.senseRobotAtLocation(prioritizedOpponentHeadquarters.add(d)) == null && rc.sensePassability(prioritizedOpponentHeadquarters.add(d))) {
-                                    hasSpace = true;
-                                }
-                            }
-                        }
+                        // boolean hasSpace = false;
+                        // for (Direction d : DIRECTIONS) {
+                        //     if (rc.canSenseLocation(prioritizedOpponentHeadquarters.add(d))) {
+                        //         if (rc.senseRobotAtLocation(prioritizedOpponentHeadquarters.add(d)) == null && rc.sensePassability(prioritizedOpponentHeadquarters.add(d))) {
+                        //             hasSpace = true;
+                        //         }
+                        //     }
+                        // }
                         // if (hasSpace) {
                         state = 2;
                         continue;
