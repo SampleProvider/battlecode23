@@ -188,6 +188,12 @@ public strictfp class RobotPlayer {
             }
         }
         
+        // RobotInfo[] nearbyRobots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
+        // int nearbyCarriers = 0;
+        // for (RobotInfo robot : nearbyRobots) {
+        //     if (robot.getType() == RobotType.CARRIER) nearbyCarriers++;
+        // }
+
         // If we can see a well, move towards it
         WellInfo[] wells = rc.senseNearbyWells();
         if (wells.length > 1 && rng.nextInt(3) == 1) {
@@ -221,6 +227,11 @@ public strictfp class RobotPlayer {
                 rc.attack(toAttack);
             }
         }
+
+        new MapLocation(rng.nextInt(rc.getMapWidth()), rng.nextInt(rc.getMapHeight()));
+        int randomx = rng.nextInt(rc.getMapWidth());
+        int randomy = rng.nextInt(rc.getMapHeight());
+        new MapLocation(randomx, randomy);
 
         // Also try to move randomly.
         Direction dir = directions[rng.nextInt(directions.length)];

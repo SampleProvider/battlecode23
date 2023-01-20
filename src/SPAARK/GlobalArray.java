@@ -16,6 +16,10 @@ public strictfp class GlobalArray {
     public static final int AMPLIFIERS_LENGTH = 6;
     public static final int OPPONENTS = 23;
     public static final int OPPONENTS_LENGTH = 8;
+    public static final int OPPONENT_HEADQUARTERS = 31;
+    public static final int OPPONENT_HEADQUARTERS_LENGTH = 4;
+    public static final int ISLANDS = 35;
+    public static final int ISLANDS_LENGTH = 16;
 
     public static final int PRIORITIZED_RESOURCE_HQ1 = 0;
     public static final int PRIORITIZED_RESOURCE_HQ2 = 1;
