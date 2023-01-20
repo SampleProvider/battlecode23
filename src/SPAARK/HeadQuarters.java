@@ -22,6 +22,8 @@ public strictfp class HeadQuarters {
 
     private int possibleSpawningLocations = 0;
 
+    private StoredLocations storedLocations;
+
     private boolean isPrimaryHQ = false;
     private boolean setTargetElixirWell = false;
     protected int adamantium = 0;
@@ -52,6 +54,7 @@ public strictfp class HeadQuarters {
             } else {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many HeadQuarters!");
             }
+            storedLocations = new StoredLocations(rc);
         } catch (GameActionException e) {
             System.out.println("GameActionException at HeadQuarters constructor");
             e.printStackTrace();
@@ -86,7 +89,10 @@ public strictfp class HeadQuarters {
                     }
                 }
 
-                // if (round > 1000) {
+                storedLocations.detectWells();
+                storedLocations.writeToGlobalArray();
+
+                // if (round > 200) {
                 //     rc.resign();
                 // }
                 // int amplifierIndex = 0;
@@ -152,14 +158,14 @@ public strictfp class HeadQuarters {
                             indicatorString.append("PROD LAU; ");
                             rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                         }
-                        else if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && possibleSpawningLocations >= 6 && launchers > 10 && amplifierIndex != 0) {
-                            rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
-                            launchers = 5;
-                            builtRobot = true;
-                            rc.writeSharedArray(amplifierIndex, GlobalArray.setBit(GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 14, 1), 15, round % 2));
-                            indicatorString.append("PROD AMP; ");
-                            rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                        }
+                        // else if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && possibleSpawningLocations >= 6 && launchers > 10 && amplifierIndex != 0) {
+                        //     rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
+                        //     launchers = 5;
+                        //     builtRobot = true;
+                        //     rc.writeSharedArray(amplifierIndex, GlobalArray.setBit(GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 14, 1), 15, round % 2));
+                        //     indicatorString.append("PROD AMP; ");
+                        //     rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                        // }
                         else if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
                             rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                             carriers += 1;

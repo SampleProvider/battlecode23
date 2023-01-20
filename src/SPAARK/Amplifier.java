@@ -22,13 +22,14 @@ public strictfp class Amplifier {
     private MapLocation[] headquarters;
     private MapLocation prioritizedHeadquarters;
     private RobotType prioritizedRobotType = RobotType.LAUNCHER;
+    
+    private StoredLocations storedLocations;
 
     private MapLocation opponentLocation;
 
     private int centerRange = 2;
     private boolean arrivedAtCenter = false;
     
-    private int amplifierArray;
     protected int amplifierID = 0;
 
     private boolean clockwiseRotation = true;
@@ -60,6 +61,7 @@ public strictfp class Amplifier {
             if (amplifierID == 0) {
                 throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
             }
+            storedLocations = new StoredLocations(rc);
         } catch (GameActionException e) {
             System.out.println("GameActionException at Amplifier constructor");
             e.printStackTrace();
@@ -75,10 +77,6 @@ public strictfp class Amplifier {
     public void run() {
         while (true) {
             try {
-                // if (amplifierID == 0) {
-                //     throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
-                // }
-                // amplifierArray = rc.readSharedArray(amplifierID);
                 me = rc.getLocation();
                 round = rc.getRoundNum();
                 prioritizedHeadquarters = headquarters[0];
@@ -91,6 +89,9 @@ public strictfp class Amplifier {
                 }
 
                 indicatorString = new StringBuilder();
+
+                storedLocations.detectWells();
+                storedLocations.writeToGlobalArray();
 
                 if (me.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) <= centerRange) {
                     indicatorString.append("CENT; ");
@@ -144,7 +145,7 @@ public strictfp class Amplifier {
                             }
                         }
                         else {
-                            indicatorString.append("RAND-1; ");
+                            indicatorString.append("1 ");
                             Motion.spreadRandomly(rc, me, opponentLocation);
                         }
                         me = rc.getLocation();
@@ -161,11 +162,11 @@ public strictfp class Amplifier {
                             }
                         }
                         else if (arrivedAtCenter) {
-                            indicatorString.append("RAND-2; ");
+                            indicatorString.append("2 ");
                             Motion.moveRandomly(rc);
                         }
                         else {
-                            indicatorString.append("RAND-3; ");
+                            indicatorString.append("3 ");
                             Motion.spreadCenter(rc, me);
                         }
                         me = rc.getLocation();
