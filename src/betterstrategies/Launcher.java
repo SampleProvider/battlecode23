@@ -71,7 +71,6 @@ public strictfp class Launcher {
     // 3 is defense
     // 4 is pathfinding to opponent
     // 5 is bad
-    // 6 is random exploring
 
     protected StringBuilder indicatorString = new StringBuilder();
 
@@ -272,18 +271,18 @@ public strictfp class Launcher {
                     }
                     updatePrioritizedOpponentHeadquarters();
                     if (prioritizedOpponentHeadquarters != null) {
-                        boolean hasSpace = false;
-                        for (Direction d : DIRECTIONS) {
-                            if (rc.canSenseLocation(prioritizedOpponentHeadquarters.add(d))) {
-                                if (rc.senseRobotAtLocation(prioritizedOpponentHeadquarters.add(d)) == null && rc.sensePassability(prioritizedOpponentHeadquarters.add(d))) {
-                                    hasSpace = true;
-                                }
-                            }
-                        }
-                        if (hasSpace) {
+                        // boolean hasSpace = false;
+                        // for (Direction d : DIRECTIONS) {
+                        //     if (rc.canSenseLocation(prioritizedOpponentHeadquarters.add(d))) {
+                        //         if (rc.senseRobotAtLocation(prioritizedOpponentHeadquarters.add(d)) == null && rc.sensePassability(prioritizedOpponentHeadquarters.add(d))) {
+                        //             hasSpace = true;
+                        //         }
+                        //     }
+                        // }
+                        // if (hasSpace) {
                             state = 2;
                             continue;
-                        }
+                        // }
                     }
                     prioritizedAmplifierLocation = GlobalArray.parseLocation(amplifierArray);
                     rc.setIndicatorLine(me, prioritizedAmplifierLocation, 255, 175, 75);
@@ -442,7 +441,6 @@ public strictfp class Launcher {
                         Motion.spreadEdges(rc, me);
                     }
                 }
-
                 me = rc.getLocation();
                 robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
                 prioritizedRobotInfoLocation = Attack.attack(rc, me, robotInfo, prioritizedRobotType, true, indicatorString);

@@ -15,7 +15,7 @@ public strictfp class HeadQuarters {
     private int anchorCooldown = 200;
     private int carrierCooldown = 0;
     private int launcherCooldown = 0;
-    private int amplifierCooldown = 100;
+    private int amplifierCooldown = 0;
     private int carriers = 0;
     private int launchers = 0;
     private int nearbyCarriers = 0;
