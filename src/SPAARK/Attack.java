@@ -15,18 +15,15 @@ public class Attack {
                     if (prioritizedRobotInfo == null) {
                         prioritizedRobotInfo = w;
                         prioritizedRobotInfoLocation = w.getLocation();
-                    }
-                    else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
+                    } else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
                         prioritizedRobotInfo = w;
                         prioritizedRobotInfoLocation = w.getLocation();
                     }
-                }
-                else if (attackAll) {
+                } else if (attackAll) {
                     if (prioritizedRobotInfo == null) {
                         prioritizedRobotInfo = w;
                         prioritizedRobotInfoLocation = w.getLocation();
-                    }
-                    else if (prioritizedRobotInfo.getType() != robotType && prioritizedRobotInfo.getHealth() > w.getHealth()) {
+                    } else if (prioritizedRobotInfo.getType() != robotType && prioritizedRobotInfo.getHealth() > w.getHealth()) {
                         prioritizedRobotInfo = w;
                         prioritizedRobotInfoLocation = w.getLocation();
                     }
@@ -39,11 +36,11 @@ public class Attack {
                 }
             }
             return prioritizedRobotInfoLocation;
-        }
-        else {
+        } else {
             return null;
         }
     }
+
     protected static MapLocation senseOpponent(RobotController rc, MapLocation me, RobotInfo[] robotInfo) throws GameActionException {
         if (robotInfo.length > 0) {
             RobotInfo prioritizedRobotInfo = null;
@@ -55,15 +52,13 @@ public class Attack {
                 if (prioritizedRobotInfo == null) {
                     prioritizedRobotInfo = w;
                     prioritizedRobotInfoLocation = w.getLocation();
-                }
-                else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
+                } else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
                     prioritizedRobotInfo = w;
                     prioritizedRobotInfoLocation = w.getLocation();
                 }
             }
             return prioritizedRobotInfoLocation;
-        }
-        else {
+        } else {
             return null;
         }
     }

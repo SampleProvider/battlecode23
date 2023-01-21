@@ -23,7 +23,7 @@ public strictfp class Booster {
             run();
         }
     }
-    
+
     private void run() {
         while (true) {
             try {

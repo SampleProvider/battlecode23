@@ -9,27 +9,27 @@ public strictfp class Amplifier {
     private int round = 0;
 
     private final Direction[] directions = {
-        Direction.SOUTHWEST,
-        Direction.SOUTH,
-        Direction.SOUTHEAST,
-        Direction.WEST,
-        Direction.EAST,
-        Direction.NORTHWEST,
-        Direction.NORTH,
-        Direction.NORTHEAST,
+            Direction.SOUTHWEST,
+            Direction.SOUTH,
+            Direction.SOUTHEAST,
+            Direction.WEST,
+            Direction.EAST,
+            Direction.NORTHWEST,
+            Direction.NORTH,
+            Direction.NORTHEAST,
     };
 
     private MapLocation[] headquarters;
     private MapLocation prioritizedHeadquarters;
     private RobotType prioritizedRobotType = RobotType.LAUNCHER;
-    
+
     private StoredLocations storedLocations;
 
     private MapLocation opponentLocation;
 
     private int centerRange = 2;
     private boolean arrivedAtCenter = false;
-    
+
     protected int amplifierID = 0;
 
     private boolean clockwiseRotation = true;
@@ -41,7 +41,8 @@ public strictfp class Amplifier {
         try {
             this.rc = rc;
             int hqCount = 0;
-            for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
+            for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS
+                    + GlobalArray.HEADQUARTERS_LENGTH; i++) {
                 if (GlobalArray.hasLocation(rc.readSharedArray(i)))
                     hqCount++;
             }
@@ -73,7 +74,7 @@ public strictfp class Amplifier {
             run();
         }
     }
-    
+
     public void run() {
         while (true) {
             try {
@@ -116,18 +117,15 @@ public strictfp class Amplifier {
                             if (prioritizedRobotInfo == null) {
                                 prioritizedRobotInfo = w;
                                 prioritizedRobotInfoLocation = w.getLocation();
-                            }
-                            else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
+                            } else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
                                 prioritizedRobotInfo = w;
                                 prioritizedRobotInfoLocation = w.getLocation();
                             }
-                        }
-                        else {
+                        } else {
                             if (prioritizedRobotInfo == null) {
                                 prioritizedRobotInfo = w;
                                 prioritizedRobotInfoLocation = w.getLocation();
-                            }
-                            else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
+                            } else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
                                 prioritizedRobotInfo = w;
                                 prioritizedRobotInfoLocation = w.getLocation();
                             }
@@ -143,16 +141,13 @@ public strictfp class Amplifier {
                             if (bug2array[1] == Direction.CENTER) {
                                 clockwiseRotation = !clockwiseRotation;
                             }
-                        }
-                        else {
+                        } else {
                             indicatorString.append("1 ");
                             Motion.spreadRandomly(rc, me, opponentLocation);
                         }
                         me = rc.getLocation();
                         rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
-                        // rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1000000000000000) | GlobalArray.intifyLocation(prioritizedRobotInfoLocation), 15, round % 2));
-                    }
-                    else {
+                    } else {
                         if (arrivedAtCenter && opponentLocation != null && surroundingLaunchers >= 15) {
                             indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
                             Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
@@ -160,30 +155,27 @@ public strictfp class Amplifier {
                             if (bug2array[1] == Direction.CENTER) {
                                 clockwiseRotation = !clockwiseRotation;
                             }
-                        }
-                        else if (arrivedAtCenter) {
+                        } else if (arrivedAtCenter) {
                             indicatorString.append("2 ");
                             Motion.moveRandomly(rc);
-                        }
-                        else {
+                        } else {
                             indicatorString.append("3 ");
                             Motion.spreadCenter(rc, me);
                         }
                         me = rc.getLocation();
                         rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
                     }
-                }
-                else if (arrivedAtCenter) {
+                } else if (arrivedAtCenter) {
                     Motion.moveRandomly(rc);
                     me = rc.getLocation();
                     rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
-                }
-                else {
+                } else {
                     // if (arrivedAtCenter && opponentLocation != null) {
-                    // Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
+                    // Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection,
+                    // clockwiseRotation, indicatorString);
                     // lastDirection = bug2array[0];
                     // if (bug2array[1] == Direction.CENTER) {
-                    //     clockwiseRotation = !clockwiseRotation;
+                    // clockwiseRotation = !clockwiseRotation;
                     // }
                     // }
                     // else {

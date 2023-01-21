@@ -9,14 +9,14 @@ public strictfp class Carrier {
     private int round = 0;
 
     private static final Direction[] DIRECTIONS = {
-        Direction.SOUTHWEST,
-        Direction.SOUTH,
-        Direction.SOUTHEAST,
-        Direction.WEST,
-        Direction.EAST,
-        Direction.NORTHWEST,
-        Direction.NORTH,
-        Direction.NORTHEAST,
+            Direction.SOUTHWEST,
+            Direction.SOUTH,
+            Direction.SOUTHEAST,
+            Direction.WEST,
+            Direction.EAST,
+            Direction.NORTHWEST,
+            Direction.NORTH,
+            Direction.NORTHEAST,
     };
 
     private ResourceType prioritizedResourceType = ResourceType.ELIXIR;
@@ -98,7 +98,7 @@ public strictfp class Carrier {
                 }
                 lastHealth = rc.getHealth();
 
-                RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
+                RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
                 MapLocation loc = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
                 if (loc == null) {
                     loc = Attack.senseOpponent(rc, me, robotInfo);
@@ -110,7 +110,7 @@ public strictfp class Carrier {
 
                 runState();
                 me = rc.getLocation();
-                robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared,rc.getTeam().opponent());
+                robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
                 loc = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
                 if (loc == null) {
                     loc = Attack.senseOpponent(rc, me, robotInfo);
@@ -166,10 +166,8 @@ public strictfp class Carrier {
                     return;
                 }
             }
-            
             Motion.spreadRandomly(rc, me);
-        }
-        else if (state == 1) {
+        } else if (state == 1) {
             updatePrioritizedWell();
             if (prioritizedWell == null) {
                 state = 0;
@@ -185,8 +183,7 @@ public strictfp class Carrier {
             attemptCollection();
             me = rc.getLocation();
             rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
-        }
-        else if (state == 2) {
+        } else if (state == 2) {
             indicatorString.append("COLLECT; ");
             if (rc.canCollectResource(prioritizedWell, -1)
                     && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
@@ -198,8 +195,7 @@ public strictfp class Carrier {
                 state = 0;
                 runState();
             }
-        }
-        else if (state == 3) {
+        } else if (state == 3) {
             int[] islands = rc.senseNearbyIslands();
             MapLocation prioritizedIslandLocation = null;
             for (int id : islands) {
@@ -208,8 +204,7 @@ public strictfp class Carrier {
                     for (MapLocation m : islandLocations) {
                         if (prioritizedIslandLocation == null) {
                             prioritizedIslandLocation = m;
-                        }
-                        else if (m.distanceSquaredTo(me) < prioritizedIslandLocation.distanceSquaredTo(me)) {
+                        } else if (m.distanceSquaredTo(me) < prioritizedIslandLocation.distanceSquaredTo(me)) {
                             prioritizedIslandLocation = m;
                         }
                     }
@@ -236,8 +231,7 @@ public strictfp class Carrier {
                 Motion.moveRandomly(rc);
                 return;
             }
-        }
-        else if (state == 4) {
+        } else if (state == 4) {
             updatePrioritizedHeadquarters();
             indicatorString.append("RET; ");
             Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, indicatorString);
@@ -250,7 +244,7 @@ public strictfp class Carrier {
                 state = 0;
             }
             me = rc.getLocation();
-            rc.setIndicatorLine(me, prioritizedHeadquarters, 255, 255, 0);
+            rc.setIndicatorLine(me, prioritizedHeadquarters, 0, 0, 100);
         }
     }
 
@@ -305,8 +299,7 @@ public strictfp class Carrier {
                         }
                         if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null) {
                             fullSpots += 1;
-                        }
-                        else {
+                        } else {
                             emptySpots += 1;
                         }
                     }
@@ -315,8 +308,7 @@ public strictfp class Carrier {
                         prioritizedWell = w.getMapLocation();
                     }
                     continue;
-                }
-                else if (prioritizedWellInfo.getResourceType() == prioritizedResourceType) {
+                } else if (prioritizedWellInfo.getResourceType() == prioritizedResourceType) {
                     if (w.getResourceType() == prioritizedResourceType
                             && prioritizedWell.distanceSquaredTo(me) > w
                                     .getMapLocation().distanceSquaredTo(me)) {
@@ -329,8 +321,7 @@ public strictfp class Carrier {
                             }
                             if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null) {
                                 fullSpots += 1;
-                            }
-                            else {
+                            } else {
                                 emptySpots += 1;
                             }
                         }
@@ -350,8 +341,7 @@ public strictfp class Carrier {
                             }
                             if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null) {
                                 fullSpots += 1;
-                            }
-                            else {
+                            } else {
                                 emptySpots += 1;
                             }
                         }
@@ -359,8 +349,7 @@ public strictfp class Carrier {
                             prioritizedWellInfo = w;
                             prioritizedWell = w.getMapLocation();
                         }
-                    }
-                    else if (prioritizedWell.distanceSquaredTo(me) > w.getMapLocation()
+                    } else if (prioritizedWell.distanceSquaredTo(me) > w.getMapLocation()
                             .distanceSquaredTo(me)) {
                         int emptySpots = 0;
                         int fullSpots = 0;
@@ -371,8 +360,7 @@ public strictfp class Carrier {
                             }
                             if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null) {
                                 fullSpots += 1;
-                            }
-                            else {
+                            } else {
                                 emptySpots += 1;
                             }
                         }
@@ -383,8 +371,7 @@ public strictfp class Carrier {
                     }
                 }
             }
-        }
-        else {
+        } else {
             MapLocation[] wellLocations = GlobalArray.getKnownWellLocations(rc);
             for (MapLocation m : wellLocations) {
                 if (m == null) {
@@ -400,8 +387,7 @@ public strictfp class Carrier {
                         }
                         if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null) {
                             fullSpots += 1;
-                        }
-                        else {
+                        } else {
                             emptySpots += 1;
                         }
                     }
@@ -409,8 +395,7 @@ public strictfp class Carrier {
                         prioritizedWell = m;
                     }
                     continue;
-                }
-                else if (prioritizedWell.distanceSquaredTo(me) > m
+                } else if (prioritizedWell.distanceSquaredTo(me) > m
                         .distanceSquaredTo(me)) {
                     int emptySpots = 0;
                     int fullSpots = 0;
@@ -421,8 +406,7 @@ public strictfp class Carrier {
                         }
                         if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null) {
                             fullSpots += 1;
-                        }
-                        else {
+                        } else {
                             emptySpots += 1;
                         }
                     }
