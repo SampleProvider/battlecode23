@@ -30,6 +30,8 @@ public strictfp class GlobalArray {
     public static final int ELIXIR_HQ_ID = 6;
     public static final int CONVERSION_WELL_ID = 7;
 
+    public static final int DEBUG_INFO = 1;
+
     private static final ResourceType[] resourceTypes = new ResourceType[] {ResourceType.NO_RESOURCE, ResourceType.ADAMANTIUM, ResourceType.MANA, ResourceType.ELIXIR};
     
     private final int[] currentState = new int[8];
@@ -145,6 +147,49 @@ public strictfp class GlobalArray {
             }
         }
         return opponentLocations;
+    }
+    
+    // islands
+    public static boolean storeIslandLocation(RobotController rc, MapLocation islandLocation, Team islandTeam, int islandId) throws GameActionException {
+        if (rc.canWriteSharedArray(0, 0)) {
+            if (rc.readSharedArray(ISLANDS + islandId - 1) == 0) {
+                if (islandTeam == Team.A) {
+                    rc.writeSharedArray(ISLANDS + islandId - 1, 0b10000000000000 + intifyLocation(islandLocation));
+                }
+                if (islandTeam == Team.B) {
+                    rc.writeSharedArray(ISLANDS + islandId - 1, 0b100000000000000 + intifyLocation(islandLocation));
+                }
+                if (islandTeam == Team.NEUTRAL) {
+                    rc.writeSharedArray(ISLANDS + islandId - 1, 0b110000000000000 + intifyLocation(islandLocation));
+                }
+            }
+        }
+        return false;
+    }
+    public static MapLocation[] getKnownIslandLocations(RobotController rc, Team team) throws GameActionException {
+        MapLocation[] islandLocations = new MapLocation[ISLANDS_LENGTH];
+        for (int i = ISLANDS; i < ISLANDS + ISLANDS_LENGTH; i++) {
+            int arrayIslandLocation = rc.readSharedArray(i);
+            if (hasLocation(arrayIslandLocation)) {
+                if (rc.canSenseLocation(parseLocation(arrayIslandLocation))) {
+                    if (rc.senseTeamOccupyingIsland(i - ISLANDS + 1) == team) {
+                        islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
+                    }
+                }
+                else {
+                    if (arrayIslandLocation >> 13 == 1 && team == Team.A) {
+                        islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
+                    }
+                    else if (arrayIslandLocation >> 13 == 2 && team == Team.B) {
+                        islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
+                    }
+                    else if (arrayIslandLocation >> 13 == 3 && team == Team.NEUTRAL) {
+                        islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
+                    }
+                }
+            }
+        }
+        return islandLocations;
     }
     
     /*
