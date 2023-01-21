@@ -43,7 +43,7 @@ public strictfp class HeadQuarters {
             // setting headquarter locations
             locInt = GlobalArray.intifyLocation(rc.getLocation());
             hqIndex = rc.getID()/2;
-            if (rc.getID() % 2 == 1)
+            if (rc.getID() % 2 == 0)
                 hqIndex--;
             rc.writeSharedArray(GlobalArray.HEADQUARTERS+hqIndex, locInt);
             if (hqIndex == 0)
