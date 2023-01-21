@@ -102,6 +102,7 @@ public strictfp class Carrier {
                 RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
                 MapLocation loc = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
                 if (loc == null) {
+                    robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                     loc = Attack.senseOpponent(rc, me, robotInfo);
                 }
                 if (loc != null) {
@@ -115,6 +116,7 @@ public strictfp class Carrier {
                 robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
                 loc = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
                 if (loc == null) {
+                    robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                     loc = Attack.senseOpponent(rc, me, robotInfo);
                 }
                 if (loc != null) {
@@ -348,7 +350,7 @@ public strictfp class Carrier {
                             emptySpots += 1;
                         }
                     }
-                    if (testFull(emptySpots, fullSpots)) {
+                    if (testFull(fullSpots, emptySpots)) {
                         prioritizedWellInfo = w;
                         prioritizedWell = w.getMapLocation();
                     }
@@ -370,7 +372,7 @@ public strictfp class Carrier {
                                 emptySpots += 1;
                             }
                         }
-                        if (testFull(emptySpots, fullSpots)) {
+                        if (testFull(fullSpots, emptySpots)) {
                             prioritizedWellInfo = w;
                             prioritizedWell = w.getMapLocation();
                         }
@@ -390,7 +392,7 @@ public strictfp class Carrier {
                                 emptySpots += 1;
                             }
                         }
-                        if (testFull(emptySpots, fullSpots)) {
+                        if (testFull(fullSpots, emptySpots)) {
                             prioritizedWellInfo = w;
                             prioritizedWell = w.getMapLocation();
                         }
@@ -409,7 +411,7 @@ public strictfp class Carrier {
                                 emptySpots += 1;
                             }
                         }
-                        if (testFull(emptySpots, fullSpots)) {
+                        if (testFull(fullSpots, emptySpots)) {
                             prioritizedWellInfo = w;
                             prioritizedWell = w.getMapLocation();
                         }
@@ -440,7 +442,7 @@ public strictfp class Carrier {
                         emptySpots += 1;
                     }
                 }
-                if (testFull(emptySpots, fullSpots)) {
+                if (testFull(fullSpots, emptySpots)) {
                     prioritizedWell = m;
                 }
                 continue;
@@ -461,7 +463,7 @@ public strictfp class Carrier {
                         emptySpots += 1;
                     }
                 }
-                if (testFull(emptySpots, fullSpots)) {
+                if (testFull(fullSpots, emptySpots)) {
                     prioritizedWell = m;
                 }
             }

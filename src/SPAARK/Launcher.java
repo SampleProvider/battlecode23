@@ -44,8 +44,6 @@ public strictfp class Launcher {
 
     protected int amplifierID = -1;
 
-    private MapLocation prioritizedRobotInfoLocation;
-
     private MapLocation prioritizedAmplifierLocation;
 
     private boolean clockwiseRotation = true;
@@ -95,9 +93,13 @@ public strictfp class Launcher {
                 indicatorString = new StringBuilder();
 
                 robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                prioritizedRobotInfoLocation = Attack.attack(rc, me, robotInfo, prioritizedRobotType, true, indicatorString);
-                if (prioritizedRobotInfoLocation != null) {
-                    opponentLocation = prioritizedRobotInfoLocation;
+                MapLocation loc = Attack.attack(rc, me, robotInfo, prioritizedRobotType, true, indicatorString);
+                if (loc == null) {
+                    robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+                    loc = Attack.senseOpponent(rc, me, robotInfo);
+                }
+                if (loc != null) {
+                    opponentLocation = loc;
                 }
 
                 storedLocations.detectWells();
@@ -108,9 +110,13 @@ public strictfp class Launcher {
 
                 me = rc.getLocation();
                 robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                prioritizedRobotInfoLocation = Attack.attack(rc, me, robotInfo, prioritizedRobotType, true, indicatorString);
-                if (prioritizedRobotInfoLocation != null) {
-                    opponentLocation = prioritizedRobotInfoLocation;
+                loc = Attack.attack(rc, me, robotInfo, prioritizedRobotType, true, indicatorString);
+                if (loc == null) {
+                    robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+                    loc = Attack.senseOpponent(rc, me, robotInfo);
+                }
+                if (loc != null) {
+                    opponentLocation = loc;
                 }
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Launcher");
@@ -190,10 +196,10 @@ public strictfp class Launcher {
                     return;
                 }
                 RobotInfo[] friendlyRobotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam());
+                int surroundingLaunchers = 0;
                 if (friendlyRobotInfo.length > 0) {
                     RobotInfo lowestIdFriendlyRobotInfo = null;
                     RobotInfo highestIdFriendlyRobotInfo = null;
-                    int surroundingLaunchers = 0;
                     for (RobotInfo w : friendlyRobotInfo) {
                         if (w.getType() != RobotType.LAUNCHER) {
                             continue;
@@ -211,7 +217,7 @@ public strictfp class Launcher {
                             highestIdFriendlyRobotInfo = w;
                         }
                     }
-                    if (surroundingLaunchers > 1) {
+                    if (surroundingLaunchers >= 2) {
                         if (lowestIdFriendlyRobotInfo.ID > rc.getID()) {
                             if (opponentLocation != null) {
                                 Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
@@ -256,7 +262,12 @@ public strictfp class Launcher {
                                     clockwiseRotation = !clockwiseRotation;
                                 }
                                 me = rc.getLocation();
-                                if (me.distanceSquaredTo(opponentLocation) <= 5) {
+                                // if (surroundingLaunchers <= 4) {
+                                //     if (me.distanceSquaredTo(opponentLocation) <= 8) {
+                                //         opponentLocation = null;
+                                //     }
+                                // }
+                                else if (me.distanceSquaredTo(opponentLocation) <= 5) {
                                     opponentLocation = null;
                                 }
                             } else if (me.distanceSquaredTo(lowestIdFriendlyRobotInfo.getLocation()) <= launcherCircleRange * 1.5) {
@@ -277,12 +288,6 @@ public strictfp class Launcher {
                     }
                 }
                 indicatorString.append("DEF; ");
-                int surroundingLaunchers = 0;
-                for (RobotInfo w : friendlyRobotInfo) {
-                    if (w.getType() == RobotType.LAUNCHER) {
-                        surroundingLaunchers += 1;
-                    }
-                }
                 headquarterCircleRange = 16 + surroundingLaunchers / 3;
                 if (opponentLocation != null) {
                     if (GlobalArray.DEBUG_INFO >= 2) {

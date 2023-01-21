@@ -88,7 +88,13 @@ public strictfp class Amplifier {
                         }
                     }
                 }
-                Motion.moveRandomly(rc);
+
+                storedLocations.detectWells();
+                storedLocations.detectOpponentLocations();
+                storedLocations.detectIslandLocations();
+                storedLocations.writeToGlobalArray();
+
+                Motion.spreadRandomly(rc, me);
 
                 // indicatorString = new StringBuilder();
 
