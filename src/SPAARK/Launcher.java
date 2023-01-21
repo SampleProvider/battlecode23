@@ -267,7 +267,7 @@ public strictfp class Launcher {
                                 //         opponentLocation = null;
                                 //     }
                                 // }
-                                else if (me.distanceSquaredTo(opponentLocation) <= 5) {
+                                if (me.distanceSquaredTo(opponentLocation) <= 5) {
                                     opponentLocation = null;
                                 }
                             } else if (me.distanceSquaredTo(lowestIdFriendlyRobotInfo.getLocation()) <= launcherCircleRange * 1.5) {
