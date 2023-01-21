@@ -25,10 +25,11 @@ public strictfp class Amplifier {
     private MapLocation[] headquarters;
     private MapLocation prioritizedHeadquarters;
     private RobotType prioritizedRobotType = RobotType.LAUNCHER;
+    
+    private StoredLocations storedLocations;
 
     private MapLocation opponentLocation;
     
-    private int amplifierArray;
     protected int amplifierID = 0;
 
     private boolean clockwiseRotation = true;
@@ -61,11 +62,10 @@ public strictfp class Amplifier {
                     break;
                 }
             }
-            // indicatorString.append("AMPID=" + amplifierID + "; ");
-            // rc.setIndicatorString(indicatorString.toString());
             if (amplifierID == 0) {
                 System.out.println("[!] Too many Amplifiers! [!]");
             }
+            storedLocations = new StoredLocations(rc);
         } catch (GameActionException e) {
             System.out.println("GameActionException at Amplifier constructor");
             e.printStackTrace();
@@ -81,10 +81,6 @@ public strictfp class Amplifier {
     public void run() {
         while (true) {
             try {
-                // if (amplifierID == 0) {
-                //     throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
-                // }
-                // amplifierArray = rc.readSharedArray(amplifierID);
                 me = rc.getLocation();
                 round = rc.getRoundNum();
                 prioritizedHeadquarters = headquarters[0];
@@ -97,6 +93,9 @@ public strictfp class Amplifier {
                 }
 
                 indicatorString = new StringBuilder();
+
+                storedLocations.detectWells();
+                storedLocations.writeToGlobalArray();
 
                 RobotInfo[] robotInfo = rc.senseNearbyRobots();
                 if (robotInfo.length > 0) {
@@ -162,7 +161,6 @@ public strictfp class Amplifier {
                 }
                 me = rc.getLocation();
                 rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
-                // Motion.moveRandomly(rc);
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Amplifier");
                 e.printStackTrace();
