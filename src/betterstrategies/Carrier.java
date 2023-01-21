@@ -113,14 +113,14 @@ public strictfp class Carrier {
                     for (int i = 0;i < maxSeenWells;i++) {
                         if (seenWells[i] != null) {
                             if (GlobalArray.storeWell(rc, seenWells[i])) {
-                                indicatorString.append("STO WELL " + seenWells[i].toString() + "; ");
+                                indicatorString.append("STWELL " + seenWells[i].getMapLocation().toString() + "; ");
                                 seenWells[i] = null;
                             }
                         }
                     }
                     if (opponentLocation != null) {
                         if (GlobalArray.storeOpponentLocation(rc, opponentLocation)) {
-                            indicatorString.append("STO OPP " + opponentLocation.toString() + "; ");
+                            indicatorString.append("STOPP " + opponentLocation.toString() + "; ");
                             opponentLocation = null;
                         }
                     }

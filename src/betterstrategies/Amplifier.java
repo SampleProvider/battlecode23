@@ -27,9 +27,6 @@ public strictfp class Amplifier {
     private RobotType prioritizedRobotType = RobotType.LAUNCHER;
 
     private MapLocation opponentLocation;
-
-    private int centerRange = 2;
-    private boolean arrivedAtCenter = false;
     
     private int amplifierArray;
     protected int amplifierID = 0;
@@ -39,6 +36,7 @@ public strictfp class Amplifier {
 
     private MapLocation randomExploreLocation;
     private int randomExploreTime = 0;
+    private final int randomExploreMinKnownLocDistSquared = 81;
 
     protected StringBuilder indicatorString = new StringBuilder();
 
@@ -100,10 +98,6 @@ public strictfp class Amplifier {
 
                 indicatorString = new StringBuilder();
 
-                if (me.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) <= centerRange) {
-                    indicatorString.append("CENT; ");
-                    arrivedAtCenter = true;
-                }
                 RobotInfo[] robotInfo = rc.senseNearbyRobots();
                 if (robotInfo.length > 0) {
                     RobotInfo prioritizedRobotInfo = null;
@@ -143,63 +137,31 @@ public strictfp class Amplifier {
                     indicatorString.append("LAU=" + surroundingLaunchers + "; ");
                     if (prioritizedRobotInfoLocation != null) {
                         opponentLocation = prioritizedRobotInfoLocation;
-                        if (surroundingLaunchers >= 15) {
-                            indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
-                            Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
-                            lastDirection = bug2array[0];
-                            if (bug2array[1] == Direction.CENTER) {
-                                clockwiseRotation = !clockwiseRotation;
-                            }
-                        }
-                        else {
-                            indicatorString.append("RAND-1; ");
-                            Motion.spreadRandomly(rc, me, opponentLocation);
-                        }
-                        me = rc.getLocation();
-                        rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
-                        // rc.writeSharedArray(amplifierID, GlobalArray.setBit((amplifierArray & 0b1000000000000000) | GlobalArray.intifyLocation(prioritizedRobotInfoLocation), 15, round % 2));
                     }
-                    else {
-                        if (arrivedAtCenter && opponentLocation != null && surroundingLaunchers >= 15) {
-                            indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
-                            Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
+                    if (opponentLocation != null && surroundingLaunchers >= 15) {
+                        indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
+                        Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
+                        lastDirection = bug2array[0];
+                        if (bug2array[1] == Direction.CENTER) {
+                            clockwiseRotation = !clockwiseRotation;
+                        }
+                    } else {
+                        updateRandomExploreLocation();
+                        if (randomExploreLocation != null) {
+                            indicatorString.append("EXPL-" + randomExploreLocation.toString() + "; ");
+                            Direction[] bug2array = Motion.bug2(rc, randomExploreLocation, lastDirection, clockwiseRotation, indicatorString);
                             lastDirection = bug2array[0];
                             if (bug2array[1] == Direction.CENTER) {
                                 clockwiseRotation = !clockwiseRotation;
                             }
-                        }
-                        else if (arrivedAtCenter) {
-                            indicatorString.append("RAND-2; ");
+                        } else {
+                            indicatorString.append("RAND");
                             Motion.moveRandomly(rc);
                         }
-                        else {
-                            indicatorString.append("RAND-3; ");
-                            Motion.spreadCenter(rc, me);
-                        }
-                        me = rc.getLocation();
-                        rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
                     }
                 }
-                else if (arrivedAtCenter) {
-                    Motion.moveRandomly(rc);
-                    me = rc.getLocation();
-                    rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
-                }
-                else {
-                    // if (arrivedAtCenter && opponentLocation != null) {
-                    // Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
-                    // lastDirection = bug2array[0];
-                    // if (bug2array[1] == Direction.CENTER) {
-                    //     clockwiseRotation = !clockwiseRotation;
-                    // }
-                    // }
-                    // else {
-                    Motion.spreadCenter(rc, me);
-                    // Motion.moveRandomly(rc);
-                    // }
-                    me = rc.getLocation();
-                    rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
-                }
+                me = rc.getLocation();
+                rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
                 // Motion.moveRandomly(rc);
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Amplifier");
@@ -218,9 +180,16 @@ public strictfp class Amplifier {
     private void updateRandomExploreLocation() throws GameActionException {
         if (randomExploreLocation != null) return;
         MapLocation[] knownWells = GlobalArray.getKnownWellLocations(rc);
-        while (randomExploreLocation == null) {
+        int iteration = 0;
+        search: while (randomExploreLocation == null && iteration < 16) {
             randomExploreLocation = new MapLocation(rng.nextInt(rc.getMapWidth()), rng.nextInt(rc.getMapHeight()));
-
+            for (MapLocation well : knownWells) {
+                if (well.distanceSquaredTo(randomExploreLocation) < randomExploreMinKnownLocDistSquared) {
+                    randomExploreLocation = null;
+                    continue search;
+                }
+            }
+            iteration++;
         }
     }
 }
