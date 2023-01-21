@@ -112,8 +112,8 @@ public strictfp class HeadQuarters {
                 // Clock.yield();
                 // continue;
                 while (rc.isActionReady()) {
-                    MapLocation optimalSpawningLocationWell = optimalSpawnLocation(rc, me, true);
-                    MapLocation optimalSpawningLocation = optimalSpawnLocation(rc, me, false);
+                    MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
+                    MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
                     boolean builtRobot = false;
                     if (anchorCooldown <= 0 && round >= 200 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
                         if (adamantium >= 100 && mana >= 100) {
@@ -269,7 +269,7 @@ public strictfp class HeadQuarters {
         }
     }
 
-    private MapLocation optimalSpawnLocation(RobotController rc, MapLocation me, boolean well) throws GameActionException {
+    private MapLocation optimalSpawnLocation(boolean well) throws GameActionException {
         WellInfo[] wellInfo = rc.senseNearbyWells();
         MapLocation[] spawningLocations = rc.getAllLocationsWithinRadiusSquared(me, 9);
         MapLocation optimalSpawningLocation = null;
@@ -278,20 +278,14 @@ public strictfp class HeadQuarters {
             WellInfo prioritizedWellInfo = wellInfo[0];
             MapLocation prioritizedWellInfoLocation = wellInfo[0].getMapLocation();
             ResourceType prioritizedResourceType = ResourceType.ELIXIR;
-            // if (turnCount < 15) {
-            //     prioritizedResourceType = ResourceType.ADAMANTIUM;
-            // }
             for (WellInfo w : wellInfo) {
                 if (prioritizedWellInfo.getResourceType() == prioritizedResourceType) {
-                    if (w.getResourceType() == prioritizedResourceType
-                            && prioritizedWellInfo.getMapLocation().distanceSquaredTo(me) > w
-                                    .getMapLocation().distanceSquaredTo(me)) {
+                    if (w.getResourceType() == prioritizedResourceType && prioritizedWellInfo.getMapLocation().distanceSquaredTo(me) > w.getMapLocation().distanceSquaredTo(me)) {
                         prioritizedWellInfo = w;
                         prioritizedWellInfoLocation = w.getMapLocation();
                     }
                 } else {
-                    if (prioritizedWellInfo.getMapLocation().distanceSquaredTo(me) > w.getMapLocation()
-                            .distanceSquaredTo(me)) {
+                    if (prioritizedWellInfo.getMapLocation().distanceSquaredTo(me) > w.getMapLocation().distanceSquaredTo(me)) {
                         prioritizedWellInfo = w;
                         prioritizedWellInfoLocation = w.getMapLocation();
                     }
@@ -317,7 +311,8 @@ public strictfp class HeadQuarters {
                     possibleSpawningLocations += 1;
                     if (optimalSpawningLocation == null) {
                         optimalSpawningLocation = m;
-                    } else if (optimalSpawningLocation.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) < m.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))) {
+                    } else if (optimalSpawningLocation.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))
+                            < m.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))) {
                         optimalSpawningLocation = m;
                     }
                 }
@@ -329,7 +324,8 @@ public strictfp class HeadQuarters {
                     possibleSpawningLocations += 1;
                     if (optimalSpawningLocation == null) {
                         optimalSpawningLocation = m;
-                    } else if (optimalSpawningLocation.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) > m.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))) {
+                    } else if (optimalSpawningLocation.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))
+                            > m.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))) {
                         optimalSpawningLocation = m;
                     }
                 }
