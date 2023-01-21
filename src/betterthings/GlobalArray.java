@@ -1,4 +1,4 @@
-package betterstrategies;
+package betterthings;
 
 import java.util.Arrays;
 
