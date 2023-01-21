@@ -186,7 +186,7 @@ public strictfp class Carrier {
             }
             attemptCollection();
             me = rc.getLocation();
-            if (GlobalArray.DEBUG_INFO >= 3) {
+            if (GlobalArray.DEBUG_INFO >= 2) {
                 rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
             }
         } else if (state == 2) {
@@ -348,7 +348,7 @@ public strictfp class Carrier {
                             emptySpots += 1;
                         }
                     }
-                    if (fullSpots <= emptySpots + 1) {
+                    if (testFull(emptySpots, fullSpots)) {
                         prioritizedWellInfo = w;
                         prioritizedWell = w.getMapLocation();
                     }
@@ -370,7 +370,7 @@ public strictfp class Carrier {
                                 emptySpots += 1;
                             }
                         }
-                        if (fullSpots <= emptySpots + 1) {
+                        if (testFull(emptySpots, fullSpots)) {
                             prioritizedWellInfo = w;
                             prioritizedWell = w.getMapLocation();
                         }
@@ -390,7 +390,7 @@ public strictfp class Carrier {
                                 emptySpots += 1;
                             }
                         }
-                        if (fullSpots <= emptySpots + 1) {
+                        if (testFull(emptySpots, fullSpots)) {
                             prioritizedWellInfo = w;
                             prioritizedWell = w.getMapLocation();
                         }
@@ -409,7 +409,7 @@ public strictfp class Carrier {
                                 emptySpots += 1;
                             }
                         }
-                        if (fullSpots <= emptySpots + 1) {
+                        if (testFull(emptySpots, fullSpots)) {
                             prioritizedWellInfo = w;
                             prioritizedWell = w.getMapLocation();
                         }
@@ -440,7 +440,7 @@ public strictfp class Carrier {
                         emptySpots += 1;
                     }
                 }
-                if (fullSpots <= emptySpots + 1) {
+                if (testFull(emptySpots, fullSpots)) {
                     prioritizedWell = m;
                 }
                 continue;
@@ -461,10 +461,19 @@ public strictfp class Carrier {
                         emptySpots += 1;
                     }
                 }
-                if (fullSpots <= emptySpots + 1) {
+                if (testFull(emptySpots, fullSpots)) {
                     prioritizedWell = m;
                 }
             }
         }
+    }
+
+    private boolean testFull(int fullSpots, int emptySpots) {
+        // optimize??
+        // return fullSpots <= emptySpots + 1;
+        if (fullSpots + emptySpots == 0) {
+            return true;
+        }
+        return emptySpots >= 2;
     }
 }
