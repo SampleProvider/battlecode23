@@ -184,7 +184,7 @@ public strictfp class Amplifier {
         search: while (randomExploreLocation == null && iteration < 16) {
             randomExploreLocation = new MapLocation(rng.nextInt(rc.getMapWidth()), rng.nextInt(rc.getMapHeight()));
             for (MapLocation well : knownWells) {
-                if (well.distanceSquaredTo(randomExploreLocation) < randomExploreMinKnownLocDistSquared) {
+                if (well != null && well.distanceSquaredTo(randomExploreLocation) < randomExploreMinKnownLocDistSquared) {
                     randomExploreLocation = null;
                     continue search;
                 }
