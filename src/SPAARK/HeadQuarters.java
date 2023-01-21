@@ -264,7 +264,7 @@ public strictfp class HeadQuarters {
                     }
                 }
                 // save game state
-                rc.writeSharedArray(0, globalArray.getGameStateNumber());
+                rc.writeSharedArray(GlobalArray.GAMESTATE, globalArray.getGameStateNumber());
             } catch (GameActionException e) {
                 System.out.println("GameActionException at HeadQuarters");
                 e.printStackTrace();

@@ -18,14 +18,14 @@ public strictfp class HeadQuarters {
     private int amplifierCooldown = 0;
     private int carriers = 0;
     private int launchers = 0;
+    private int amplifiers = 0;
     private int nearbyCarriers = 0;
     private int nearbyLaunchers = 0;
-
-    private boolean spammingAmplifiers = true;
 
     private int possibleSpawningLocations = 0;
 
     private int mapSizeFactor = 100;
+    private StoredLocations storedLocations;
 
     private boolean isPrimaryHQ = false;
     private boolean setTargetElixirWell = false;
@@ -42,23 +42,29 @@ public strictfp class HeadQuarters {
             this.rc = rc;
             // setting headquarter locations
             locInt = GlobalArray.intifyLocation(rc.getLocation());
-            if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS))) {
-                rc.writeSharedArray(GlobalArray.HEADQUARTERS, locInt);
-                hqIndex = GlobalArray.HEADQUARTERS;
+            hqIndex = rc.getID()/2;
+            if (rc.getID() % 2 == 1)
+                hqIndex--;
+            rc.writeSharedArray(GlobalArray.HEADQUARTERS+hqIndex, locInt);
+            if (hqIndex == 0)
                 isPrimaryHQ = true;
-            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS + 1))) {
-                rc.writeSharedArray(GlobalArray.HEADQUARTERS + 1, locInt);
-                hqIndex = GlobalArray.HEADQUARTERS + 1;
-            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS + 2))) {
-                rc.writeSharedArray(GlobalArray.HEADQUARTERS + 2, locInt);
-                hqIndex = GlobalArray.HEADQUARTERS + 2;
-            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS + 3))) {
-                rc.writeSharedArray(GlobalArray.HEADQUARTERS + 3, locInt);
-                hqIndex = GlobalArray.HEADQUARTERS + 3;
-            } else {
-                throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many HeadQuarters!");
-            }
-            spammingAmplifiers = rc.getMapHeight() > 30 || rc.getMapWidth() > 30;
+            // if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS))) {
+            //     rc.writeSharedArray(GlobalArray.HEADQUARTERS, locInt);
+            //     hqIndex = GlobalArray.HEADQUARTERS;
+            //     isPrimaryHQ = true;
+            // } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS + 1))) {
+            //     rc.writeSharedArray(GlobalArray.HEADQUARTERS + 1, locInt);
+            //     hqIndex = GlobalArray.HEADQUARTERS + 1;
+            // } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS + 2))) {
+            //     rc.writeSharedArray(GlobalArray.HEADQUARTERS + 2, locInt);
+            //     hqIndex = GlobalArray.HEADQUARTERS + 2;
+            // } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS + 3))) {
+            //     rc.writeSharedArray(GlobalArray.HEADQUARTERS + 3, locInt);
+            //     hqIndex = GlobalArray.HEADQUARTERS + 3;
+            // } else {
+            //     throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many HeadQuarters!");
+            // }
+            storedLocations = new StoredLocations(rc);
         } catch (GameActionException e) {
             System.out.println("GameActionException at HeadQuarters constructor");
             e.printStackTrace();
@@ -86,10 +92,17 @@ public strictfp class HeadQuarters {
 
                 indicatorString.append("DR=" + deltaResources + "; ");
 
+                // detect stuff
+                storedLocations.detectWells();
+                storedLocations.detectOpponentLocations();
+                storedLocations.detectIslandLocations();
+                storedLocations.writeToGlobalArray();
+
                 // track carriers and launchers
                 if (round % 2 == 1) {
                     carriers = rc.readSharedArray(GlobalArray.CARRIERCOUNT);
                     launchers = rc.readSharedArray(GlobalArray.LAUNCHERCOUNT);
+                    amplifiers = rc.readSharedArray(GlobalArray.AMPLIFIERCOUNT);
                     nearbyCarriers = 0;
                     nearbyLaunchers = 0;
                     RobotInfo[] nearbyBots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
@@ -99,49 +112,19 @@ public strictfp class HeadQuarters {
                         else if (r.getType() == RobotType.CARRIER)
                             nearbyCarriers++;
                     }
-                    indicatorString.append("C-L-NC-NL[" + carriers + ", " + launchers + ", " + nearbyCarriers + ", " + nearbyLaunchers + "]; ");
+                    indicatorString.append("C-L-A-NC-NL[" + carriers + ", " + launchers + ", " + amplifiers + ", " + nearbyCarriers + ", " + nearbyLaunchers + "]; ");
                 }
                 if (isPrimaryHQ) {
-                    // track amplifiers
-                    for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
-                        int arrAmp = rc.readSharedArray(a);
-                        if (GlobalArray.hasLocation(arrAmp)) {
-                            if ((arrAmp >> 15) == round % 2) {
-                                indicatorString.append("AMP " + (a) + " d; ");
-                                rc.writeSharedArray(a, 0);
-                            }
-                        }
-                    }
                     if (round % 2 == 0) {
                         rc.writeSharedArray(GlobalArray.CARRIERCOUNT, 0);
                         rc.writeSharedArray(GlobalArray.LAUNCHERCOUNT, 0);
+                        rc.writeSharedArray(GlobalArray.AMPLIFIERCOUNT, 0);
                     }
                 }
+
                 // spawn things
-                int nextAmplifierIndex = 0;
-                for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
-                    if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
-                        nextAmplifierIndex = a;
-                        break;
-                    }
-                }
-                indicatorString.append("CP-AMP=" + (nextAmplifierIndex > 0 ? "T" : "F") + "; ");
                 int carriersProduced = 0;
                 int launchersProduced = 0;
-                if (spammingAmplifiers) {
-                    MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
-                    if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
-                            && launchers > 5 && carriers > 0 && nextAmplifierIndex > 0 && amplifierCooldown <= 0) {
-                        rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
-                        indicatorString.append("P AMP; ");
-                        rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                        rc.writeSharedArray(nextAmplifierIndex, GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 15, round % 2));
-                        amplifierCooldown = 5;
-                        nextAmplifierIndex = 0;
-                    }
-                    if (round > 100)
-                        spammingAmplifiers = false;
-                }
                 if (anchorCooldown <= 0 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
                     if (adamantium > 100 && mana > 100) {
                         rc.buildAnchor(Anchor.STANDARD);
@@ -181,13 +164,12 @@ public strictfp class HeadQuarters {
                             carrierCooldown = 30;
                         } else if (optimalSpawningLocation != null && possibleSpawningLocations >= 4) {
                             if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
-                                    && launchers > 10 && carriers > 0 && nextAmplifierIndex > 0 && amplifierCooldown <= 0) {
+                                    && launchers > 10 && carriers > 0 && amplifiers < 5 && amplifierCooldown <= 0) {
                                 rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                                 indicatorString.append("P AMP; ");
                                 rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                                rc.writeSharedArray(nextAmplifierIndex, GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 15, round % 2));
                                 amplifierCooldown = 30;
-                                nextAmplifierIndex = 0;
+                                amplifiers = Integer.MAX_VALUE;
                             } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
                                     && (launchers < 30 * hqCount * mapSizeFactor || nearbyLaunchers < 15 || launcherCooldown <= 0)) {
                                 rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
@@ -208,8 +190,10 @@ public strictfp class HeadQuarters {
                 carrierCooldown--;
                 launcherCooldown--;
                 amplifierCooldown--;
+
                 // store
                 GlobalArray.storeHeadquarters(this);
+
                 // prioritized resources
                 double deviation = (mana - (adamantium * 1.8)) / (mana + (adamantium * 1.8));
                 if (Math.abs(deviation) < 0.2) {
@@ -231,7 +215,6 @@ public strictfp class HeadQuarters {
                         }
                         mapSizeFactor = (rc.getMapWidth() * rc.getMapHeight()) / 400;
                     }
-                    // set prioritized resource
                     // set upgrade wells if resources adequate
                     boolean upgradeWells = true;
                     for (int i = GlobalArray.HEADQUARTERS; i <= GlobalArray.HEADQUARTERS + hqCount; i++) {
@@ -256,8 +239,8 @@ public strictfp class HeadQuarters {
                 System.out.println("Exception at HeadQuarters");
                 e.printStackTrace();
             } finally {
-                lastAdamantium = adamantium;
-                lastMana = mana;
+                lastAdamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
+                lastMana = rc.getResourceAmount(ResourceType.MANA);
                 rc.setIndicatorString(indicatorString.toString());
                 Clock.yield();
             }

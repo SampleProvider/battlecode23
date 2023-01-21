@@ -7,8 +7,12 @@ public strictfp class StoredLocations {
 
     private WellInfo[] wells = new WellInfo[8];
     private MapLocation[] opponents = new MapLocation[8];
-
+    private MapLocation[] islands = new MapLocation[16];
+    private Team[] islandTeams = new Team[16];
+    private int[] islandIds = new int[16];
+    
     protected boolean[] removedOpponents = new boolean[GlobalArray.OPPONENTS_LENGTH];
+    protected boolean[] removedIslands = new boolean[GlobalArray.ISLANDS_LENGTH];
 
     // general location/data parsing/writing
     public StoredLocations(RobotController rc) {
@@ -23,6 +27,8 @@ public strictfp class StoredLocations {
             rc.writeSharedArray(GlobalArray.CARRIERCOUNT, rc.readSharedArray(GlobalArray.CARRIERCOUNT) + 1);
         } else if (rc.getType() == RobotType.LAUNCHER) {
             rc.writeSharedArray(GlobalArray.LAUNCHERCOUNT, rc.readSharedArray(GlobalArray.LAUNCHERCOUNT) + 1);
+        } else if (rc.getType() == RobotType.AMPLIFIER) {
+            rc.writeSharedArray(GlobalArray.AMPLIFIERCOUNT, rc.readSharedArray(GlobalArray.AMPLIFIERCOUNT) + 1);
         }
         for (int i = 0; i < 8; i++) {
             if (wells[i] != null) {
@@ -43,6 +49,15 @@ public strictfp class StoredLocations {
         for (int i = 0; i < GlobalArray.OPPONENTS_LENGTH; i++) {
             if (removedOpponents[i]) {
                 rc.writeSharedArray(i + GlobalArray.OPPONENTS, 0);
+            }
+        }
+        for (int i = 0;i < 16;i++) {
+            if (islands[i] != null) {
+                if (GlobalArray.storeIslandLocation(rc, islands[i], islandTeams[i], islandIds[i])) {
+                    islands[i] = null;
+                    islandTeams[i] = null;
+                    islandIds[i] = 0;
+                }
             }
         }
     }
@@ -84,5 +99,29 @@ public strictfp class StoredLocations {
 
     public void detectOpponentLocations() throws GameActionException {
         storeOpponentLocation(Attack.senseOpponent(rc, rc.getLocation(), rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())));
+    }
+    public boolean storeIslandLocation(MapLocation m, int id) throws GameActionException {
+        for (int i = 0;i < 16;i++) {
+            if (islands[i] != null && islandIds[i] == id) {
+                return false;
+            }
+            else if (islands[i] == null) {
+                islands[i] = m;
+                islandTeams[i] = rc.senseTeamOccupyingIsland(id);
+                islandIds[i] = id;
+                return true;
+            }
+        }
+        return false;
+    }
+    public void removeIslandLocation(int n) {
+        removedIslands[n] = true;
+    }
+    public void detectIslandLocations() throws GameActionException {
+        int[] islands = rc.senseNearbyIslands();
+        for (int id : islands) {
+            MapLocation[] islandLocations = rc.senseNearbyIslandLocations(id);
+            storeIslandLocation(islandLocations[0], id);
+        }
     }
 }
