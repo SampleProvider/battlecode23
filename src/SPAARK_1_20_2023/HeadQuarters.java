@@ -1,4 +1,4 @@
-package SPAARK;
+package SPAARK_1_20_2023;
 
 import battlecode.common.*;
 
@@ -90,47 +90,7 @@ public strictfp class HeadQuarters {
                 }
 
                 storedLocations.detectWells();
-                storedLocations.detectOpponentLocations();
-                storedLocations.detectIslandLocations();
                 storedLocations.writeToGlobalArray();
-                
-                if (GlobalArray.DEBUG_INFO >= 1 && isPrimaryHQ) {
-                    MapLocation[] wells = GlobalArray.getKnownWellLocations(rc);
-                    for (MapLocation m : wells) {
-                        if (m == null) {
-                            continue;
-                        }
-                        rc.setIndicatorDot(m, 255, 75, 75);
-                    }
-                    MapLocation[] opponents = GlobalArray.getKnownOpponentLocations(rc);
-                    for (MapLocation m : opponents) {
-                        if (m == null) {
-                            continue;
-                        }
-                        rc.setIndicatorDot(m, 0, 255, 0);
-                    }
-                    MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.A);
-                    for (MapLocation m : islands) {
-                        if (m == null) {
-                            continue;
-                        }
-                        rc.setIndicatorDot(m, 255, 0, 0);
-                    }
-                    islands = GlobalArray.getKnownIslandLocations(rc, Team.B);
-                    for (MapLocation m : islands) {
-                        if (m == null) {
-                            continue;
-                        }
-                        rc.setIndicatorDot(m, 0, 0, 255);
-                    }
-                    islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
-                    for (MapLocation m : islands) {
-                        if (m == null) {
-                            continue;
-                        }
-                        rc.setIndicatorDot(m, 255, 255, 255);
-                    }
-                }
 
                 // if (round > 200) {
                 // rc.resign();
@@ -155,7 +115,7 @@ public strictfp class HeadQuarters {
                     MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
                     MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
                     boolean builtRobot = false;
-                    if (anchorCooldown <= 0 && round >= 1000 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
+                    if (anchorCooldown <= 0 && round >= 200 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
                         if (adamantium >= 100 && mana >= 100) {
                             rc.buildAnchor(Anchor.STANDARD);
                             indicatorString.append("PROD ANC; ");
@@ -168,9 +128,7 @@ public strictfp class HeadQuarters {
                                     carriers += 1;
                                     builtRobot = true;
                                     indicatorString.append("PROD CAR; ");
-                                    if (GlobalArray.DEBUG_INFO >= 2) {
-                                        rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
-                                    }
+                                    rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                                 }
                             }
                             if (mana >= 160) {
@@ -179,9 +137,7 @@ public strictfp class HeadQuarters {
                                     launchers++;
                                     builtRobot = true;
                                     indicatorString.append("PROD LAU; ");
-                                    if (GlobalArray.DEBUG_INFO >= 2) {
-                                        rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                                    }
+                                    rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                                 }
                             }
                         }
@@ -190,6 +146,9 @@ public strictfp class HeadQuarters {
                         for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS
                                 + GlobalArray.AMPLIFIERS_LENGTH; a++) {
                             if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
+                                if (round == 1274) {
+                                    System.out.println(a + " " + rc.readSharedArray(a));
+                                }
                                 amplifierIndex = a;
                                 break;
                             }
@@ -199,28 +158,26 @@ public strictfp class HeadQuarters {
                             launchers++;
                             builtRobot = true;
                             indicatorString.append("PROD LAU; ");
-                            if (GlobalArray.DEBUG_INFO >= 2) {
-                                rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                            }
+                            rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                         }
-                        else if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && possibleSpawningLocations >= 6 && launchers > 10) {
-                            rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
-                            launchers = 0;
-                            builtRobot = true;
-                            // rc.writeSharedArray(amplifierIndex, GlobalArray.setBit(GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 14, 1), 15, round % 2));
-                            indicatorString.append("PROD AMP; ");
-                            if (GlobalArray.DEBUG_INFO >= 2) {
-                                rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                            }
-                        }
+                        // else if (optimalSpawningLocation != null &&
+                        // rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) &&
+                        // possibleSpawningLocations >= 6 && launchers > 10 && amplifierIndex != 0) {
+                        // rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
+                        // launchers = 5;
+                        // builtRobot = true;
+                        // rc.writeSharedArray(amplifierIndex,
+                        // GlobalArray.setBit(GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation),
+                        // 14, 1), 15, round % 2));
+                        // indicatorString.append("PROD AMP; ");
+                        // rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                        // }
                         else if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
                             rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                             carriers += 1;
                             builtRobot = true;
                             indicatorString.append("PROD CAR; ");
-                            if (GlobalArray.DEBUG_INFO >= 2) {
-                                rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
-                            }
+                            rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                         }
                     }
                     if (!builtRobot) {

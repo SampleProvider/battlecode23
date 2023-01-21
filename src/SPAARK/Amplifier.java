@@ -52,16 +52,16 @@ public strictfp class Amplifier {
             }
             round = rc.getRoundNum();
             amplifierID = 0;
-            for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
-                if (((rc.readSharedArray(a) >> 14) & 0b1) == 1) {
-                    amplifierID = a;
-                    rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(rc.getLocation()), 15, round % 2));
-                    break;
-                }
-            }
-            if (amplifierID == 0) {
-                throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
-            }
+            // for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
+            //     if (((rc.readSharedArray(a) >> 14) & 0b1) == 1) {
+            //         amplifierID = a;
+            //         rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(rc.getLocation()), 15, round % 2));
+            //         break;
+            //     }
+            // }
+            // if (amplifierID == 0) {
+            //     throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
+            // }
             storedLocations = new StoredLocations(rc);
         } catch (GameActionException e) {
             System.out.println("GameActionException at Amplifier constructor");
@@ -89,102 +89,110 @@ public strictfp class Amplifier {
                     }
                 }
 
-                indicatorString = new StringBuilder();
-
                 storedLocations.detectWells();
+                storedLocations.detectOpponentLocations();
+                storedLocations.detectIslandLocations();
                 storedLocations.writeToGlobalArray();
 
-                if (me.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) <= centerRange) {
-                    indicatorString.append("CENT; ");
-                    arrivedAtCenter = true;
-                }
-                RobotInfo[] robotInfo = rc.senseNearbyRobots();
-                if (robotInfo.length > 0) {
-                    RobotInfo prioritizedRobotInfo = null;
-                    MapLocation prioritizedRobotInfoLocation = null;
-                    int surroundingLaunchers = 0;
-                    for (RobotInfo w : robotInfo) {
-                        if (w.getTeam() == rc.getTeam()) {
-                            if (w.getType() == RobotType.LAUNCHER) {
-                                surroundingLaunchers += 1;
-                            }
-                            continue;
-                        }
-                        if (w.getType() == RobotType.HEADQUARTERS) {
-                            continue;
-                        }
-                        if (w.getType() == prioritizedRobotType) {
-                            if (prioritizedRobotInfo == null) {
-                                prioritizedRobotInfo = w;
-                                prioritizedRobotInfoLocation = w.getLocation();
-                            } else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
-                                prioritizedRobotInfo = w;
-                                prioritizedRobotInfoLocation = w.getLocation();
-                            }
-                        } else {
-                            if (prioritizedRobotInfo == null) {
-                                prioritizedRobotInfo = w;
-                                prioritizedRobotInfoLocation = w.getLocation();
-                            } else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
-                                prioritizedRobotInfo = w;
-                                prioritizedRobotInfoLocation = w.getLocation();
-                            }
-                        }
-                    }
-                    indicatorString.append("LAU=" + surroundingLaunchers + "; ");
-                    if (prioritizedRobotInfoLocation != null) {
-                        opponentLocation = prioritizedRobotInfoLocation;
-                        if (surroundingLaunchers >= 15) {
-                            indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
-                            Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
-                            lastDirection = bug2array[0];
-                            if (bug2array[1] == Direction.CENTER) {
-                                clockwiseRotation = !clockwiseRotation;
-                            }
-                        } else {
-                            indicatorString.append("1 ");
-                            Motion.spreadRandomly(rc, me, opponentLocation);
-                        }
-                        me = rc.getLocation();
-                        rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
-                    } else {
-                        if (arrivedAtCenter && opponentLocation != null && surroundingLaunchers >= 15) {
-                            indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
-                            Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
-                            lastDirection = bug2array[0];
-                            if (bug2array[1] == Direction.CENTER) {
-                                clockwiseRotation = !clockwiseRotation;
-                            }
-                        } else if (arrivedAtCenter) {
-                            indicatorString.append("2 ");
-                            Motion.moveRandomly(rc);
-                        } else {
-                            indicatorString.append("3 ");
-                            Motion.spreadCenter(rc, me);
-                        }
-                        me = rc.getLocation();
-                        rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
-                    }
-                } else if (arrivedAtCenter) {
-                    Motion.moveRandomly(rc);
-                    me = rc.getLocation();
-                    rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
-                } else {
-                    // if (arrivedAtCenter && opponentLocation != null) {
-                    // Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection,
-                    // clockwiseRotation, indicatorString);
-                    // lastDirection = bug2array[0];
-                    // if (bug2array[1] == Direction.CENTER) {
-                    // clockwiseRotation = !clockwiseRotation;
-                    // }
-                    // }
-                    // else {
-                    Motion.spreadCenter(rc, me);
-                    // Motion.moveRandomly(rc);
-                    // }
-                    me = rc.getLocation();
-                    rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
-                }
+                Motion.spreadRandomly(rc, me);
+
+                // indicatorString = new StringBuilder();
+
+                // storedLocations.detectWells();
+                // storedLocations.detectIslandLocations();
+                // storedLocations.writeToGlobalArray();
+
+                // if (me.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) <= centerRange) {
+                //     indicatorString.append("CENT; ");
+                //     arrivedAtCenter = true;
+                // }
+                // RobotInfo[] robotInfo = rc.senseNearbyRobots();
+                // if (robotInfo.length > 0) {
+                //     RobotInfo prioritizedRobotInfo = null;
+                //     MapLocation prioritizedRobotInfoLocation = null;
+                //     int surroundingLaunchers = 0;
+                //     for (RobotInfo w : robotInfo) {
+                //         if (w.getTeam() == rc.getTeam()) {
+                //             if (w.getType() == RobotType.LAUNCHER) {
+                //                 surroundingLaunchers += 1;
+                //             }
+                //             continue;
+                //         }
+                //         if (w.getType() == RobotType.HEADQUARTERS) {
+                //             continue;
+                //         }
+                //         if (w.getType() == prioritizedRobotType) {
+                //             if (prioritizedRobotInfo == null) {
+                //                 prioritizedRobotInfo = w;
+                //                 prioritizedRobotInfoLocation = w.getLocation();
+                //             } else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
+                //                 prioritizedRobotInfo = w;
+                //                 prioritizedRobotInfoLocation = w.getLocation();
+                //             }
+                //         } else {
+                //             if (prioritizedRobotInfo == null) {
+                //                 prioritizedRobotInfo = w;
+                //                 prioritizedRobotInfoLocation = w.getLocation();
+                //             } else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
+                //                 prioritizedRobotInfo = w;
+                //                 prioritizedRobotInfoLocation = w.getLocation();
+                //             }
+                //         }
+                //     }
+                //     indicatorString.append("LAU=" + surroundingLaunchers + "; ");
+                //     if (prioritizedRobotInfoLocation != null) {
+                //         opponentLocation = prioritizedRobotInfoLocation;
+                //         if (surroundingLaunchers >= 15) {
+                //             indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
+                //             Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
+                //             lastDirection = bug2array[0];
+                //             if (bug2array[1] == Direction.CENTER) {
+                //                 clockwiseRotation = !clockwiseRotation;
+                //             }
+                //         } else {
+                //             indicatorString.append("1 ");
+                //             Motion.spreadRandomly(rc, me, opponentLocation);
+                //         }
+                //         me = rc.getLocation();
+                //         rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
+                //     } else {
+                //         if (arrivedAtCenter && opponentLocation != null && surroundingLaunchers >= 15) {
+                //             indicatorString.append("PATH->OP-" + opponentLocation.toString() + "; ");
+                //             Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
+                //             lastDirection = bug2array[0];
+                //             if (bug2array[1] == Direction.CENTER) {
+                //                 clockwiseRotation = !clockwiseRotation;
+                //             }
+                //         } else if (arrivedAtCenter) {
+                //             indicatorString.append("2 ");
+                //             Motion.moveRandomly(rc);
+                //         } else {
+                //             indicatorString.append("3 ");
+                //             Motion.spreadCenter(rc, me);
+                //         }
+                //         me = rc.getLocation();
+                //         rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
+                //     }
+                // } else if (arrivedAtCenter) {
+                //     Motion.moveRandomly(rc);
+                //     me = rc.getLocation();
+                //     rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
+                // } else {
+                //     // if (arrivedAtCenter && opponentLocation != null) {
+                //     // Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection,
+                //     // clockwiseRotation, indicatorString);
+                //     // lastDirection = bug2array[0];
+                //     // if (bug2array[1] == Direction.CENTER) {
+                //     // clockwiseRotation = !clockwiseRotation;
+                //     // }
+                //     // }
+                //     // else {
+                //     Motion.spreadCenter(rc, me);
+                //     // Motion.moveRandomly(rc);
+                //     // }
+                //     me = rc.getLocation();
+                //     rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));
+                // }
                 // Motion.moveRandomly(rc);
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Amplifier");

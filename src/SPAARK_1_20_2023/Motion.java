@@ -1,4 +1,4 @@
-package SPAARK;
+package SPAARK_1_20_2023;
 
 import battlecode.common.*;
 
@@ -469,7 +469,7 @@ public class Motion {
             }
             Direction direction = me.directionTo(dest);
             boolean moved = false;
-            if (rc.canMove(direction) && lastDirection != direction.opposite() && rc.senseMapInfo(me.translate(direction.dx, direction.dy)).getCurrentDirection() != direction.opposite()) {
+            if (rc.canMove(direction) && lastDirection != direction.opposite()) {
                 boolean touchingTheWallBefore = false;
                 for (int i = -1; i <= 1; i++) {
                     for (int j = -1; j <= 1; j++) {
@@ -504,7 +504,7 @@ public class Motion {
             if (clockwiseRotation) {
                 for (int i = 0; i < 7; i++) {
                     direction = direction.rotateLeft();
-                    int f = bug2f(rc, me, direction, lastDirection);
+                    int f = bug2f(rc, direction, lastDirection);
                     if (f == 1) {
                         lastDirection = direction;
                         moved = true;
@@ -519,7 +519,7 @@ public class Motion {
             } else {
                 for (int i = 0; i < 7; i++) {
                     direction = direction.rotateRight();
-                    int f = bug2f(rc, me, direction, lastDirection);
+                    int f = bug2f(rc, direction, lastDirection);
                     if (f == 1) {
                         lastDirection = direction;
                         moved = true;
@@ -544,8 +544,8 @@ public class Motion {
         return new Direction[] { lastDirection, null };
     }
 
-    private static int bug2f(RobotController rc, MapLocation me, Direction direction, Direction lastDirection) throws GameActionException {
-        if (rc.canMove(direction) && lastDirection != direction.opposite() && rc.senseMapInfo(me.translate(direction.dx, direction.dy)).getCurrentDirection() != direction.opposite()) {
+    private static int bug2f(RobotController rc, Direction direction, Direction lastDirection) throws GameActionException {
+        if (rc.canMove(direction) && lastDirection != direction.opposite()) {
             rc.move(direction);
             return 1;
         }
