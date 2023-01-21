@@ -160,7 +160,7 @@ public strictfp class Carrier {
             } else {
                 updatePrioritizedWell();
                 if (prioritizedWell != null) {
-                    indicatorString.append("WANDER-(NXT:PATH->WELL); ");
+                    indicatorString.append("WDR-(NXT:P->W); ");
                     state = 1;
                     runState();
                     return;
@@ -184,7 +184,7 @@ public strictfp class Carrier {
             }
             attemptCollection();
             me = rc.getLocation();
-            // rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
+            rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
         }
         else if (state == 2) {
             indicatorString.append("COLLECT; ");
@@ -224,7 +224,7 @@ public strictfp class Carrier {
                 me = rc.getLocation();
                 if (rc.canPlaceAnchor()) {
                     if (rc.senseTeamOccupyingIsland(rc.senseIsland(me)) == Team.NEUTRAL) {
-                        indicatorString.append("PLAC ANC; ");
+                        indicatorString.append("P ANC; ");
                         rc.placeAnchor();
                         state = 0;
                     }
@@ -239,7 +239,7 @@ public strictfp class Carrier {
         }
         else if (state == 4) {
             updatePrioritizedHeadquarters();
-            indicatorString.append("RETREAT; ");
+            indicatorString.append("RET; ");
             Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, indicatorString);
             lastDirection = bug2array[0];
             if (bug2array[1] == Direction.CENTER) {
@@ -250,7 +250,7 @@ public strictfp class Carrier {
                 state = 0;
             }
             me = rc.getLocation();
-            // rc.setIndicatorLine(me, prioritizedHeadquarters, 255, 255, 0);
+            rc.setIndicatorLine(me, prioritizedHeadquarters, 255, 255, 0);
         }
     }
 
@@ -264,15 +264,15 @@ public strictfp class Carrier {
     private void attemptTransfer() throws GameActionException {
         if (rc.canTransferResource(prioritizedHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount)) {
             rc.transferResource(prioritizedHeadquarters, ResourceType.ADAMANTIUM, adamantiumAmount);
-            indicatorString.append("DROP AD; ");
+            indicatorString.append("D AD; ");
         }
         if (rc.canTransferResource(prioritizedHeadquarters, ResourceType.MANA, manaAmount)) {
             rc.transferResource(prioritizedHeadquarters, ResourceType.MANA, manaAmount);
-            indicatorString.append("DROP MN; ");
+            indicatorString.append("D MN; ");
         }
         if (rc.canTransferResource(prioritizedHeadquarters, ResourceType.ELIXIR, elixirAmount)) {
             rc.transferResource(prioritizedHeadquarters, ResourceType.ELIXIR, elixirAmount);
-            indicatorString.append("DROP EX; ");
+            indicatorString.append("D EL; ");
         }
     }
 

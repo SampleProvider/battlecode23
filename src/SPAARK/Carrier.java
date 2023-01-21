@@ -184,7 +184,7 @@ public strictfp class Carrier {
             }
             attemptCollection();
             me = rc.getLocation();
-            // rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
+            rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
         }
         else if (state == 2) {
             indicatorString.append("COLLECT; ");
@@ -250,7 +250,7 @@ public strictfp class Carrier {
                 state = 0;
             }
             me = rc.getLocation();
-            // rc.setIndicatorLine(me, prioritizedHeadquarters, 255, 255, 0);
+            rc.setIndicatorLine(me, prioritizedHeadquarters, 255, 255, 0);
         }
     }
 
