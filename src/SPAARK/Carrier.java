@@ -110,6 +110,7 @@ public strictfp class Carrier {
                 }
 
                 runState();
+                
                 me = rc.getLocation();
                 robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
                 loc = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);

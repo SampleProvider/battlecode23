@@ -169,15 +169,19 @@ public strictfp class GlobalArray {
     // islands
     public static boolean storeIslandLocation(RobotController rc, MapLocation islandLocation, Team islandTeam, int islandId) throws GameActionException {
         if (rc.canWriteSharedArray(0, 0)) {
-            if (rc.readSharedArray(ISLANDS + islandId - 1) == 0) {
+            int arrayIslandLocation = rc.readSharedArray(ISLANDS + islandId - 1);
+            if (arrayIslandLocation == 0 || intToTeam(arrayIslandLocation >> 13) != islandTeam) {
                 if (islandTeam == Team.A) {
                     rc.writeSharedArray(ISLANDS + islandId - 1, 0b10000000000000 + intifyLocation(islandLocation));
+                    return true;
                 }
                 if (islandTeam == Team.B) {
                     rc.writeSharedArray(ISLANDS + islandId - 1, 0b100000000000000 + intifyLocation(islandLocation));
+                    return true;
                 }
                 if (islandTeam == Team.NEUTRAL) {
                     rc.writeSharedArray(ISLANDS + islandId - 1, 0b110000000000000 + intifyLocation(islandLocation));
+                    return true;
                 }
             }
         }
@@ -194,19 +198,23 @@ public strictfp class GlobalArray {
                     }
                 }
                 else {
-                    if (arrayIslandLocation >> 13 == 1 && team == Team.A) {
-                        islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
-                    }
-                    else if (arrayIslandLocation >> 13 == 2 && team == Team.B) {
-                        islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
-                    }
-                    else if (arrayIslandLocation >> 13 == 3 && team == Team.NEUTRAL) {
+                    if (intToTeam(arrayIslandLocation >> 13) == team) {
                         islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
                     }
                 }
             }
         }
         return islandLocations;
+    }
+
+    private static Team intToTeam(int n) {
+        if (n == 1) {
+            return Team.A;
+        }
+        else if (n == 2) {
+            return Team.B;
+        }
+        return Team.NEUTRAL;
     }
     
     /*

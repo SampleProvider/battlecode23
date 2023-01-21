@@ -52,16 +52,16 @@ public strictfp class Amplifier {
             }
             round = rc.getRoundNum();
             amplifierID = 0;
-            for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
-                if (((rc.readSharedArray(a) >> 14) & 0b1) == 1) {
-                    amplifierID = a;
-                    rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(rc.getLocation()), 15, round % 2));
-                    break;
-                }
-            }
-            if (amplifierID == 0) {
-                throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
-            }
+            // for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
+            //     if (((rc.readSharedArray(a) >> 14) & 0b1) == 1) {
+            //         amplifierID = a;
+            //         rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(rc.getLocation()), 15, round % 2));
+            //         break;
+            //     }
+            // }
+            // if (amplifierID == 0) {
+            //     throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
+            // }
             storedLocations = new StoredLocations(rc);
         } catch (GameActionException e) {
             System.out.println("GameActionException at Amplifier constructor");
