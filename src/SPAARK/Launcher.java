@@ -289,20 +289,21 @@ public strictfp class Launcher {
                 }
                 indicatorString.append("DEF; ");
                 headquarterCircleRange = 16 + surroundingLaunchers / 3;
-                if (opponentLocation != null) {
-                    if (GlobalArray.DEBUG_INFO >= 2) {
-                        rc.setIndicatorLine(me, opponentLocation, 255, 125, 25);
-                    }
-                    Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
-                    lastDirection = bug2array[0];
-                    if (bug2array[1] == Direction.CENTER) {
-                        clockwiseRotation = !clockwiseRotation;
-                    }
-                    me = rc.getLocation();
-                    if (me.distanceSquaredTo(opponentLocation) <= 2) {
-                        opponentLocation = null;
-                    }
-                } else if (me.distanceSquaredTo(prioritizedHeadquarters) <= headquarterCircleRange * 1.25) {
+                // if (opponentLocation != null) {
+                //     if (GlobalArray.DEBUG_INFO >= 2) {
+                //         rc.setIndicatorLine(me, opponentLocation, 255, 125, 25);
+                //     }
+                //     Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
+                //     lastDirection = bug2array[0];
+                //     if (bug2array[1] == Direction.CENTER) {
+                //         clockwiseRotation = !clockwiseRotation;
+                //     }
+                //     me = rc.getLocation();
+                //     if (me.distanceSquaredTo(opponentLocation) <= 2) {
+                //         opponentLocation = null;
+                //     }
+                // } else 
+                if (me.distanceSquaredTo(prioritizedHeadquarters) <= headquarterCircleRange * 1.25) {
                     if (me.x <= edgeRange || me.x >= rc.getMapWidth() - edgeRange || me.y <= edgeRange || me.y >= rc.getMapHeight() - edgeRange) {
                         if (rc.isMovementReady()) {
                             clockwiseRotation = !clockwiseRotation;

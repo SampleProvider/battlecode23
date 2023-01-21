@@ -155,7 +155,7 @@ public strictfp class HeadQuarters {
                     MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
                     MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
                     boolean builtRobot = false;
-                    if (anchorCooldown <= 0 && round >= 200 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
+                    if (anchorCooldown <= 0 && round >= 1000 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
                         if (adamantium >= 100 && mana >= 100) {
                             rc.buildAnchor(Anchor.STANDARD);
                             indicatorString.append("PROD ANC; ");
