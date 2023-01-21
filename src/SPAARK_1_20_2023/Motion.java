@@ -1,4 +1,4 @@
-package betterthings;
+package SPAARK_1_20_2023;
 
 import battlecode.common.*;
 

@@ -1,4 +1,4 @@
-package betterthings;
+package SPAARK_1_20_2023;
 
 import battlecode.common.*;
 
@@ -18,11 +18,6 @@ public strictfp class StoredLocations {
     public void writeToGlobalArray() throws GameActionException {
         if (!rc.canWriteSharedArray(0, 0)) {
             return;
-        }
-        if (rc.getType() == RobotType.CARRIER) {
-            rc.writeSharedArray(GlobalArray.CARRIERCOUNT, rc.readSharedArray(GlobalArray.CARRIERCOUNT) + 1);
-        } else if (rc.getType() == RobotType.LAUNCHER) {
-            rc.writeSharedArray(GlobalArray.LAUNCHERCOUNT, rc.readSharedArray(GlobalArray.LAUNCHERCOUNT) + 1);
         }
         for (int i = 0; i < 8; i++) {
             if (wells[i] != null) {

@@ -1,8 +1,8 @@
-package SPAARK;
+package SPAARK_1_20_2023;
 
 import battlecode.common.*;
 
-public strictfp class Booster {
+public strictfp class Destabilizer {
     protected RobotController rc;
     protected MapLocation me;
     private GlobalArray globalArray = new GlobalArray();
@@ -10,14 +10,14 @@ public strictfp class Booster {
 
     protected StringBuilder indicatorString = new StringBuilder();
 
-    public Booster(RobotController rc) {
+    public Destabilizer(RobotController rc) {
         try {
             this.rc = rc;
         // } catch (GameActionException e) {
-        //     System.out.println("GameActionException at Booster constructor");
+        //     System.out.println("GameActionException at Destabilizer constructor");
         //     e.printStackTrace();
         } catch (Exception e) {
-            System.out.println("Exception at Booster constructor");
+            System.out.println("Exception at Destabilizer constructor");
             e.printStackTrace();
         } finally {
             run();
@@ -32,10 +32,10 @@ public strictfp class Booster {
                 indicatorString = new StringBuilder();
                 // code
             // } catch (GameActionException e) {
-            //     System.out.println("GameActionException at Booster");
+            //     System.out.println("GameActionException at Destabilizer");
             //     e.printStackTrace();
             } catch (Exception e) {
-                System.out.println("Exception at Booster");
+                System.out.println("Exception at Destabilizer");
                 e.printStackTrace();
             } finally {
                 rc.setIndicatorString(indicatorString.toString());

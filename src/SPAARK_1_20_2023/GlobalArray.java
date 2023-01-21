@@ -1,4 +1,4 @@
-package betterthings;
+package SPAARK_1_20_2023;
 
 import java.util.Arrays;
 
@@ -20,8 +20,6 @@ public strictfp class GlobalArray {
     public static final int OPPONENT_HEADQUARTERS_LENGTH = 4;
     public static final int ISLANDS = 35;
     public static final int ISLANDS_LENGTH = 16;
-    public static final int CARRIERCOUNT = 51;
-    public static final int LAUNCHERCOUNT = 52;
 
     public static final int PRIORITIZED_RESOURCE_HQ1 = 0;
     public static final int PRIORITIZED_RESOURCE_HQ2 = 1;
