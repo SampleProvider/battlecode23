@@ -20,7 +20,7 @@ public strictfp class Amplifier {
         Direction.NORTHEAST,
     };
 
-    private final Random rng = new Random(2023);
+    private Random rng = new Random(2023);
 
     private MapLocation[] headquarters;
     private MapLocation prioritizedHeadquarters;
@@ -66,6 +66,7 @@ public strictfp class Amplifier {
                 System.out.println("[!] Too many Amplifiers! [!]");
             }
             storedLocations = new StoredLocations(rc);
+            rng = new Random(amplifierID);
         } catch (GameActionException e) {
             System.out.println("GameActionException at Amplifier constructor");
             e.printStackTrace();
@@ -102,14 +103,21 @@ public strictfp class Amplifier {
                     RobotInfo prioritizedRobotInfo = null;
                     MapLocation prioritizedRobotInfoLocation = null;
                     int surroundingLaunchers = 0;
+                    boolean storedOpponent = false;
                     for (RobotInfo w : robotInfo) {
                         if (w.getTeam() == rc.getTeam()) {
                             if (w.getType() == RobotType.LAUNCHER) {
                                 surroundingLaunchers += 1;
                             }
                             continue;
+                        } else if (!storedOpponent) {
+                            storedLocations.storeOpponentLocation(w.getLocation());
+                            storedOpponent = true;
                         }
                         if (w.getType() == RobotType.HEADQUARTERS) {
+                            if (w.getTeam() != rc.getTeam()) {
+                                // report enemy headquarter location
+                            }
                             continue;
                         }
                         if (w.getType() == prioritizedRobotType) {
@@ -153,11 +161,14 @@ public strictfp class Amplifier {
                             if (bug2array[1] == Direction.CENTER) {
                                 clockwiseRotation = !clockwiseRotation;
                             }
+                            randomExploreTime++;
+                            if (randomExploreTime > 30) randomExploreLocation = null;
                         } else {
                             indicatorString.append("RAND");
                             Motion.moveRandomly(rc);
                         }
                     }
+                } else {
                 }
                 me = rc.getLocation();
                 rc.writeSharedArray(amplifierID, GlobalArray.setBit(GlobalArray.intifyLocation(me), 15, round % 2));

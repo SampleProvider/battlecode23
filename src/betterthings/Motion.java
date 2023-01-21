@@ -404,7 +404,7 @@ public class Motion {
                 lastDirection = direction;
             }
             else {
-                indicatorString.append("BUG-DIR=" + DIRABBREV[direction.getDirectionOrderNum()] + "; BUG-CW=" + clockwiseRotation + "; ");
+                indicatorString.append("BUG-D=" + DIRABBREV[direction.getDirectionOrderNum()] + "; BUG-CW=" + clockwiseRotation + "; ");
                 if (clockwiseRotation) {
                     if (rc.canMove(direction.rotateLeft()) && lastDirection != direction.rotateLeft().opposite()) {
                         rc.move(direction.rotateLeft());
@@ -566,7 +566,7 @@ public class Motion {
                 break;
             }
         }
-        indicatorString.append("BUG-LAST-DIR=" + DIRABBREV[lastDirection.getDirectionOrderNum()] + "; BUG-CW=" + clockwiseRotation + "; ");
+        indicatorString.append("BUG-LD=" + DIRABBREV[lastDirection.getDirectionOrderNum()] + "; BUG-CW=" + clockwiseRotation + "; ");
         if (oldClockwiseRotation != clockwiseRotation) {
             return new Direction[]{lastDirection,Direction.CENTER};
         }

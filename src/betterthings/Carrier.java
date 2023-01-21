@@ -250,7 +250,7 @@ public strictfp class Carrier {
                 state = 0;
             }
             me = rc.getLocation();
-            rc.setIndicatorLine(me, prioritizedHeadquarters, 255, 255, 0);
+            rc.setIndicatorLine(me, prioritizedHeadquarters, 0, 100, 200);
         }
     }
 
