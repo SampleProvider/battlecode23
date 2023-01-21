@@ -44,12 +44,12 @@ public strictfp class GlobalArray {
      * Bits 6-11 y coordinate
      * Bit 12 presence marker
      * Headquarters:
-     * Bit 13 adequate materials
+     *  Bit 13 adequate materials
      * Wells:
-     * Bits 13-14 resource type
-     * Bit 15 upgraded marker
+     *  Bits 13-14 resource type
+     *  Bit 15 upgraded marker
      * Opponents:
-     * No extra bits
+     *  No extra bits
      * Islands:
      * 
      */

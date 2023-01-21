@@ -6,8 +6,7 @@ public strictfp class StoredLocations {
     protected RobotController rc;
 
     private WellInfo[] wells = new WellInfo[8];
-    private MapLocation[] opponents = new MapLocation[4];
-    private MapLocation[] opponentHeadquarters = new MapLocation[4];
+    private MapLocation[] opponents = new MapLocation[8];
 
     protected boolean[] removedOpponents = new boolean[GlobalArray.OPPONENTS_LENGTH];
 
@@ -25,7 +24,7 @@ public strictfp class StoredLocations {
         } else if (rc.getType() == RobotType.LAUNCHER) {
             rc.writeSharedArray(GlobalArray.LAUNCHERCOUNT, rc.readSharedArray(GlobalArray.LAUNCHERCOUNT) + 1);
         }
-        for (int i = 0; i < wells.length; i++) {
+        for (int i = 0; i < 8; i++) {
             if (wells[i] != null) {
                 if (GlobalArray.storeWell(rc, wells[i])) {
                     wells[i] = null;
@@ -34,7 +33,7 @@ public strictfp class StoredLocations {
                 break;
             }
         }
-        for (int i = 0; i < opponents.length; i++) {
+        for (int i = 0; i < 8; i++) {
             if (opponents[i] != null) {
                 if (GlobalArray.storeOpponentLocation(rc, opponents[i])) {
                     opponents[i] = null;
@@ -49,7 +48,7 @@ public strictfp class StoredLocations {
     }
 
     public boolean storeWell(WellInfo w) {
-        for (int i = 0; i < wells.length; i++) {
+        for (int i = 0; i < 8; i++) {
             if (wells[i] != null && wells[i].equals(w)) {
                 return false;
             } else if (wells[i] == null) {
@@ -68,7 +67,7 @@ public strictfp class StoredLocations {
     }
 
     public boolean storeOpponentLocation(MapLocation m) {
-        for (int i = 0; i < opponents.length; i++) {
+        for (int i = 0; i < 8; i++) {
             if (opponents[i] != null && opponents[i].equals(m)) {
                 return false;
             } else if (opponents[i] == null) {
@@ -84,7 +83,6 @@ public strictfp class StoredLocations {
     }
 
     public void detectOpponentLocations() throws GameActionException {
-        storeOpponentLocation(Attack.senseOpponent(rc, rc.getLocation(),
-                rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())));
+        storeOpponentLocation(Attack.senseOpponent(rc, rc.getLocation(), rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())));
     }
 }
