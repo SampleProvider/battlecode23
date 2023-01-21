@@ -41,8 +41,7 @@ public strictfp class Amplifier {
         try {
             this.rc = rc;
             int hqCount = 0;
-            for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS
-                    + GlobalArray.HEADQUARTERS_LENGTH; i++) {
+            for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
                 if (GlobalArray.hasLocation(rc.readSharedArray(i)))
                     hqCount++;
             }
