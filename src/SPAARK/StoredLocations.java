@@ -6,12 +6,16 @@ public strictfp class StoredLocations {
     protected RobotController rc;
 
     private final int FULL_WELL_TIME = 100;
+    
+    private final int WELLS_LENGTH = 8;
+    private final int OPPONENTS_LENGTH = 8;
+    private final int ISLANDS_LENGTH = 16;
 
-    private WellInfo[] wells = new WellInfo[8];
-    private MapLocation[] opponents = new MapLocation[8];
-    private MapLocation[] islands = new MapLocation[16];
-    private Team[] islandTeams = new Team[16];
-    private int[] islandIds = new int[16];
+    private WellInfo[] wells = new WellInfo[WELLS_LENGTH];
+    private MapLocation[] opponents = new MapLocation[OPPONENTS_LENGTH];
+    private MapLocation[] islands = new MapLocation[ISLANDS_LENGTH];
+    private Team[] islandTeams = new Team[ISLANDS_LENGTH];
+    private int[] islandIds = new int[ISLANDS_LENGTH];
     
     protected MapLocation[] fullWells = new MapLocation[GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH];
     protected int[] fullWellTimer = new int[GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH];
@@ -28,7 +32,7 @@ public strictfp class StoredLocations {
         if (!rc.canWriteSharedArray(0, 0)) {
             return;
         }
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < WELLS_LENGTH; i++) {
             if (wells[i] != null) {
                 if (GlobalArray.storeWell(rc, wells[i])) {
                     wells[i] = null;
@@ -37,7 +41,7 @@ public strictfp class StoredLocations {
                 break;
             }
         }
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < OPPONENTS_LENGTH; i++) {
             if (opponents[i] != null) {
                 if (GlobalArray.storeOpponentLocation(rc, opponents[i])) {
                     opponents[i] = null;
@@ -49,7 +53,7 @@ public strictfp class StoredLocations {
                 rc.writeSharedArray(i + GlobalArray.OPPONENTS, 0);
             }
         }
-        for (int i = 0;i < 16;i++) {
+        for (int i = 0;i < ISLANDS_LENGTH;i++) {
             if (islands[i] != null) {
                 if (GlobalArray.storeIslandLocation(rc, islands[i], islandTeams[i], islandIds[i])) {
                     islands[i] = null;
@@ -61,7 +65,7 @@ public strictfp class StoredLocations {
     }
 
     public boolean storeWell(WellInfo w) {
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < WELLS_LENGTH; i++) {
             if (wells[i] != null && wells[i].equals(w)) {
                 return false;
             } else if (wells[i] == null) {
@@ -111,7 +115,7 @@ public strictfp class StoredLocations {
     }
 
     public boolean storeOpponentLocation(MapLocation m) {
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < OPPONENTS_LENGTH; i++) {
             if (opponents[i] != null && opponents[i].equals(m)) {
                 return false;
             } else if (opponents[i] == null) {
@@ -131,7 +135,7 @@ public strictfp class StoredLocations {
     }
     
     public boolean storeIslandLocation(MapLocation m, int id) throws GameActionException {
-        for (int i = 0;i < 16;i++) {
+        for (int i = 0;i < ISLANDS_LENGTH;i++) {
             if (islands[i] != null && islandIds[i] == id) {
                 return false;
             }
