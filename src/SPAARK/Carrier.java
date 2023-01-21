@@ -155,7 +155,7 @@ public strictfp class Carrier {
                     attemptTransfer();
                 }
                 me = rc.getLocation();
-                // rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 25, 255);
+                rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 25, 255);
                 return;
             } else {
                 updatePrioritizedWell();
