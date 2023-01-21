@@ -5,12 +5,17 @@ import battlecode.common.*;
 public strictfp class StoredLocations {
     protected RobotController rc;
 
+    private final int FULL_WELL_TIME = 100;
+
     private WellInfo[] wells = new WellInfo[8];
     private MapLocation[] opponents = new MapLocation[8];
     private MapLocation[] islands = new MapLocation[16];
     private Team[] islandTeams = new Team[16];
     private int[] islandIds = new int[16];
     
+    protected MapLocation[] fullWells = new MapLocation[GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH];
+    protected int[] fullWellTimer = new int[GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH];
+
     protected boolean[] removedOpponents = new boolean[GlobalArray.OPPONENTS_LENGTH];
     protected boolean[] removedIslands = new boolean[GlobalArray.ISLANDS_LENGTH];
 
@@ -74,6 +79,37 @@ public strictfp class StoredLocations {
         return false;
     }
 
+    public void fullWell(MapLocation m) {
+        for (MapLocation l : fullWells) {
+            if (l != null && l.equals(m)) {
+                return;
+            }
+        }
+        for (int i = 0;i < GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH;i++) {
+            if (fullWells[i] == null) {
+                fullWells[i] = m;
+                fullWellTimer[i] = FULL_WELL_TIME;
+                return;
+            }
+        }
+    }
+    public boolean isFullWell(MapLocation m) {
+        for (MapLocation l : fullWells) {
+            if (l != null && l.equals(m)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public void updateFullWells() {
+        for (int i = 0;i < GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH;i++) {
+            fullWellTimer[i] -= 1;
+            if (fullWellTimer[i] == 0) {
+                fullWells[i] = null;
+            }
+        }
+    }
+
     public void detectWells() {
         WellInfo[] wellInfo = rc.senseNearbyWells();
         for (WellInfo w : wellInfo) {
@@ -100,6 +136,7 @@ public strictfp class StoredLocations {
     public void detectOpponentLocations() throws GameActionException {
         storeOpponentLocation(Attack.senseOpponent(rc, rc.getLocation(), rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())));
     }
+    
     public boolean storeIslandLocation(MapLocation m, int id) throws GameActionException {
         for (int i = 0;i < 16;i++) {
             if (islands[i] != null && islandIds[i] == id) {
@@ -114,9 +151,11 @@ public strictfp class StoredLocations {
         }
         return false;
     }
+    
     public void removeIslandLocation(int n) {
         removedIslands[n] = true;
     }
+    
     public void detectIslandLocations() throws GameActionException {
         int[] islands = rc.senseNearbyIslands();
         for (int id : islands) {

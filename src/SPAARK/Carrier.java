@@ -1,16 +1,6 @@
 package SPAARK;
 
-import battlecode.common.Anchor;
-import battlecode.common.Clock;
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.ResourceType;
-import battlecode.common.RobotController;
-import battlecode.common.RobotInfo;
-import battlecode.common.RobotType;
-import battlecode.common.Team;
-import battlecode.common.WellInfo;
+import battlecode.common.*;
 
 public strictfp class Carrier {
     protected RobotController rc;
