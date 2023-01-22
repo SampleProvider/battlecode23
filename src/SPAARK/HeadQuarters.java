@@ -170,6 +170,8 @@ public strictfp class HeadQuarters {
                                     indicatorString.append("PROD CAR; ");
                                     if (GlobalArray.DEBUG_INFO >= 2) {
                                         rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
+                                    } else {
+                                        rc.setIndicatorDot(optimalSpawningLocationWell, 125, 125, 125);
                                     }
                                 }
                             }
@@ -181,6 +183,8 @@ public strictfp class HeadQuarters {
                                     indicatorString.append("PROD LAU; ");
                                     if (GlobalArray.DEBUG_INFO >= 2) {
                                         rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                                    } else {
+                                        rc.setIndicatorDot(optimalSpawningLocation, 125, 125, 125);
                                     }
                                 }
                             }
@@ -201,6 +205,8 @@ public strictfp class HeadQuarters {
                             indicatorString.append("PROD LAU; ");
                             if (GlobalArray.DEBUG_INFO >= 2) {
                                 rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                            } else {
+                                rc.setIndicatorDot(optimalSpawningLocation, 125, 125, 125);
                             }
                         }
                         else if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && possibleSpawningLocations >= 6 && launchers > 10) {
@@ -211,6 +217,8 @@ public strictfp class HeadQuarters {
                             indicatorString.append("PROD AMP; ");
                             if (GlobalArray.DEBUG_INFO >= 2) {
                                 rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                            } else {
+                                rc.setIndicatorDot(optimalSpawningLocation, 125, 125, 125);
                             }
                         }
                         else if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
@@ -220,6 +228,8 @@ public strictfp class HeadQuarters {
                             indicatorString.append("PROD CAR; ");
                             if (GlobalArray.DEBUG_INFO >= 2) {
                                 rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
+                            } else {
+                                rc.setIndicatorDot(optimalSpawningLocation, 125, 125, 125);
                             }
                         }
                     }

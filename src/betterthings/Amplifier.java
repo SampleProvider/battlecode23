@@ -112,6 +112,11 @@ public strictfp class Amplifier {
                     if (bug2array[1] == Direction.CENTER) {
                         clockwiseRotation = !clockwiseRotation;
                     }
+                    if (GlobalArray.DEBUG_INFO >= 2) {
+                        rc.setIndicatorLine(me, randomExploreLocation, 0, 175, 0);
+                    } else {
+                        rc.setIndicatorDot(me, 0, 175, 0);
+                    }
                     randomExploreTime++;
                     if (randomExploreTime > 30) randomExploreLocation = null;
                 } else {
