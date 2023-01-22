@@ -414,6 +414,7 @@ public strictfp class Carrier {
         storedLocations.fullWell(well);
         return false;
     }
+    
     private boolean testFull(int fullSpots, int emptySpots) {
         // optimize??
         // return fullSpots <= emptySpots + 1;

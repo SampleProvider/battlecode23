@@ -174,19 +174,18 @@ public strictfp class HeadQuarters {
                             MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
                             MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
                             if (mana > 160 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
-                                    && (launchers < 30 * hqCount * mapSizeFactor || nearbyLaunchers < 15 || launcherCooldown <= 0) && possibleSpawningLocations >= 4) {
+                                    && (launchers < 30 * hqCount * mapSizeFactor || nearbyLaunchers < 15 || launcherCooldown <= 0) && possibleSpawningLocations >= 3) {
                                 rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                                 launchersProduced++;
                                 rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                                 launcherCooldown = 5;
                             } else if (adamantium > 150 && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
-                                    && ((deltaResources < 5 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 6) {
+                                    && ((deltaResources < 5 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 4) {
                                 rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                                 carriersProduced++;
                                 rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                                 carrierCooldown = 30;
-                            } else
-                                break;
+                            } else break;
                         }
                     }
                 } else {
@@ -194,13 +193,13 @@ public strictfp class HeadQuarters {
                         MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
                         MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
                         if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
-                                && ((deltaResources < 5 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0)
-                                && (round > 1 || carriersProduced < 2) && possibleSpawningLocations >= 2) {
+                                && ((deltaResources < 5 && nearbyCarriers < 10) || carriers < 20 * hqCount || carrierCooldown <= 0)
+                                && (round > 1 || carriersProduced < 2) && possibleSpawningLocations >= 3) {
                             rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                             carriersProduced++;
                             rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                             carrierCooldown = 30;
-                        } else if (optimalSpawningLocation != null && possibleSpawningLocations >= 4) {
+                        } else if (optimalSpawningLocation != null && possibleSpawningLocations >= 2) {
                             if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
                                     && launchers > 10 && carriers > 0 && amplifiers < 5 && amplifierCooldown <= 0) {
                                 rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
@@ -213,11 +212,9 @@ public strictfp class HeadQuarters {
                                 rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                                 launchersProduced++;
                                 rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                                launcherCooldown = 5;
-                            } else
-                                break;
-                        } else
-                            break;
+                                launcherCooldown = 0;
+                            } else break;
+                        } else break;
                     }
                 }
                 if (carriersProduced > 0)
