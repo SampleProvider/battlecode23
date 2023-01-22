@@ -53,7 +53,7 @@ public strictfp class GlobalArray {
      * Opponents:
      *  No extra bits
      * Islands:
-     * 
+     *  Bits 13-14  team controlling island
      */
 
     // general location/data parsing/writing
@@ -187,6 +187,7 @@ public strictfp class GlobalArray {
         }
         return false;
     }
+
     public static MapLocation[] getKnownIslandLocations(RobotController rc, Team team) throws GameActionException {
         MapLocation[] islandLocations = new MapLocation[ISLANDS_LENGTH];
         for (int i = ISLANDS; i < ISLANDS + ISLANDS_LENGTH; i++) {
