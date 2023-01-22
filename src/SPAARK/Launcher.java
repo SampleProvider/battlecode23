@@ -35,7 +35,7 @@ public strictfp class Launcher {
     private int amplifierSensingRange = 25;
     private int amplifierCircleRange = 7;
 
-    private int launcherCircleRange = 4;
+    private int launcherCircleRange = 2;
 
     private int headquarterCircleRange = 16;
 
