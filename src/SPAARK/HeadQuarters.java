@@ -52,7 +52,7 @@ public strictfp class HeadQuarters {
                 rc.writeSharedArray(GlobalArray.HEADQUARTERS + 3, locInt);
                 hqIndex = GlobalArray.HEADQUARTERS + 3;
             } else {
-                throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many HeadQuarters!");
+                System.out.println("[!] Too many Headquarters! [!]");
             }
             storedLocations = new StoredLocations(rc);
         } catch (GameActionException e) {
@@ -231,7 +231,7 @@ public strictfp class HeadQuarters {
                 // store
                 GlobalArray.storeHeadquarters(this);
                 // prioritized resources
-                double deviation = (mana - (adamantium * 1.5)) / (mana + (adamantium * 1.5));
+                double deviation = (mana - (adamantium * 1.8)) / (mana + (adamantium * 1.8));
                 if (Math.abs(deviation) < 0.2) {
                     globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE, hqIndex);
                     indicatorString.append("PR=NO; ");
