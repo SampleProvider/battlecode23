@@ -98,7 +98,45 @@ public strictfp class HeadQuarters {
                 storedLocations.detectIslandLocations();
                 storedLocations.writeToGlobalArray();
 
-                // track carriers and launchers
+                if (GlobalArray.DEBUG_INFO >= 1 && isPrimaryHQ) {
+                    MapLocation[] wells = GlobalArray.getKnownWellLocations(rc);
+                    for (MapLocation m : wells) {
+                        if (m == null) {
+                            continue;
+                        }
+                        rc.setIndicatorDot(m, 255, 75, 75);
+                    }
+                    MapLocation[] opponents = GlobalArray.getKnownOpponentLocations(rc);
+                    for (MapLocation m : opponents) {
+                        if (m == null) {
+                            continue;
+                        }
+                        rc.setIndicatorDot(m, 0, 255, 0);
+                    }
+                    MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.A);
+                    for (MapLocation m : islands) {
+                        if (m == null) {
+                            continue;
+                        }
+                        rc.setIndicatorDot(m, 255, 0, 0);
+                    }
+                    islands = GlobalArray.getKnownIslandLocations(rc, Team.B);
+                    for (MapLocation m : islands) {
+                        if (m == null) {
+                            continue;
+                        }
+                        rc.setIndicatorDot(m, 0, 0, 255);
+                    }
+                    islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
+                    for (MapLocation m : islands) {
+                        if (m == null) {
+                            continue;
+                        }
+                        rc.setIndicatorDot(m, 255, 255, 255);
+                    }
+                }
+
+                // track bots
                 if (round % 2 == 1) {
                     carriers = rc.readSharedArray(GlobalArray.CARRIERCOUNT);
                     launchers = rc.readSharedArray(GlobalArray.LAUNCHERCOUNT);
@@ -239,8 +277,8 @@ public strictfp class HeadQuarters {
                 System.out.println("Exception at HeadQuarters");
                 e.printStackTrace();
             } finally {
-                lastAdamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
-                lastMana = rc.getResourceAmount(ResourceType.MANA);
+                lastAdamantium = adamantium;
+                lastMana = mana;
                 rc.setIndicatorString(indicatorString.toString());
                 Clock.yield();
             }
