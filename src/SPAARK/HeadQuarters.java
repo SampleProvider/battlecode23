@@ -163,7 +163,7 @@ public strictfp class HeadQuarters {
                         } else {
                             indicatorString.append("TRY PROD ANC; ");
                             if (adamantium >= 150) {
-                                if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
+                                if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 8) {
                                     rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                                     carriers += 1;
                                     builtRobot = true;
@@ -213,7 +213,7 @@ public strictfp class HeadQuarters {
                                 rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                             }
                         }
-                        else if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 5) {
+                        else if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 8) {
                             rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                             carriers += 1;
                             builtRobot = true;
