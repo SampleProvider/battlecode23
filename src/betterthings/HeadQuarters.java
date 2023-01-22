@@ -292,7 +292,6 @@ public strictfp class HeadQuarters {
             MapLocation[] headQuarters = GlobalArray.getKnownHeadQuarterLocations(rc);
             int lowestDist = Integer.MAX_VALUE;
             int wellIndex = -1;
-            int hqIndex = -1;
             for (int i = 0; i < headQuarters.length; i++) {
                 if (headQuarters[i] != null) {
                     for (int j = 0; j < wells.length; j++) {
@@ -300,7 +299,6 @@ public strictfp class HeadQuarters {
                             int dist = headQuarters[i].distanceSquaredTo(wells[j]);
                             if (dist < lowestDist) {
                                 lowestDist = dist;
-                                hqIndex = i;
                                 wellIndex = j;
                             }
                         }
@@ -308,8 +306,8 @@ public strictfp class HeadQuarters {
                 }
             }
             if (wellIndex > -1) {
-                indicatorString.append("EX-HQ=" + wells[wellIndex].toString() + "-" + headQuarters[hqIndex].toString() + "; ");
-                globalArray.setTargetElixirWellHQPair(wellIndex, hqIndex);
+                indicatorString.append("EX=" + wells[wellIndex].toString() + "; ");
+                globalArray.setTargetElixirWell(wellIndex);
             }
         } catch (GameActionException e) {
             System.out.println("GameActionException setting target elixir well");
