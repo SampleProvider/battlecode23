@@ -42,28 +42,28 @@ public strictfp class HeadQuarters {
             this.rc = rc;
             // setting headquarter locations
             locInt = GlobalArray.intifyLocation(rc.getLocation());
-            hqIndex = rc.getID()/2;
-            if (rc.getID() % 2 == 0)
-                hqIndex--;
-            rc.writeSharedArray(GlobalArray.HEADQUARTERS+hqIndex, locInt);
-            if (hqIndex == 0)
-                isPrimaryHQ = true;
-            // if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS))) {
-            //     rc.writeSharedArray(GlobalArray.HEADQUARTERS, locInt);
-            //     hqIndex = GlobalArray.HEADQUARTERS;
+            // hqIndex = rc.getID()/2;
+            // if (rc.getID() % 2 == 0)
+            //     hqIndex--;
+            // rc.writeSharedArray(GlobalArray.HEADQUARTERS+hqIndex, locInt);
+            // if (hqIndex == 0)
             //     isPrimaryHQ = true;
-            // } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS + 1))) {
-            //     rc.writeSharedArray(GlobalArray.HEADQUARTERS + 1, locInt);
-            //     hqIndex = GlobalArray.HEADQUARTERS + 1;
-            // } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS + 2))) {
-            //     rc.writeSharedArray(GlobalArray.HEADQUARTERS + 2, locInt);
-            //     hqIndex = GlobalArray.HEADQUARTERS + 2;
-            // } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS + 3))) {
-            //     rc.writeSharedArray(GlobalArray.HEADQUARTERS + 3, locInt);
-            //     hqIndex = GlobalArray.HEADQUARTERS + 3;
-            // } else {
-            //     throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many HeadQuarters!");
-            // }
+            if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS))) {
+                rc.writeSharedArray(GlobalArray.HEADQUARTERS, locInt);
+                hqIndex = GlobalArray.HEADQUARTERS;
+                isPrimaryHQ = true;
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS + 1))) {
+                rc.writeSharedArray(GlobalArray.HEADQUARTERS + 1, locInt);
+                hqIndex = GlobalArray.HEADQUARTERS + 1;
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS + 2))) {
+                rc.writeSharedArray(GlobalArray.HEADQUARTERS + 2, locInt);
+                hqIndex = GlobalArray.HEADQUARTERS + 2;
+            } else if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS + 3))) {
+                rc.writeSharedArray(GlobalArray.HEADQUARTERS + 3, locInt);
+                hqIndex = GlobalArray.HEADQUARTERS + 3;
+            } else {
+                System.out.println("[!] Too many Headquarters! [!]");
+            }
             storedLocations = new StoredLocations(rc);
         } catch (GameActionException e) {
             System.out.println("GameActionException at HeadQuarters constructor");

@@ -52,7 +52,7 @@ public strictfp class HeadQuarters {
                 rc.writeSharedArray(GlobalArray.HEADQUARTERS + 3, locInt);
                 hqIndex = GlobalArray.HEADQUARTERS + 3;
             } else {
-                throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many HeadQuarters!");
+                System.out.println("[!] Too many Headquarters! [!]");
             }
             storedLocations = new StoredLocations(rc);
         } catch (GameActionException e) {
