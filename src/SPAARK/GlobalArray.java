@@ -27,10 +27,10 @@ public strictfp class GlobalArray {
     public static final int PRIORITIZED_RESOURCE_HQ4 = 3;
     public static final int CONVERT_WELL = 4;
     public static final int UPGRADE_WELLS = 5;
-    public static final int ELIXIR_HQ_ID = 6;
-    public static final int CONVERSION_WELL_ID = 7;
+    public static final int CONVERSION_WELL_ID = 6;
+    public static final int MAP_SYMMETRY = 7;
 
-    public static int DEBUG_INFO = 1;
+    public static final int DEBUG_INFO = 2;
 
     private static final ResourceType[] resourceTypes = new ResourceType[] {
             ResourceType.NO_RESOURCE,
@@ -42,18 +42,18 @@ public strictfp class GlobalArray {
     private final int[] currentState = new int[8];
 
     /*
-     * Bits 0-5 x coordinate
-     * Bits 6-11 y coordinate
-     * Bit 12 presence marker
+     * Bits 0-5     x coordinate
+     * Bits 6-11    y coordinate
+     * Bit 12       presence marker
      * Headquarters:
-     *  Bit 13 adequate materials
+     *  Bit 13      adequate materials
      * Wells:
-     *  Bits 13-14 resource type
-     *  Bit 15 upgraded marker
+     *  Bits 13-14  resource type
+     *  Bit 15      upgraded marker
      * Opponents:
      *  No extra bits
      * Islands:
-     * 
+     *  Bits 13-14  team controlling island
      */
 
     // general location/data parsing/writing
@@ -187,6 +187,7 @@ public strictfp class GlobalArray {
         }
         return false;
     }
+
     public static MapLocation[] getKnownIslandLocations(RobotController rc, Team team) throws GameActionException {
         MapLocation[] islandLocations = new MapLocation[ISLANDS_LENGTH];
         for (int i = ISLANDS; i < ISLANDS + ISLANDS_LENGTH; i++) {
@@ -218,14 +219,14 @@ public strictfp class GlobalArray {
     }
     
     /*
-     * Bits 0-1 prioritized resource hq 1
-     * Bits 2-3 prioritized resource hq 2
-     * Bits 4-5 prioritized resource hq 3
-     * Bits 6-7 prioritized resource hq 4
-     * Bit 8 convert well
-     * Bit 9 upgrade wells
-     * Bits 10-11 id of elixir hq (where to drop elixir)
-     * bits 12-13 id of well to convert to elixir
+     * Bits 0-1     prioritized resource hq 1
+     * Bits 2-3     prioritized resource hq 2
+     * Bits 4-5     prioritized resource hq 3
+     * Bits 6-7     prioritized resource hq 4
+     * Bit 8        convert well
+     * Bit 9        upgrade wells
+     * Bits 10-13   id of well to convert to elixir
+     * Bits 14-15   map symmetry
      */
 
     // read game state
@@ -236,8 +237,8 @@ public strictfp class GlobalArray {
         currentState[PRIORITIZED_RESOURCE_HQ4] = (n >> 6) & 0b11; // bits 6-7
         currentState[CONVERT_WELL] = (n >> 8) & 0b1; // bit 8
         currentState[UPGRADE_WELLS] = (n >> 9) & 0b1; // bit 9
-        currentState[ELIXIR_HQ_ID] = (n >> 10) & 0b11; // bits 10-11
-        currentState[CONVERSION_WELL_ID] = (n >> 12) & 0b11; // bits 12-13
+        currentState[CONVERSION_WELL_ID] = (n >> 10) & 0b1111; // bits 10-13
+        currentState[MAP_SYMMETRY] = (n >> 14) & 0b11; // bits 14-15
         return currentState;
     }
 
@@ -257,6 +258,10 @@ public strictfp class GlobalArray {
         return currentState[UPGRADE_WELLS] == 1;
     }
 
+    public int mapSymmetry() {
+        return currentState[MAP_SYMMETRY];
+    }
+
     // write game state
     public int getGameStateNumber() {
         return (currentState[PRIORITIZED_RESOURCE_HQ1])
@@ -265,22 +270,25 @@ public strictfp class GlobalArray {
                 | (currentState[PRIORITIZED_RESOURCE_HQ4] << 6)
                 | (currentState[CONVERT_WELL] << 8)
                 | (currentState[UPGRADE_WELLS] << 9)
-                | (currentState[ELIXIR_HQ_ID] << 10)
-                | (currentState[CONVERSION_WELL_ID] << 12);
+                | (currentState[CONVERSION_WELL_ID] << 10)
+                | (currentState[MAP_SYMMETRY] << 14);
     }
 
     public void setPrioritizedResource(ResourceType resource, int hqIndex) {
         currentState[hqIndex - PRIORITIZED_RESOURCE_HQ1 - HEADQUARTERS] = resource.resourceID;
     }
 
-    public void setTargetElixirWellHQPair(int wellIndex, int hqIndex) {
-        currentState[CONVERT_WELL] = 1;
-        currentState[CONVERSION_WELL_ID] = wellIndex;
-        currentState[ELIXIR_HQ_ID] = hqIndex;
-    }
-
     public void setUpgradeWells(boolean set) {
         currentState[UPGRADE_WELLS] = set ? 1 : 0;
+    }
+
+    public void setTargetElixirWell(int wellIndex) {
+        currentState[CONVERT_WELL] = 1;
+        currentState[CONVERSION_WELL_ID] = wellIndex;
+    }
+
+    public void setMapSymmetry(int symmetry) {
+        currentState[MAP_SYMMETRY] = symmetry;
     }
 
     // bit operations
