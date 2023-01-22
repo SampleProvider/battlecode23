@@ -169,7 +169,6 @@ public strictfp class Carrier {
             } else {
                 updatePrioritizedWell();
                 if (prioritizedWell != null) {
-                    indicatorString.append("WDR-(NXT:P->W); ");
                     state = 1;
                     indicatorString.append("PATH->WELL; ");
                     Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, indicatorString);
