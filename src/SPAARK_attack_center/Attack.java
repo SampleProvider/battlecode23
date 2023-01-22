@@ -3,7 +3,7 @@ package SPAARK_attack_center;
 import battlecode.common.*;
 
 public class Attack {
-    protected static MapLocation attack(RobotController rc, MapLocation me, RobotInfo[] robotInfo, RobotType robotType, boolean attackAll) throws GameActionException {
+    protected static MapLocation attack(RobotController rc, MapLocation me, RobotInfo[] robotInfo, RobotType robotType, boolean attackAll, StringBuilder indicatorString) throws GameActionException {
         if (robotInfo.length > 0) {
             RobotInfo prioritizedRobotInfo = null;
             MapLocation prioritizedRobotInfoLocation = null;
@@ -15,18 +15,15 @@ public class Attack {
                     if (prioritizedRobotInfo == null) {
                         prioritizedRobotInfo = w;
                         prioritizedRobotInfoLocation = w.getLocation();
-                    }
-                    else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
+                    } else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
                         prioritizedRobotInfo = w;
                         prioritizedRobotInfoLocation = w.getLocation();
                     }
-                }
-                else if (attackAll) {
+                } else if (attackAll) {
                     if (prioritizedRobotInfo == null) {
                         prioritizedRobotInfo = w;
                         prioritizedRobotInfoLocation = w.getLocation();
-                    }
-                    else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
+                    } else if (prioritizedRobotInfo.getType() != robotType && prioritizedRobotInfo.getHealth() > w.getHealth()) {
                         prioritizedRobotInfo = w;
                         prioritizedRobotInfoLocation = w.getLocation();
                     }
@@ -34,16 +31,16 @@ public class Attack {
             }
             if (prioritizedRobotInfoLocation != null) {
                 if (rc.canAttack(prioritizedRobotInfoLocation)) {
-                    rc.setIndicatorString("Attacking");
+                    indicatorString.append("ATK-" + prioritizedRobotInfoLocation.toString() + "; ");
                     rc.attack(prioritizedRobotInfoLocation);
                 }
             }
             return prioritizedRobotInfoLocation;
-        }
-        else {
+        } else {
             return null;
         }
     }
+
     protected static MapLocation senseOpponent(RobotController rc, MapLocation me, RobotInfo[] robotInfo) throws GameActionException {
         if (robotInfo.length > 0) {
             RobotInfo prioritizedRobotInfo = null;
@@ -55,15 +52,13 @@ public class Attack {
                 if (prioritizedRobotInfo == null) {
                     prioritizedRobotInfo = w;
                     prioritizedRobotInfoLocation = w.getLocation();
-                }
-                else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
+                } else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
                     prioritizedRobotInfo = w;
                     prioritizedRobotInfoLocation = w.getLocation();
                 }
             }
             return prioritizedRobotInfoLocation;
-        }
-        else {
+        } else {
             return null;
         }
     }
