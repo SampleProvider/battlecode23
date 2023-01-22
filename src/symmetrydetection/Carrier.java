@@ -1,6 +1,8 @@
-package SPAARK;
+package symmetrydetection;
 
 import battlecode.common.*;
+
+import java.lang.Math;
 
 public strictfp class Carrier {
     protected RobotController rc;
@@ -37,15 +39,19 @@ public strictfp class Carrier {
     private boolean clockwiseRotation = true;
     private Direction lastDirection = Direction.CENTER;
 
+    private MapLocation symmetryDetectionHeadquarters;
+    private int suspectedSymmetry = 1;
+
     private int lastHealth = 0;
 
-    private int state = 0;
+    private int state = 5;
     // state
     // 0 is wander
     // 1 is pathfinding to well
     // 2 is collecting
     // 3 is pathfinding to island
     // 4 is retreat
+    // 5 is symmetry detection
 
     protected StringBuilder indicatorString = new StringBuilder();
 
@@ -108,7 +114,10 @@ public strictfp class Carrier {
                 }
                 if (loc != null) {
                     storedLocations.storeOpponentLocation(loc);
-                    state = 4;
+                    if (state != 5) {
+                        //blindly sally forth to detect symmetry
+                        state = 4;
+                    }
                 }
 
                 runState();
@@ -162,11 +171,14 @@ public strictfp class Carrier {
                 me = rc.getLocation();
                 if (GlobalArray.DEBUG_INFO >= 3) {
                     rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 25, 255);
+                } else {
+                    rc.setIndicatorDot(me, 125, 25, 255);
                 }
                 return;
             } else {
                 updatePrioritizedWell();
                 if (prioritizedWell != null) {
+                    indicatorString.append("WDR-(NXT:P->W); ");
                     state = 1;
                     indicatorString.append("PATH->WELL; ");
                     Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, indicatorString);
@@ -178,6 +190,8 @@ public strictfp class Carrier {
                     me = rc.getLocation();
                     if (GlobalArray.DEBUG_INFO >= 2) {
                         rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
+                    } else {
+                        rc.setIndicatorDot(me, 255, 75, 75);
                     }
                     return;
                 }
@@ -200,6 +214,8 @@ public strictfp class Carrier {
             me = rc.getLocation();
             if (GlobalArray.DEBUG_INFO >= 2) {
                 rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
+            } else {
+                rc.setIndicatorDot(me, 255, 75, 75);
             }
         } else if (state == 2) {
             indicatorString.append("COLLECT; ");
@@ -210,6 +226,8 @@ public strictfp class Carrier {
                 me = rc.getLocation();
                 if (GlobalArray.DEBUG_INFO >= 2) {
                     rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
+                } else {
+                    rc.setIndicatorDot(me, 255, 75, 75);
                 }
             } else {
                 state = 0;
@@ -246,6 +264,8 @@ public strictfp class Carrier {
                 }
                 if (GlobalArray.DEBUG_INFO >= 2) {
                     rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 125, 255);
+                } else {
+                    rc.setIndicatorDot(me, 75, 125, 255);
                 }
             } else {
                 // get island location from global array
@@ -277,6 +297,8 @@ public strictfp class Carrier {
                     }
                     if (GlobalArray.DEBUG_INFO >= 2) {
                         rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 125, 255);
+                    } else {
+                        rc.setIndicatorDot(me, 75, 125, 255);
                     }
                 }
                 else {
@@ -299,7 +321,58 @@ public strictfp class Carrier {
             me = rc.getLocation();
             if (GlobalArray.DEBUG_INFO >= 3) {
                 rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 255, 0);
+            } else {
+                rc.setIndicatorDot(me, 125, 255, 0);
             }
+        } else if (state == 5) {
+            indicatorString.append("SSYM=" + suspectedSymmetry + "; ");
+            // 1: horz
+            // 2: vert
+            // 3: rot
+            symmetryDetectionHeadquarters = headquarters[0];
+            double centerX = (rc.getMapWidth() - 1.0) / 2.0;
+            double centerY = (rc.getMapHeight() - 1.0) / 2.0;
+            for (int i = 0; i < headquarters.length; i++) {
+                if (headquarters[i] != null) {
+                    if (Math.sqrt((centerX - headquarters[i].x) * (centerX - headquarters[i].x) + (centerY - headquarters[i].y) * (centerY - headquarters[i].y)) < Math.sqrt((centerX - symmetryDetectionHeadquarters.x) * (centerX - symmetryDetectionHeadquarters.x) + (centerY - symmetryDetectionHeadquarters.y) * (centerY - symmetryDetectionHeadquarters.y))) {
+                        symmetryDetectionHeadquarters = headquarters[i];
+                    }
+                }
+            }
+            MapLocation target;
+            if (suspectedSymmetry == 1) {
+                target = new MapLocation(rc.getMapWidth() - symmetryDetectionHeadquarters.x - 1, symmetryDetectionHeadquarters.y);
+            } else if (suspectedSymmetry == 2) {
+                target = new MapLocation(symmetryDetectionHeadquarters.x, rc.getMapHeight() - symmetryDetectionHeadquarters.y - 1);
+            } else {
+                //suspectedSymmetry = 3
+                target = new MapLocation(rc.getMapWidth() - symmetryDetectionHeadquarters.x - 1, rc.getMapHeight() - symmetryDetectionHeadquarters.y - 1);
+            }
+            if (rc.canSenseLocation(target)) {
+                RobotInfo hq = rc.senseRobotAtLocation(target);
+                if (hq != null && hq.type == RobotType.HEADQUARTERS && hq.team != rc.getTeam().opponent()) {
+                    System.out.println(suspectedSymmetry + " symmetry CONFIRMED!");
+                    storedLocations.storeSymmetry(suspectedSymmetry);
+                    state = 4;
+                } else {
+                    if (suspectedSymmetry == 1) {
+                        suspectedSymmetry = 3;
+                    } else if (suspectedSymmetry == 3) {
+                        suspectedSymmetry = 2;
+                    } else if (suspectedSymmetry == 2) {
+                        suspectedSymmetry = 1;
+                    }
+                }
+            }
+
+
+            Direction[] bug2array = Motion.bug2(rc, target, lastDirection, clockwiseRotation, indicatorString);
+            lastDirection = bug2array[0];
+            if (bug2array[1] == Direction.CENTER) {
+                clockwiseRotation = !clockwiseRotation;
+            }
+            me = rc.getLocation();
+            rc.setIndicatorLine(me, target, 0, 0, 0);
         }
     }
 
