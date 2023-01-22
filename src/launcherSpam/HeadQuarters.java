@@ -156,9 +156,9 @@ public strictfp class HeadQuarters {
                         rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                         launchers += 1;
                     }
-                    else if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && canProduceAmplifier) {
-                        rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
-                    }
+                    // else if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && canProduceAmplifier) {
+                    //     rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
+                    // }
                     else if (rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocation) && possibleSpawningLocations >= 8) {
                         rc.buildRobot(RobotType.CARRIER, optimalSpawningLocation);
                         carriers += 1;

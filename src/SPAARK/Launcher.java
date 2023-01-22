@@ -42,6 +42,9 @@ public strictfp class Launcher {
     private int defenseRange = 64;
     private int edgeRange = 4;
 
+    private int lastLauncherID;
+    private MapLocation lastLauncherLocation;
+
     protected int amplifierID = -1;
 
     private MapLocation prioritizedAmplifierLocation;
@@ -234,6 +237,7 @@ public strictfp class Launcher {
                                 if (me.distanceSquaredTo(opponentLocation) <= 5) {
                                     opponentLocation = null;
                                 }
+                                lastLauncherLocation = null;
                             } else {
                                 if (prioritizedHeadquarters.distanceSquaredTo(me) <= 100) {
                                     Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, indicatorString);
@@ -253,7 +257,10 @@ public strictfp class Launcher {
                                     } else {
                                         rc.setIndicatorDot(me, 75, 255, 255);
                                     }
+                                } else {
+                                    Motion.moveRandomly(rc);
                                 }
+                                lastLauncherLocation = null;
                             }
                         } else {
                             if (opponentLocation != null) {
@@ -276,13 +283,24 @@ public strictfp class Launcher {
                                 if (me.distanceSquaredTo(opponentLocation) <= 5) {
                                     opponentLocation = null;
                                 }
-                            } else if (me.distanceSquaredTo(lowestIdFriendlyRobotInfo.getLocation()) <= launcherCircleRange * 1.5) {
-                                clockwiseRotation = Motion.circleAroundTarget(rc, me, lowestIdFriendlyRobotInfo.getLocation(), launcherCircleRange, clockwiseRotation);
+                                lastLauncherLocation = null;
                             } else {
-                                Direction[] bug2array = Motion.bug2(rc, lowestIdFriendlyRobotInfo.getLocation(), lastDirection, clockwiseRotation, indicatorString);
-                                lastDirection = bug2array[0];
-                                if (bug2array[1] == Direction.CENTER) {
-                                    clockwiseRotation = !clockwiseRotation;
+                                if (lastLauncherLocation != null && rc.canMove(lastLauncherLocation.directionTo(lowestIdFriendlyRobotInfo.getLocation()))) {
+                                    rc.move(lastLauncherLocation.directionTo(lowestIdFriendlyRobotInfo.getLocation()));
+                                    lastLauncherLocation = lowestIdFriendlyRobotInfo.getLocation();
+                                }
+                                else {
+                                    if (me.distanceSquaredTo(lowestIdFriendlyRobotInfo.getLocation()) <= launcherCircleRange * 1.5) {
+                                        clockwiseRotation = Motion.circleAroundTarget(rc, me, lowestIdFriendlyRobotInfo.getLocation(), launcherCircleRange, clockwiseRotation);
+                                        lastLauncherLocation = lowestIdFriendlyRobotInfo.getLocation();
+                                    }
+                                    else {
+                                        Direction[] bug2array = Motion.bug2(rc, lowestIdFriendlyRobotInfo.getLocation(), lastDirection, clockwiseRotation, indicatorString);
+                                        lastDirection = bug2array[0];
+                                        if (bug2array[1] == Direction.CENTER) {
+                                            clockwiseRotation = !clockwiseRotation;
+                                        }
+                                    }
                                 }
                             }
                             me = rc.getLocation();
@@ -297,6 +315,7 @@ public strictfp class Launcher {
                 }
                 indicatorString.append("DEF; ");
                 headquarterCircleRange = 16 + surroundingLaunchers / 3;
+                lastLauncherLocation = null;
                 // if (opponentLocation != null) {
                 //     if (GlobalArray.DEBUG_INFO >= 2) {
                 //         rc.setIndicatorLine(me, opponentLocation, 255, 125, 25);
