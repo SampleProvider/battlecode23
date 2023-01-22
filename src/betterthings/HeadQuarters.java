@@ -173,18 +173,18 @@ public strictfp class HeadQuarters {
                         while (rc.isActionReady()) {
                             MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
                             MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
-                            if (adamantium > 150 && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
-                                    && ((deltaResources < 5 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 6) {
-                                rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
-                                carriersProduced++;
-                                rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
-                                carrierCooldown = 30;
-                            } else if (mana > 160 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
+                            if (mana > 160 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
                                     && (launchers < 30 * hqCount * mapSizeFactor || nearbyLaunchers < 15 || launcherCooldown <= 0) && possibleSpawningLocations >= 4) {
                                 rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                                 launchersProduced++;
                                 rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                                 launcherCooldown = 5;
+                            } else if (adamantium > 150 && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
+                                    && ((deltaResources < 5 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 6) {
+                                rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
+                                carriersProduced++;
+                                rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
+                                carrierCooldown = 30;
                             } else
                                 break;
                         }
@@ -265,7 +265,7 @@ public strictfp class HeadQuarters {
                     globalArray.setUpgradeWells(upgradeWells);
                     // set target elixir well
                     if (round > 200 && !setTargetElixirWell) {
-                        // setTargetElixirWell();
+                        setTargetElixirWell();
                     }
                 }
                 // save game state
