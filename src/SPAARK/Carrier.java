@@ -363,11 +363,8 @@ public strictfp class Carrier {
                     if (prioritizedWell == null) {
                         prioritizedWellInfo = w;
                         prioritizedWell = w.getMapLocation();
-                        continue;
                     } else if (prioritizedWellInfo.getResourceType() == prioritizedResourceType) {
-                        if (w.getResourceType() == prioritizedResourceType
-                                && prioritizedWell.distanceSquaredTo(me) > w
-                                        .getMapLocation().distanceSquaredTo(me)) {
+                        if (w.getResourceType() == prioritizedResourceType && prioritizedWell.distanceSquaredTo(me) > w.getMapLocation().distanceSquaredTo(me)) {
                             prioritizedWellInfo = w;
                             prioritizedWell = w.getMapLocation();
                         }
@@ -375,8 +372,7 @@ public strictfp class Carrier {
                         if (w.getResourceType() == prioritizedResourceType) {
                             prioritizedWellInfo = w;
                             prioritizedWell = w.getMapLocation();
-                        } else if (prioritizedWell.distanceSquaredTo(me) > w.getMapLocation()
-                                .distanceSquaredTo(me)) {
+                        } else if (prioritizedWell.distanceSquaredTo(me) > w.getMapLocation().distanceSquaredTo(me)) {
                             prioritizedWellInfo = w;
                             prioritizedWell = w.getMapLocation();
                         }

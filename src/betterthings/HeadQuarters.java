@@ -233,7 +233,7 @@ public strictfp class HeadQuarters {
 
                 // prioritized resources
                 double deviation = (mana - (adamantium * 1.8)) / (mana + (adamantium * 1.8));
-                if (Math.abs(deviation) < 0.2) {
+                if (Math.abs(deviation) < 0.1) {
                     globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE, hqIndex);
                     indicatorString.append("PR=NO; ");
                 } else if (deviation < 0) {
