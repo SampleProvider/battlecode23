@@ -4,14 +4,18 @@ import battlecode.common.*;
 
 public strictfp class StoredLocations {
     protected RobotController rc;
+    
+    public static final int FULL_WELL_TIME = 100;
+    
+    public static final int MIN_EXISTING_DISTANCE_SQUARED = 16;
+    
+    protected MapLocation[] headquarters = new MapLocation[0];
 
-    private final int FULL_WELL_TIME = 100;
-
-    private WellInfo[] wells = new WellInfo[8];
-    private MapLocation[] opponents = new MapLocation[8];
-    private MapLocation[] islands = new MapLocation[16];
-    private Team[] islandTeams = new Team[16];
-    private int[] islandIds = new int[16];
+    protected WellInfo[] wells = new WellInfo[8];
+    protected MapLocation[] opponents = new MapLocation[8];
+    protected MapLocation[] islands = new MapLocation[16];
+    protected Team[] islandTeams = new Team[16];
+    protected boolean[] islandIsOutOfRange = new boolean[16];
 
     protected MapLocation[] fullWells = new MapLocation[GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH];
     protected int[] fullWellTimer = new int[GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH];
@@ -20,8 +24,9 @@ public strictfp class StoredLocations {
     protected boolean[] removedIslands = new boolean[GlobalArray.ISLANDS_LENGTH];
 
     // general location/data parsing/writing
-    public StoredLocations(RobotController rc) {
+    public StoredLocations(RobotController rc, MapLocation[] headquarters) {
         this.rc = rc;
+        this.headquarters = headquarters;
     }
 
     public void writeToGlobalArray() throws GameActionException {
@@ -58,10 +63,10 @@ public strictfp class StoredLocations {
         }
         for (int i = 0; i < 16; i++) {
             if (islands[i] != null) {
-                if (GlobalArray.storeIslandLocation(rc, islands[i], islandTeams[i], islandIds[i])) {
+                if (GlobalArray.storeIslandLocation(rc, islands[i], islandTeams[i], i, islandIsOutOfRange[i])) {
                     islands[i] = null;
                     islandTeams[i] = null;
-                    islandIds[i] = 0;
+                    islandIsOutOfRange[i] = false;
                 }
             }
         }
@@ -70,7 +75,7 @@ public strictfp class StoredLocations {
     public boolean storeWell(WellInfo w) {
         for (int i = 0; i < 8; i++) {
             if (wells[i] != null && wells[i].equals(w)) {
-                return false;
+                return true;
             } else if (wells[i] == null) {
                 wells[i] = w;
                 return true;
@@ -120,10 +125,13 @@ public strictfp class StoredLocations {
     }
 
     public boolean storeOpponentLocation(MapLocation m) {
+        if (m == null) return false;
         for (int i = 0; i < 8; i++) {
-            if (opponents[i] != null && opponents[i].equals(m)) {
-                return false;
-            } else if (opponents[i] == null) {
+            if (opponents[i] != null) {
+                if (opponents[i].distanceSquaredTo(m) < MIN_EXISTING_DISTANCE_SQUARED) {
+                    return true;
+                }
+            } else {
                 opponents[i] = m;
                 return true;
             }
@@ -140,15 +148,28 @@ public strictfp class StoredLocations {
     }
 
     public boolean storeIslandLocation(MapLocation m, int id) throws GameActionException {
-        for (int i = 0; i < 16; i++) {
-            if (islands[i] != null && islandIds[i] == id) {
-                return false;
-            } else if (islands[i] == null) {
-                islands[i] = m;
-                islandTeams[i] = rc.senseTeamOccupyingIsland(id);
-                islandIds[i] = id;
-                return true;
-            }
+        // lol cheating a bit here
+        if (!rc.canSenseLocation(m) || id >= 32) return false;
+        int id2 = id % 16;
+        if (id2 == id || islands[id2] == null) {
+            islands[id2] = m;
+            islandTeams[id2] = rc.senseTeamOccupyingIsland(id);
+            islandIsOutOfRange[id2] = false;
+            return true;
+        }
+        int lowestDistanceID = Integer.MAX_VALUE;
+        int lowestDistanceID2 = Integer.MAX_VALUE;
+        for (int i = 0; i < headquarters.length; i++) {
+            int dist1 = headquarters[i].distanceSquaredTo(m);
+            int dist2 = headquarters[i].distanceSquaredTo(islands[id2]);
+            if (dist1 < lowestDistanceID) lowestDistanceID = dist1;
+            if (dist2 < lowestDistanceID2) lowestDistanceID2 = dist2;
+        }
+        if (lowestDistanceID2 < lowestDistanceID) {
+            islands[id2] = m;
+            islandTeams[id2] = rc.senseTeamOccupyingIsland(id);
+            islandIsOutOfRange[id2] = true;
+            return true;
         }
         return false;
     }

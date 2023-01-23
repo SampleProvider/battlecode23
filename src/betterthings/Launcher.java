@@ -54,7 +54,7 @@ public strictfp class Launcher {
     // state
     // 0 is everything
 
-    protected StringBuilder indicatorString = new StringBuilder();
+    private StringBuilder indicatorString = new StringBuilder();
 
     public Launcher(RobotController rc) {
         try {
@@ -68,7 +68,7 @@ public strictfp class Launcher {
             for (int i = 0; i < hqCount; i++) {
                 headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
             }
-            storedLocations = new StoredLocations(rc);
+            storedLocations = new StoredLocations(rc, headquarters);
         } catch (GameActionException e) {
             System.out.println("GameActionException at Launcher constructor");
             e.printStackTrace();
@@ -127,6 +127,7 @@ public strictfp class Launcher {
         }
     }
 
+    // intentionally stand on opponent islands
     private void runState() throws GameActionException {
         if (state == 0) {
             // group with amplifiers

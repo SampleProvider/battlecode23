@@ -35,7 +35,7 @@ public strictfp class HeadQuarters {
     protected int lastMana = 0;
     protected int deltaResources = 0;
 
-    protected StringBuilder indicatorString = new StringBuilder();
+    private StringBuilder indicatorString = new StringBuilder();
 
     public HeadQuarters(RobotController rc) {
         try {
@@ -64,7 +64,7 @@ public strictfp class HeadQuarters {
             } else {
                 System.out.println("[!] Too many Headquarters! [!]");
             }
-            storedLocations = new StoredLocations(rc);
+            storedLocations = new StoredLocations(rc, new MapLocation[] {});
         } catch (GameActionException e) {
             System.out.println("GameActionException at HeadQuarters constructor");
             e.printStackTrace();
@@ -163,7 +163,9 @@ public strictfp class HeadQuarters {
                 // spawn things
                 int carriersProduced = 0;
                 int launchersProduced = 0;
-                if (anchorCooldown <= 0 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
+                MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
+                boolean canProduceAnchor = islands.length > 0;
+                if (anchorCooldown <= 0 && rc.getNumAnchors(Anchor.STANDARD) == 0 && canProduceAnchor) {
                     if (adamantium > 100 && mana > 100) {
                         rc.buildAnchor(Anchor.STANDARD);
                         indicatorString.append("P ANC; ");
@@ -198,10 +200,10 @@ public strictfp class HeadQuarters {
                             rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                             carriersProduced++;
                             rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
-                            carrierCooldown = 30;
+                            carrierCooldown = 50;
                         } else if (optimalSpawningLocation != null && possibleSpawningLocations >= 2) {
                             if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
-                                    && launchers > 10 && carriers > 0 && amplifiers < 3 && amplifierCooldown <= 0) {
+                                    && launchers > 10 && carriers > 0 && amplifiers < 5 && amplifierCooldown <= 0) {
                                 rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                                 indicatorString.append("P AMP; ");
                                 rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
@@ -246,8 +248,13 @@ public strictfp class HeadQuarters {
                     if (round == 2) {
                         for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
                             if (GlobalArray.hasLocation(rc.readSharedArray(i)))
-                                hqCount++;
+                            hqCount++;
                         }
+                        MapLocation headquarters[] = new MapLocation[hqCount];
+                        for (int i = 0; i < hqCount; i++) {
+                            headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
+                        }
+                        storedLocations.headquarters = headquarters;
                         mapSizeFactor = (rc.getMapWidth() * rc.getMapHeight()) / 400;
                     }
                     // set upgrade wells if resources adequate

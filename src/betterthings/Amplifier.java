@@ -42,8 +42,7 @@ public strictfp class Amplifier {
     private int randomExploreTime = 0;
     private final int randomExploreMinKnownLocDistSquared = 81;
 
-
-    protected StringBuilder indicatorString = new StringBuilder();
+    private StringBuilder indicatorString = new StringBuilder();
 
     public Amplifier(RobotController rc) {
         try {
@@ -71,7 +70,7 @@ public strictfp class Amplifier {
             // if (amplifierID == 0) {
             //     System.out.println("[!] Too many Amplifiers! [!]");
             // }
-            storedLocations = new StoredLocations(rc);
+            storedLocations = new StoredLocations(rc, headquarters);
             rng = new Random(amplifierID);
         } catch (GameActionException e) {
             System.out.println("GameActionException at Amplifier constructor");
@@ -120,7 +119,7 @@ public strictfp class Amplifier {
                         rc.setIndicatorDot(randomExploreLocation, 0, 175, 0);
                     }
                     randomExploreTime++;
-                    if (randomExploreTime > 30 || randomExploreLocation.equals(me)) randomExploreLocation = null;
+                    if (randomExploreTime > 50 || randomExploreLocation.distanceSquaredTo(me) <= 4) randomExploreLocation = null;
                 } else {
                     indicatorString.append("RAND");
                     Motion.moveRandomly(rc);

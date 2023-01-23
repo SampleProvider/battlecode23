@@ -47,7 +47,7 @@ public strictfp class Carrier {
     // 3 is pathfinding to island
     // 4 is retreat
 
-    protected StringBuilder indicatorString = new StringBuilder();
+    private StringBuilder indicatorString = new StringBuilder();
 
     public Carrier(RobotController rc) {
         try {
@@ -62,7 +62,7 @@ public strictfp class Carrier {
                 headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
             }
             lastHealth = rc.getHealth();
-            storedLocations = new StoredLocations(rc);
+            storedLocations = new StoredLocations(rc, headquarters);
         } catch (GameActionException e) {
             System.out.println("GameActionException at Carrier constructor");
             e.printStackTrace();
@@ -212,7 +212,7 @@ public strictfp class Carrier {
             if (rc.canCollectResource(prioritizedWell, -1)
                     && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
                 rc.collectResource(prioritizedWell, -1);
-                // Motion.circleAroundTarget(rc, me, prioritizedWell);
+                Motion.circleAroundTarget(rc, me, prioritizedWell);
                 me = rc.getLocation();
                 if (GlobalArray.DEBUG_INFO >= 2) {
                     rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);

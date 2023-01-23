@@ -61,6 +61,7 @@ public strictfp class GlobalArray {
      *  No extra bits
      * Islands:
      *  Bits 13-14  team controlling island
+     *  Bit 15      is out of range
      */
 
     // general location/data parsing/writing
@@ -152,8 +153,11 @@ public strictfp class GlobalArray {
         if (rc.canWriteSharedArray(0, 0)) {
             for (int i = OPPONENTS; i < OPPONENTS + OPPONENTS_LENGTH; i++) {
                 int arrayOpponentLocation = rc.readSharedArray(i);
-                if (parseLocation(arrayOpponentLocation).equals(opponentLocation)) return true;
-                if (!hasLocation(arrayOpponentLocation)) {
+                if (hasLocation(arrayOpponentLocation)) {
+                    if (parseLocation(arrayOpponentLocation).distanceSquaredTo(opponentLocation) < StoredLocations.MIN_EXISTING_DISTANCE_SQUARED) {
+                        return true;
+                    }
+                } else {
                     rc.writeSharedArray(i, intifyLocation(opponentLocation));
                     return true;
                 }
@@ -175,20 +179,20 @@ public strictfp class GlobalArray {
     }
     
     // islands
-    public static boolean storeIslandLocation(RobotController rc, MapLocation islandLocation, Team islandTeam, int islandId) throws GameActionException {
+    public static boolean storeIslandLocation(RobotController rc, MapLocation islandLocation, Team islandTeam, int islandId, boolean outOfRange) throws GameActionException {
         if (rc.canWriteSharedArray(0, 0)) {
             int arrayIslandLocation = rc.readSharedArray(ISLANDS + islandId - 1);
             if (arrayIslandLocation == 0 || intToTeam(arrayIslandLocation >> 13) != islandTeam) {
                 if (islandTeam == Team.A) {
-                    rc.writeSharedArray(ISLANDS + islandId - 1, 0b10000000000000 + intifyLocation(islandLocation));
+                    rc.writeSharedArray(ISLANDS + islandId - 1, (outOfRange ? 0b100000000000000 : 0) | 0b10000000000000 | intifyLocation(islandLocation));
                     return true;
                 }
                 if (islandTeam == Team.B) {
-                    rc.writeSharedArray(ISLANDS + islandId - 1, 0b100000000000000 + intifyLocation(islandLocation));
+                    rc.writeSharedArray(ISLANDS + islandId - 1, (outOfRange ? 0b100000000000000 : 0) | 0b100000000000000 | intifyLocation(islandLocation));
                     return true;
                 }
                 if (islandTeam == Team.NEUTRAL) {
-                    rc.writeSharedArray(ISLANDS + islandId - 1, 0b110000000000000 + intifyLocation(islandLocation));
+                    rc.writeSharedArray(ISLANDS + islandId - 1, (outOfRange ? 0b100000000000000 : 0) | 0b110000000000000 | intifyLocation(islandLocation));
                     return true;
                 }
             }
@@ -202,7 +206,7 @@ public strictfp class GlobalArray {
             int arrayIslandLocation = rc.readSharedArray(i);
             if (hasLocation(arrayIslandLocation)) {
                 if (rc.canSenseLocation(parseLocation(arrayIslandLocation))) {
-                    if (rc.senseTeamOccupyingIsland(i - ISLANDS + 1) == team) {
+                    if (rc.senseTeamOccupyingIsland(i - ISLANDS + 1 + (arrayIslandLocation << 15 == 1 ? 16 : 0)) == team) {
                         islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
                     }
                 }
@@ -219,8 +223,7 @@ public strictfp class GlobalArray {
     private static Team intToTeam(int n) {
         if (n == 1) {
             return Team.A;
-        }
-        else if (n == 2) {
+        } else if (n == 2) {
             return Team.B;
         }
         return Team.NEUTRAL;

@@ -35,7 +35,7 @@ public strictfp class Amplifier {
     private boolean clockwiseRotation = true;
     private Direction lastDirection = Direction.CENTER;
 
-    protected StringBuilder indicatorString = new StringBuilder();
+    private StringBuilder indicatorString = new StringBuilder();
 
     public Amplifier(RobotController rc) {
         try {

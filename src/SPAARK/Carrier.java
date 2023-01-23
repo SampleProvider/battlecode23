@@ -47,7 +47,7 @@ public strictfp class Carrier {
     // 3 is pathfinding to island
     // 4 is retreat
 
-    protected StringBuilder indicatorString = new StringBuilder();
+    private StringBuilder indicatorString = new StringBuilder();
 
     public Carrier(RobotController rc) {
         try {
