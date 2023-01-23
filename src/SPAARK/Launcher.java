@@ -150,6 +150,7 @@ public strictfp class Launcher {
                     }
                 }
             }
+
             MapLocation[] opponentLocations = GlobalArray.getKnownOpponentLocations(rc);
             MapLocation prioritizedOpponentLocation = null;
             int prioritizedOpponentLocationIndex = -1;
@@ -170,8 +171,12 @@ public strictfp class Launcher {
                 }
             }
             if (prioritizedOpponentLocation != null && prioritizedOpponentLocation.distanceSquaredTo(me) <= defenseRange) {
-                if (GlobalArray.DEBUG_INFO >= 2) {
+                // if carrier/amplifier/hq writes opponent location, try to go there
+                if (GlobalArray.DEBUG_INFO >= 3) {
                     rc.setIndicatorLine(me, prioritizedOpponentLocation, 75, 255, 75);
+                }
+                else if (GlobalArray.DEBUG_INFO >= 2) {
+                    rc.setIndicatorDot(me, 75, 255, 75);
                 }
                 if (storedLocations.removedOpponents[prioritizedOpponentLocationIndex] == true) {
                     Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, indicatorString);
@@ -221,6 +226,7 @@ public strictfp class Launcher {
                     }
                 }
                 if (surroundingLaunchers >= 2) {
+                    // try to swarm
                     if (lowestIdFriendlyRobotInfo.ID > rc.getID()) {
                         if (opponentLocation != null) {
                             Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
@@ -229,8 +235,11 @@ public strictfp class Launcher {
                                 clockwiseRotation = !clockwiseRotation;
                             }
                             me = rc.getLocation();
-                            if (GlobalArray.DEBUG_INFO >= 2) {
+                            if (GlobalArray.DEBUG_INFO >= 3) {
                                 rc.setIndicatorLine(me, opponentLocation, 255, 125, 25);
+                            }
+                            else if (GlobalArray.DEBUG_INFO >= 2) {
+                                rc.setIndicatorDot(me, 255, 125, 25);
                             }
                             if (me.distanceSquaredTo(opponentLocation) <= 5) {
                                 opponentLocation = null;
@@ -250,8 +259,11 @@ public strictfp class Launcher {
                                     clockwiseRotation = !clockwiseRotation;
                                 }
                                 me = rc.getLocation();
-                                if (GlobalArray.DEBUG_INFO >= 2) {
+                                if (GlobalArray.DEBUG_INFO >= 3) {
                                     rc.setIndicatorLine(me, highestIdFriendlyRobotInfo.getLocation(), 75, 255, 255);
+                                }
+                                else if (GlobalArray.DEBUG_INFO >= 2) {
+                                    rc.setIndicatorDot(me, 75, 255, 255);
                                 }
                             } else {
                                 Motion.moveRandomly(rc);
@@ -260,8 +272,11 @@ public strictfp class Launcher {
                         }
                     } else {
                         if (opponentLocation != null) {
-                            if (GlobalArray.DEBUG_INFO >= 2) {
+                            if (GlobalArray.DEBUG_INFO >= 3) {
                                 rc.setIndicatorLine(me, opponentLocation, 255, 125, 25);
+                            }
+                            else if (GlobalArray.DEBUG_INFO >= 2) {
+                                rc.setIndicatorDot(me, 255, 125, 25);
                             }
                             Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
                             lastDirection = bug2array[0];
@@ -298,18 +313,22 @@ public strictfp class Launcher {
                             }
                         }
                         me = rc.getLocation();
-                        if (GlobalArray.DEBUG_INFO >= 2) {
+                        if (GlobalArray.DEBUG_INFO >= 3) {
                             rc.setIndicatorLine(me, lowestIdFriendlyRobotInfo.getLocation(), 255, 255, 75);
+                        }
+                        else if (GlobalArray.DEBUG_INFO >= 2) {
+                            rc.setIndicatorDot(me, 255, 255, 75);
                         }
                     }
                     return;
                 }
             }
+            // defend hq
             indicatorString.append("DEF; ");
             headquarterCircleRange = 16 + surroundingLaunchers / 3;
             lastLauncherLocation = null;
             // if (opponentLocation != null) {
-            //     if (GlobalArray.DEBUG_INFO >= 2) {
+            //     if (GlobalArray.DEBUG_INFO >= 3) {
             //         rc.setIndicatorLine(me, opponentLocation, 255, 125, 25);
             //     }
             //     Direction[] bug2array = Motion.bug2(rc, opponentLocation, lastDirection, clockwiseRotation, indicatorString);
@@ -337,7 +356,10 @@ public strictfp class Launcher {
                 }
             }
             me = rc.getLocation();
-            if (GlobalArray.DEBUG_INFO >= 2) {
+            if (GlobalArray.DEBUG_INFO >= 3) {
+                rc.setIndicatorDot(me, 75, 255, 75);
+            }
+            else if (GlobalArray.DEBUG_INFO >= 2) {
                 rc.setIndicatorDot(me, 75, 255, 75);
             }
         } else if (state == 1) {
@@ -356,7 +378,7 @@ public strictfp class Launcher {
                 return;
             }
             prioritizedAmplifierLocation = GlobalArray.parseLocation(amplifierArray);
-            if (GlobalArray.DEBUG_INFO >= 2) {
+            if (GlobalArray.DEBUG_INFO >= 3) {
                 rc.setIndicatorLine(me, prioritizedAmplifierLocation, 255, 175, 75);
             }
             if (me.distanceSquaredTo(prioritizedAmplifierLocation) <= amplifierCircleRange * 1.25) {

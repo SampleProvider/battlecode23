@@ -168,7 +168,7 @@ public strictfp class HeadQuarters {
                                     carriers += 1;
                                     builtRobot = true;
                                     indicatorString.append("PROD CAR; ");
-                                    if (GlobalArray.DEBUG_INFO >= 2) {
+                                    if (GlobalArray.DEBUG_INFO >= 3) {
                                         rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                                     }
                                 }
@@ -179,7 +179,7 @@ public strictfp class HeadQuarters {
                                     launchers++;
                                     builtRobot = true;
                                     indicatorString.append("PROD LAU; ");
-                                    if (GlobalArray.DEBUG_INFO >= 2) {
+                                    if (GlobalArray.DEBUG_INFO >= 3) {
                                         rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                                     }
                                 }
@@ -199,7 +199,7 @@ public strictfp class HeadQuarters {
                             launchers++;
                             builtRobot = true;
                             indicatorString.append("PROD LAU; ");
-                            if (GlobalArray.DEBUG_INFO >= 2) {
+                            if (GlobalArray.DEBUG_INFO >= 3) {
                                 rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                             }
                         }
@@ -209,7 +209,7 @@ public strictfp class HeadQuarters {
                             builtRobot = true;
                             // rc.writeSharedArray(amplifierIndex, GlobalArray.setBit(GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 14, 1), 15, round % 2));
                             indicatorString.append("PROD AMP; ");
-                            if (GlobalArray.DEBUG_INFO >= 2) {
+                            if (GlobalArray.DEBUG_INFO >= 3) {
                                 rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                             }
                         }
@@ -218,7 +218,7 @@ public strictfp class HeadQuarters {
                             carriers += 1;
                             builtRobot = true;
                             indicatorString.append("PROD CAR; ");
-                            if (GlobalArray.DEBUG_INFO >= 2) {
+                            if (GlobalArray.DEBUG_INFO >= 3) {
                                 rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                             }
                         }
