@@ -76,7 +76,7 @@ public strictfp class Launcher {
                 headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
             }
             defenseRange = (rc.getMapWidth() * rc.getMapHeight()) / 6;
-            storedLocations = new StoredLocations(rc);
+            storedLocations = new StoredLocations(rc, headquarters);
         } catch (GameActionException e) {
             System.out.println("GameActionException at Launcher constructor");
             e.printStackTrace();
