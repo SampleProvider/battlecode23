@@ -31,7 +31,13 @@ public strictfp class GlobalArray {
     public static final int CONVERSION_WELL_ID = 6;
     public static final int MAP_SYMMETRY = 7;
 
-    public static final int DEBUG_INFO = 2;
+    /*
+     * 0 - none
+     * 1 - all dots
+     * 2 - all dots + launcher swarming/defense lines
+     * 3 - all lines
+     */
+    public static final int DEBUG_INFO = 1;
 
     private static final ResourceType[] resourceTypes = new ResourceType[] {
             ResourceType.NO_RESOURCE,
@@ -146,7 +152,8 @@ public strictfp class GlobalArray {
         if (rc.canWriteSharedArray(0, 0)) {
             for (int i = OPPONENTS; i < OPPONENTS + OPPONENTS_LENGTH; i++) {
                 int arrayOpponentLocation = rc.readSharedArray(i);
-                if (!hasLocation(arrayOpponentLocation) || parseLocation(arrayOpponentLocation).equals(opponentLocation)) {
+                if (parseLocation(arrayOpponentLocation).equals(opponentLocation)) return true;
+                if (!hasLocation(arrayOpponentLocation)) {
                     rc.writeSharedArray(i, intifyLocation(opponentLocation));
                     return true;
                 }

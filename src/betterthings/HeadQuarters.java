@@ -140,7 +140,7 @@ public strictfp class HeadQuarters {
                 if (round % 2 == 1) {
                     carriers = rc.readSharedArray(GlobalArray.CARRIERCOUNT);
                     launchers = rc.readSharedArray(GlobalArray.LAUNCHERCOUNT);
-                    amplifiers = rc.readSharedArray(GlobalArray.AMPLIFIERCOUNT);
+                    amplifiers = rc.readSharedArray(GlobalArray.AMPLIFIERCOUNT) & 0b11111111;
                     nearbyCarriers = 0;
                     nearbyLaunchers = 0;
                     RobotInfo[] nearbyBots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
@@ -156,7 +156,7 @@ public strictfp class HeadQuarters {
                     if (round % 2 == 0) {
                         rc.writeSharedArray(GlobalArray.CARRIERCOUNT, 0);
                         rc.writeSharedArray(GlobalArray.LAUNCHERCOUNT, 0);
-                        rc.writeSharedArray(GlobalArray.AMPLIFIERCOUNT, 0);
+                        rc.writeSharedArray(GlobalArray.AMPLIFIERCOUNT, rc.readSharedArray(GlobalArray.AMPLIFIERCOUNT) & 0b1111111100000000);
                     }
                 }
 
@@ -193,7 +193,7 @@ public strictfp class HeadQuarters {
                         MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
                         MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
                         if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
-                                && ((deltaResources < 5 && nearbyCarriers < 10) || carriers < 20 * hqCount || carrierCooldown <= 0)
+                                && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0)
                                 && (round > 1 || carriersProduced < 2) && possibleSpawningLocations >= 3) {
                             rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                             carriersProduced++;
@@ -201,7 +201,7 @@ public strictfp class HeadQuarters {
                             carrierCooldown = 30;
                         } else if (optimalSpawningLocation != null && possibleSpawningLocations >= 2) {
                             if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
-                                    && launchers > 10 && carriers > 0 && amplifiers < 5 && amplifierCooldown <= 0) {
+                                    && launchers > 10 && carriers > 0 && amplifiers < 3 && amplifierCooldown <= 0) {
                                 rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                                 indicatorString.append("P AMP; ");
                                 rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);

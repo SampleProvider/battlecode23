@@ -162,6 +162,8 @@ public strictfp class Carrier {
                 me = rc.getLocation();
                 if (GlobalArray.DEBUG_INFO >= 3) {
                     rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 25, 255);
+                } else if (GlobalArray.DEBUG_INFO > 0) {
+                    rc.setIndicatorDot(me, 125, 25, 255);
                 }
                 return;
             } else {
@@ -178,6 +180,8 @@ public strictfp class Carrier {
                     me = rc.getLocation();
                     if (GlobalArray.DEBUG_INFO >= 2) {
                         rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
+                    } else if (GlobalArray.DEBUG_INFO > 0) {
+                        rc.setIndicatorDot(me, 255, 75, 75);
                     }
                     return;
                 }
@@ -200,6 +204,8 @@ public strictfp class Carrier {
             me = rc.getLocation();
             if (GlobalArray.DEBUG_INFO >= 2) {
                 rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
+            } else if (GlobalArray.DEBUG_INFO > 0) {
+                rc.setIndicatorDot(me, 255, 75, 75);
             }
         } else if (state == 2) {
             indicatorString.append("COLLECT; ");
@@ -210,6 +216,8 @@ public strictfp class Carrier {
                 me = rc.getLocation();
                 if (GlobalArray.DEBUG_INFO >= 2) {
                     rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
+                } else if (GlobalArray.DEBUG_INFO > 0) {
+                    rc.setIndicatorDot(me, 255, 75, 75);
                 }
             } else {
                 state = 0;
@@ -246,6 +254,8 @@ public strictfp class Carrier {
                 }
                 if (GlobalArray.DEBUG_INFO >= 2) {
                     rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 125, 255);
+                } else if (GlobalArray.DEBUG_INFO > 0) {
+                    rc.setIndicatorDot(me, 75, 125, 255);
                 }
             } else {
                 // get island location from global array
@@ -277,6 +287,8 @@ public strictfp class Carrier {
                     }
                     if (GlobalArray.DEBUG_INFO >= 2) {
                         rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 125, 255);
+                    } else if (GlobalArray.DEBUG_INFO > 0) {
+                        rc.setIndicatorDot(me, 75, 125, 255);
                     }
                 }
                 else {
@@ -299,6 +311,8 @@ public strictfp class Carrier {
             me = rc.getLocation();
             if (GlobalArray.DEBUG_INFO >= 3) {
                 rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 255, 0);
+            } else if (GlobalArray.DEBUG_INFO > 0) {
+                rc.setIndicatorDot(me, 125, 255, 0);
             }
         }
     }

@@ -58,7 +58,9 @@ public strictfp class Amplifier {
                 headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
             }
             round = rc.getRoundNum();
-            amplifierID = rc.readSharedArray(GlobalArray.AMPLIFIERCOUNT);
+            int amplifierArray = rc.readSharedArray(GlobalArray.AMPLIFIERCOUNT);
+            amplifierID = amplifierArray >> 8;
+            rc.writeSharedArray(GlobalArray.AMPLIFIERCOUNT, (amplifierArray & 0b11111111) | ((amplifierArray & 0b1111111100000000) + 0b100000000));
             // for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
             //     if (((rc.readSharedArray(a) >> 14) & 0b1) == 1) {
             //         amplifierID = a;
@@ -114,11 +116,11 @@ public strictfp class Amplifier {
                     }
                     if (GlobalArray.DEBUG_INFO >= 2) {
                         rc.setIndicatorLine(me, randomExploreLocation, 0, 175, 0);
-                    } else {
-                        rc.setIndicatorDot(me, 0, 175, 0);
+                    } else if (GlobalArray.DEBUG_INFO > 0) {
+                        rc.setIndicatorDot(randomExploreLocation, 0, 175, 0);
                     }
                     randomExploreTime++;
-                    if (randomExploreTime > 30) randomExploreLocation = null;
+                    if (randomExploreTime > 30 || randomExploreLocation.equals(me)) randomExploreLocation = null;
                 } else {
                     indicatorString.append("RAND");
                     Motion.moveRandomly(rc);
