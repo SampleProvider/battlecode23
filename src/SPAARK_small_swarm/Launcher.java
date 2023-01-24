@@ -1,4 +1,4 @@
-package SPAARK;
+package SPAARK_small_swarm;
 
 import battlecode.common.*;
 
@@ -42,6 +42,7 @@ public strictfp class Launcher {
     private int defenseRange = 64;
     private int edgeRange = 4;
 
+    private int lastLauncherID;
     private MapLocation lastLauncherLocation;
 
     protected int amplifierID = -1;
@@ -244,46 +245,27 @@ public strictfp class Launcher {
                                 opponentLocation = null;
                             }
                         } else {
-                            if (surroundingLaunchers >= 3) {
-                                if (prioritizedHeadquarters.distanceSquaredTo(me) <= 100) {
-                                    Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, indicatorString);
-                                    lastDirection = bug2array[0];
-                                    if (bug2array[1] == Direction.CENTER) {
-                                        clockwiseRotation = !clockwiseRotation;
-                                    }
-                                } else if (rng.nextBoolean()) {
-                                    Direction[] bug2array = Motion.bug2(rc, highestIdFriendlyRobotInfo.getLocation(), lastDirection, clockwiseRotation, indicatorString);
-                                    lastDirection = bug2array[0];
-                                    if (bug2array[1] == Direction.CENTER) {
-                                        clockwiseRotation = !clockwiseRotation;
-                                    }
-                                    me = rc.getLocation();
-                                    if (GlobalArray.DEBUG_INFO >= 3) {
-                                        rc.setIndicatorLine(me, highestIdFriendlyRobotInfo.getLocation(), 75, 255, 255);
-                                    }
-                                    else if (GlobalArray.DEBUG_INFO >= 2) {
-                                        rc.setIndicatorDot(me, 75, 255, 255);
-                                    }
-                                } else {
-                                    Motion.moveRandomly(rc);
+                            if (prioritizedHeadquarters.distanceSquaredTo(me) <= 100) {
+                                Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, indicatorString);
+                                lastDirection = bug2array[0];
+                                if (bug2array[1] == Direction.CENTER) {
+                                    clockwiseRotation = !clockwiseRotation;
                                 }
-                            }
-                            else {
-                                headquarterCircleRange = 16 + surroundingLaunchers / 3;
-                                if (me.distanceSquaredTo(prioritizedHeadquarters) <= headquarterCircleRange * 1.25) {
-                                    if (me.x <= edgeRange || me.x >= rc.getMapWidth() - edgeRange || me.y <= edgeRange || me.y >= rc.getMapHeight() - edgeRange) {
-                                        if (rc.isMovementReady()) {
-                                            clockwiseRotation = !clockwiseRotation;
-                                        }
-                                    }
-                                    clockwiseRotation = Motion.circleAroundTarget(rc, me, prioritizedHeadquarters, headquarterCircleRange, clockwiseRotation);
-                                } else {
-                                    Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, indicatorString);
-                                    lastDirection = bug2array[0];
-                                    if (bug2array[1] == Direction.CENTER) {
-                                        clockwiseRotation = !clockwiseRotation;
-                                    }
+                            } else if (rng.nextBoolean()) {
+                                Direction[] bug2array = Motion.bug2(rc, highestIdFriendlyRobotInfo.getLocation(), lastDirection, clockwiseRotation, indicatorString);
+                                lastDirection = bug2array[0];
+                                if (bug2array[1] == Direction.CENTER) {
+                                    clockwiseRotation = !clockwiseRotation;
                                 }
+                                me = rc.getLocation();
+                                if (GlobalArray.DEBUG_INFO >= 3) {
+                                    rc.setIndicatorLine(me, highestIdFriendlyRobotInfo.getLocation(), 75, 255, 255);
+                                }
+                                else if (GlobalArray.DEBUG_INFO >= 2) {
+                                    rc.setIndicatorDot(me, 75, 255, 255);
+                                }
+                            } else {
+                                Motion.moveRandomly(rc);
                             }
                         }
                         lastLauncherLocation = null;
