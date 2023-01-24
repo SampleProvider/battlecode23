@@ -182,17 +182,17 @@ public strictfp class GlobalArray {
     public static boolean storeIslandLocation(RobotController rc, MapLocation islandLocation, Team islandTeam, int islandId, boolean outOfRange) throws GameActionException {
         if (rc.canWriteSharedArray(0, 0)) {
             int arrayIslandLocation = rc.readSharedArray(ISLANDS + islandId - 1);
-            if (arrayIslandLocation == 0 || intToTeam(arrayIslandLocation >> 13) != islandTeam) {
+            if (arrayIslandLocation == 0 || intToTeam((arrayIslandLocation >> 13) & 0b11) != islandTeam) {
                 if (islandTeam == Team.A) {
-                    rc.writeSharedArray(ISLANDS + islandId - 1, (outOfRange ? 0b100000000000000 : 0) | 0b10000000000000 | intifyLocation(islandLocation));
+                    rc.writeSharedArray(ISLANDS + islandId - 1, (outOfRange ? 0b1000000000000000 : 0) | 0b10000000000000 | intifyLocation(islandLocation));
                     return true;
                 }
                 if (islandTeam == Team.B) {
-                    rc.writeSharedArray(ISLANDS + islandId - 1, (outOfRange ? 0b100000000000000 : 0) | 0b100000000000000 | intifyLocation(islandLocation));
+                    rc.writeSharedArray(ISLANDS + islandId - 1, (outOfRange ? 0b1000000000000000 : 0) | 0b100000000000000 | intifyLocation(islandLocation));
                     return true;
                 }
                 if (islandTeam == Team.NEUTRAL) {
-                    rc.writeSharedArray(ISLANDS + islandId - 1, (outOfRange ? 0b100000000000000 : 0) | 0b110000000000000 | intifyLocation(islandLocation));
+                    rc.writeSharedArray(ISLANDS + islandId - 1, (outOfRange ? 0b1000000000000000 : 0) | 0b110000000000000 | intifyLocation(islandLocation));
                     return true;
                 }
             }
@@ -206,12 +206,12 @@ public strictfp class GlobalArray {
             int arrayIslandLocation = rc.readSharedArray(i);
             if (hasLocation(arrayIslandLocation)) {
                 if (rc.canSenseLocation(parseLocation(arrayIslandLocation))) {
-                    if (rc.senseTeamOccupyingIsland(i - ISLANDS + 1 + (arrayIslandLocation << 15 == 1 ? 16 : 0)) == team) {
+                    if (rc.senseTeamOccupyingIsland(i - ISLANDS + 1 + ((arrayIslandLocation >> 15 == 1) ? 16 : 0)) == team) {
                         islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
                     }
                 }
                 else {
-                    if (intToTeam(arrayIslandLocation >> 13) == team) {
+                    if (intToTeam((arrayIslandLocation >> 13) & 0b11) == team) {
                         islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
                     }
                 }
@@ -223,12 +223,13 @@ public strictfp class GlobalArray {
     private static Team intToTeam(int n) {
         if (n == 1) {
             return Team.A;
-        } else if (n == 2) {
+        }
+        else if (n == 2) {
             return Team.B;
         }
         return Team.NEUTRAL;
     }
-    
+
     /*
      * Bits 0-1     prioritized resource hq 1
      * Bits 2-3     prioritized resource hq 2

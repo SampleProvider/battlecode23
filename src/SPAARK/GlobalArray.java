@@ -210,6 +210,7 @@ public strictfp class GlobalArray {
         }
         return islandLocations;
     }
+
     private static Team intToTeam(int n) {
         if (n == 1) {
             return Team.A;
@@ -219,7 +220,7 @@ public strictfp class GlobalArray {
         }
         return Team.NEUTRAL;
     }
-    
+
     /*
      * Bits 0-1     prioritized resource hq 1
      * Bits 2-3     prioritized resource hq 2

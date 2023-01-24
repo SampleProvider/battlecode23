@@ -154,7 +154,12 @@ public strictfp class StoredLocations {
         if (id2 == id || islands[id2] == null) {
             islands[id2] = m;
             islandTeams[id2] = rc.senseTeamOccupyingIsland(id);
-            islandIsOutOfRange[id2] = false;
+            if (id2 == id) {
+                islandIsOutOfRange[id2] = false;
+            }
+            else {
+                islandIsOutOfRange[id2] = true;
+            }
             return true;
         }
         int lowestDistanceID = Integer.MAX_VALUE;

@@ -169,7 +169,7 @@ public strictfp class HeadQuarters {
                     if (adamantium > 100 && mana > 100) {
                         rc.buildAnchor(Anchor.STANDARD);
                         indicatorString.append("P ANC; ");
-                        anchorCooldown = 100;
+                        anchorCooldown = 50;
                     } else {
                         indicatorString.append("TP ANC; ");
                         while (rc.isActionReady()) {
