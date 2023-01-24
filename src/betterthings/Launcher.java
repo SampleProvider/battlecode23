@@ -42,7 +42,6 @@ public strictfp class Launcher {
     private int defenseRange = 256;
     private int edgeRange = 4;
 
-    private int lastLauncherID;
     private MapLocation lastLauncherLocation;
 
     private MapLocation prioritizedAmplifierLocation;
@@ -379,7 +378,7 @@ public strictfp class Launcher {
     private boolean detectAmplifier() throws GameActionException {
         RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
         for (RobotInfo r : robots) {
-            if (r.getType() == RobotType.AMPLIFIER) {
+            if (r.getType() == RobotType.AMPLIFIER && r.getLocation().distanceSquaredTo(me) < amplifierSensingRange) {
                 prioritizedAmplifierLocation = r.getLocation();
                 return true;
             }

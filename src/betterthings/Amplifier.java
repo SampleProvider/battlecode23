@@ -23,15 +23,8 @@ public strictfp class Amplifier {
     private Random rng = new Random(2023);
 
     private MapLocation[] headquarters;
-    private MapLocation prioritizedHeadquarters;
-    private RobotType prioritizedRobotType = RobotType.LAUNCHER;
 
     private StoredLocations storedLocations;
-
-    private MapLocation opponentLocation;
-
-    private int centerRange = 2;
-    private boolean arrivedAtCenter = false;
 
     protected int amplifierID = 0;
 
@@ -40,7 +33,8 @@ public strictfp class Amplifier {
 
     private MapLocation randomExploreLocation;
     private int randomExploreTime = 0;
-    private final int randomExploreMinKnownLocDistSquared = 81;
+    private final int randomExploreMinKnownWellDistSquared = 81;
+    private final int randomExploreMinKnownHQDistSquared = 144;
 
     private StringBuilder indicatorString = new StringBuilder();
 
@@ -89,14 +83,6 @@ public strictfp class Amplifier {
             try {
                 me = rc.getLocation();
                 round = rc.getRoundNum();
-                prioritizedHeadquarters = headquarters[0];
-                for (MapLocation hq : headquarters) {
-                    if (hq != null) {
-                        if (prioritizedHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
-                            prioritizedHeadquarters = hq;
-                        }
-                    }
-                }
 
                 storedLocations.detectWells();
                 storedLocations.detectOpponentLocations();
@@ -124,11 +110,6 @@ public strictfp class Amplifier {
                     indicatorString.append("RAND");
                     Motion.moveRandomly(rc);
                 }
-
-
-                // storedLocations.detectWells();
-                // storedLocations.detectIslandLocations();
-                // storedLocations.writeToGlobalArray();
 
                 // if (me.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) <= centerRange) {
                 //     indicatorString.append("CENT; ");
@@ -244,7 +225,13 @@ public strictfp class Amplifier {
         search: while (randomExploreLocation == null && iteration < 16) {
             randomExploreLocation = new MapLocation(rng.nextInt(rc.getMapWidth()), rng.nextInt(rc.getMapHeight()));
             for (MapLocation well : knownWells) {
-                if (well != null && well.distanceSquaredTo(randomExploreLocation) < randomExploreMinKnownLocDistSquared) {
+                if (well != null && well.distanceSquaredTo(randomExploreLocation) < randomExploreMinKnownWellDistSquared) {
+                    randomExploreLocation = null;
+                    continue search;
+                }
+            }
+            for (MapLocation hq : headquarters) {
+                if (hq.distanceSquaredTo(randomExploreLocation) < randomExploreMinKnownHQDistSquared) {
                     randomExploreLocation = null;
                     continue search;
                 }
