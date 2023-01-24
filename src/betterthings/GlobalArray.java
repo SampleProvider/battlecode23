@@ -32,9 +32,9 @@ public strictfp class GlobalArray {
     public static final int MAP_SYMMETRY = 7;
 
     /*
-     * 0 - none
-     * 1 - all dots
-     * 2 - all dots + launcher swarming/defense lines
+     * 0 - points of interest dots only
+     * 1 - all dots + spawning lines
+     * 2 - all dots + launcher swarming/defense lines + spawning lines
      * 3 - all lines
      */
     public static final int DEBUG_INFO = 1;

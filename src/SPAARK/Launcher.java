@@ -42,7 +42,6 @@ public strictfp class Launcher {
     private int defenseRange = 64;
     private int edgeRange = 4;
 
-    private int lastLauncherID;
     private MapLocation lastLauncherLocation;
 
     protected int amplifierID = -1;
