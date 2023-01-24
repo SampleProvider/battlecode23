@@ -39,7 +39,7 @@ public strictfp class Launcher {
 
     private int headquarterCircleRange = 16;
 
-    private int defenseRange = 256;
+    private int defenseRange = 576;
     private int edgeRange = 4;
 
     private MapLocation lastLauncherLocation;
@@ -129,13 +129,11 @@ public strictfp class Launcher {
     // intentionally stand on opponent islands
     private void runState() throws GameActionException {
         if (state == 0) {
-            // group with amplifiers
             if (detectAmplifier()) {
                 state = 1;
                 runState();
                 return;
             }
-            // find headquarters to defend
             prioritizedHeadquarters = headquarters[0];
             for (MapLocation hq : headquarters) {
                 if (hq != null) {
@@ -144,7 +142,6 @@ public strictfp class Launcher {
                     }
                 }
             }
-            // locate opponents
             MapLocation[] opponentLocations = GlobalArray.getKnownOpponentLocations(rc);
             MapLocation prioritizedOpponentLocation = null;
             int prioritizedOpponentLocationIndex = -1;

@@ -176,16 +176,16 @@ public strictfp class HeadQuarters {
                             MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
                             MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
                             if (mana > 160 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
-                                    && (launchers < 30 * hqCount * mapSizeFactor || nearbyLaunchers < 15 || launcherCooldown <= 0) && possibleSpawningLocations >= 3) {
+                                    && (launchers < 40 * hqCount * mapSizeFactor || nearbyLaunchers < 15 || launcherCooldown <= 0) && possibleSpawningLocations >= 3) {
                                 rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                                 launchersProduced++;
-                                rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                                if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                                 launcherCooldown = 5;
                             } else if (adamantium > 150 && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
-                                    && ((deltaResources < 5 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 4) {
+                                    && ((deltaResources < 0 && nearbyCarriers < 15) || carriers < 20 * hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 4) {
                                 rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                                 carriersProduced++;
-                                rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
+                                if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                                 carrierCooldown = 30;
                             } else break;
                         }
@@ -195,25 +195,25 @@ public strictfp class HeadQuarters {
                         MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
                         MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
                         if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
-                                && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0)
+                                && ((deltaResources < 0 && nearbyCarriers < 15) || carriers < 20 * hqCount || carrierCooldown <= 0)
                                 && (round > 1 || carriersProduced < 2) && possibleSpawningLocations >= 3) {
                             rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                             carriersProduced++;
-                            rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
+                            if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                             carrierCooldown = 50;
                         } else if (optimalSpawningLocation != null && possibleSpawningLocations >= 2) {
                             if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
                                     && launchers > 10 && carriers > 0 && amplifiers < 5 && amplifierCooldown <= 0) {
                                 rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                                 indicatorString.append("P AMP; ");
-                                rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                                if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                                 amplifierCooldown = 30;
                                 amplifiers = Integer.MAX_VALUE;
                             } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
-                                    && (launchers < 30 * hqCount * mapSizeFactor || nearbyLaunchers < 15 || launcherCooldown <= 0)) {
+                                    && (launchers < 40 * hqCount * mapSizeFactor || nearbyLaunchers < 15 || launcherCooldown <= 0)) {
                                 rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                                 launchersProduced++;
-                                rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                                if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                                 launcherCooldown = 0;
                             } else break;
                         } else break;
@@ -232,7 +232,7 @@ public strictfp class HeadQuarters {
                 GlobalArray.storeHeadquarters(this);
 
                 // prioritized resources
-                double deviation = (mana - (adamantium * 2.5)) / (mana + (adamantium * 2.5));
+                double deviation = (mana - (adamantium * 10.0)) / (mana + (adamantium * 10.0));
                 if (Math.abs(deviation) < 0.1) {
                     globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE, hqIndex);
                     indicatorString.append("PR=NO; ");
