@@ -61,7 +61,7 @@ public strictfp class Amplifier {
             // if (amplifierID == 0) {
             //     throw new GameActionException(GameActionExceptionType.CANT_DO_THAT, "Too many Amplifiers!");
             // }
-            storedLocations = new StoredLocations(rc);
+            storedLocations = new StoredLocations(rc, headquarters);
         } catch (GameActionException e) {
             System.out.println("GameActionException at Amplifier constructor");
             e.printStackTrace();

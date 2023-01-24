@@ -54,7 +54,7 @@ public strictfp class HeadQuarters {
             } else {
                 System.out.println("[!] Too many Headquarters! [!]");
             }
-            storedLocations = new StoredLocations(rc);
+            storedLocations = new StoredLocations(rc, new MapLocation[] {});
         } catch (GameActionException e) {
             System.out.println("GameActionException at HeadQuarters constructor");
             e.printStackTrace();
@@ -242,12 +242,18 @@ public strictfp class HeadQuarters {
                     globalArray.setPrioritizedResource(ResourceType.ADAMANTIUM, hqIndex);
                     indicatorString.append("PR=AD; ");
                 }
-                if (isPrimaryHQ) {
-                    if (round == 2) {
-                        for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
-                                if (GlobalArray.hasLocation(rc.readSharedArray(i))) hqCount++;
-                        }
+                if (round == 2) {
+                    for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
+                        if (GlobalArray.hasLocation(rc.readSharedArray(i)))
+                        hqCount++;
                     }
+                    MapLocation headquarters[] = new MapLocation[hqCount];
+                    for (int i = 0; i < hqCount; i++) {
+                        headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
+                    }
+                    storedLocations.headquarters = headquarters;
+                }
+                if (isPrimaryHQ) {
                     // set upgrade wells if resources adequate
                     boolean upgradeWells = true;
                     for (int i = GlobalArray.HEADQUARTERS; i <= GlobalArray.HEADQUARTERS + hqCount; i++) {

@@ -62,7 +62,7 @@ public strictfp class Carrier {
                 headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
             }
             lastHealth = rc.getHealth();
-            storedLocations = new StoredLocations(rc);
+            storedLocations = new StoredLocations(rc, headquarters);
         } catch (GameActionException e) {
             System.out.println("GameActionException at Carrier constructor");
             e.printStackTrace();

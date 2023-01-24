@@ -30,7 +30,7 @@ public strictfp class GlobalArray {
     public static final int CONVERSION_WELL_ID = 6;
     public static final int MAP_SYMMETRY = 7;
 
-    public static final int DEBUG_INFO = 2;
+    public static final int DEBUG_INFO = 0;
 
     private static final ResourceType[] resourceTypes = new ResourceType[] {
             ResourceType.NO_RESOURCE,
@@ -145,7 +145,11 @@ public strictfp class GlobalArray {
         if (rc.canWriteSharedArray(0, 0)) {
             for (int i = OPPONENTS; i < OPPONENTS + OPPONENTS_LENGTH; i++) {
                 int arrayOpponentLocation = rc.readSharedArray(i);
-                if (!hasLocation(arrayOpponentLocation) || parseLocation(arrayOpponentLocation).equals(opponentLocation)) {
+                if (hasLocation(arrayOpponentLocation)) {
+                    if (parseLocation(arrayOpponentLocation).distanceSquaredTo(opponentLocation) < StoredLocations.MIN_EXISTING_DISTANCE_SQUARED) {
+                        return true;
+                    }
+                } else {
                     rc.writeSharedArray(i, intifyLocation(opponentLocation));
                     return true;
                 }
@@ -154,7 +158,6 @@ public strictfp class GlobalArray {
         }
         return false;
     }
-
     public static MapLocation[] getKnownOpponentLocations(RobotController rc) throws GameActionException {
         MapLocation[] opponentLocations = new MapLocation[OPPONENTS_LENGTH];
         for (int i = OPPONENTS; i < OPPONENTS + OPPONENTS_LENGTH; i++) {
@@ -167,20 +170,20 @@ public strictfp class GlobalArray {
     }
     
     // islands
-    public static boolean storeIslandLocation(RobotController rc, MapLocation islandLocation, Team islandTeam, int islandId) throws GameActionException {
+    public static boolean storeIslandLocation(RobotController rc, MapLocation islandLocation, Team islandTeam, int islandId, boolean outOfRange) throws GameActionException {
         if (rc.canWriteSharedArray(0, 0)) {
             int arrayIslandLocation = rc.readSharedArray(ISLANDS + islandId - 1);
-            if (arrayIslandLocation == 0 || intToTeam(arrayIslandLocation >> 13) != islandTeam) {
+            if (arrayIslandLocation == 0 || intToTeam((arrayIslandLocation >> 13) & 0b11) != islandTeam) {
                 if (islandTeam == Team.A) {
-                    rc.writeSharedArray(ISLANDS + islandId - 1, 0b10000000000000 + intifyLocation(islandLocation));
+                    rc.writeSharedArray(ISLANDS + islandId - 1, (outOfRange ? 0b1000000000000000 : 0) | 0b10000000000000 | intifyLocation(islandLocation));
                     return true;
                 }
                 if (islandTeam == Team.B) {
-                    rc.writeSharedArray(ISLANDS + islandId - 1, 0b100000000000000 + intifyLocation(islandLocation));
+                    rc.writeSharedArray(ISLANDS + islandId - 1, (outOfRange ? 0b1000000000000000 : 0) | 0b100000000000000 | intifyLocation(islandLocation));
                     return true;
                 }
                 if (islandTeam == Team.NEUTRAL) {
-                    rc.writeSharedArray(ISLANDS + islandId - 1, 0b110000000000000 + intifyLocation(islandLocation));
+                    rc.writeSharedArray(ISLANDS + islandId - 1, (outOfRange ? 0b1000000000000000 : 0) | 0b110000000000000 | intifyLocation(islandLocation));
                     return true;
                 }
             }
@@ -194,12 +197,12 @@ public strictfp class GlobalArray {
             int arrayIslandLocation = rc.readSharedArray(i);
             if (hasLocation(arrayIslandLocation)) {
                 if (rc.canSenseLocation(parseLocation(arrayIslandLocation))) {
-                    if (rc.senseTeamOccupyingIsland(i - ISLANDS + 1) == team) {
+                    if (rc.senseTeamOccupyingIsland(i - ISLANDS + 1 + ((arrayIslandLocation >> 15 == 1) ? 16 : 0)) == team) {
                         islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
                     }
                 }
                 else {
-                    if (intToTeam(arrayIslandLocation >> 13) == team) {
+                    if (intToTeam((arrayIslandLocation >> 13) & 0b11) == team) {
                         islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
                     }
                 }
@@ -207,7 +210,6 @@ public strictfp class GlobalArray {
         }
         return islandLocations;
     }
-
     private static Team intToTeam(int n) {
         if (n == 1) {
             return Team.A;
