@@ -360,13 +360,13 @@ public strictfp class Launcher {
     }
 
     private boolean detectAmplifier() throws GameActionException {
-        RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
-        for (RobotInfo r : robots) {
-            if (r.getType() == RobotType.AMPLIFIER && r.getLocation().distanceSquaredTo(me) < amplifierSensingRange) {
-                prioritizedAmplifierLocation = r.getLocation();
-                return true;
-            }
-        }
+        // RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
+        // for (RobotInfo r : robots) {
+        //     if (r.getType() == RobotType.AMPLIFIER && r.getLocation().distanceSquaredTo(me) < amplifierSensingRange) {
+        //         prioritizedAmplifierLocation = r.getLocation();
+        //         return true;
+        //     }
+        // }
         return false;
     }
 
