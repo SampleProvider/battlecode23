@@ -1,4 +1,4 @@
-package betterthings;
+package SPAARK_1_23_2023;
 
 import battlecode.common.*;
 
@@ -8,8 +8,6 @@ public strictfp class StoredLocations {
     public static final int FULL_WELL_TIME = 100;
     
     public static final int MIN_EXISTING_DISTANCE_SQUARED = 16;
-
-    protected boolean detectedNewLocations = false;
     
     protected MapLocation[] headquarters = new MapLocation[0];
 
@@ -34,14 +32,6 @@ public strictfp class StoredLocations {
     public void writeToGlobalArray() throws GameActionException {
         if (!rc.canWriteSharedArray(0, 0)) {
             return;
-        }
-        detectedNewLocations = false;
-        if (rc.getType() == RobotType.CARRIER) {
-            rc.writeSharedArray(GlobalArray.CARRIERCOUNT, rc.readSharedArray(GlobalArray.CARRIERCOUNT) + 1);
-        } else if (rc.getType() == RobotType.LAUNCHER) {
-            rc.writeSharedArray(GlobalArray.LAUNCHERCOUNT, rc.readSharedArray(GlobalArray.LAUNCHERCOUNT) + 1);
-        } else if (rc.getType() == RobotType.AMPLIFIER) {
-            rc.writeSharedArray(GlobalArray.AMPLIFIERCOUNT, rc.readSharedArray(GlobalArray.AMPLIFIERCOUNT) + 1);
         }
         for (int i = 0; i < 8; i++) {
             if (wells[i] != null) {
@@ -123,7 +113,7 @@ public strictfp class StoredLocations {
     public void detectWells() {
         WellInfo[] wellInfo = rc.senseNearbyWells();
         for (WellInfo w : wellInfo) {
-            detectedNewLocations = storeWell(w) || detectedNewLocations;
+            storeWell(w);
         }
     }
 
@@ -147,7 +137,7 @@ public strictfp class StoredLocations {
     }
 
     public void detectOpponentLocations() throws GameActionException {
-        detectedNewLocations = storeOpponentLocation(Attack.senseOpponent(rc, rc.getLocation(), rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent()))) || detectedNewLocations;
+        storeOpponentLocation(Attack.senseOpponent(rc, rc.getLocation(), rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent())));
     }
 
     public boolean storeIslandLocation(MapLocation m, int id) throws GameActionException {
@@ -159,7 +149,8 @@ public strictfp class StoredLocations {
             islandTeams[id2] = rc.senseTeamOccupyingIsland(id);
             if (id2 == id) {
                 islandIsOutOfRange[id2] = false;
-            } else {
+            }
+            else {
                 islandIsOutOfRange[id2] = true;
             }
             return true;
@@ -189,7 +180,7 @@ public strictfp class StoredLocations {
         int[] islands = rc.senseNearbyIslands();
         for (int id : islands) {
             MapLocation[] islandLocations = rc.senseNearbyIslandLocations(id);
-            detectedNewLocations = storeIslandLocation(islandLocations[0], id) || detectedNewLocations;
+            storeIslandLocation(islandLocations[0], id);
         }
     }
 }
