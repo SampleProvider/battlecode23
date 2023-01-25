@@ -30,7 +30,7 @@ public strictfp class GlobalArray {
     public static final int CONVERSION_WELL_ID = 6;
     public static final int MAP_SYMMETRY = 7;
 
-    public static final int DEBUG_INFO = 3;
+    public static final int DEBUG_INFO = 0;
 
     private static final ResourceType[] resourceTypes = new ResourceType[] {
             ResourceType.NO_RESOURCE,

@@ -121,7 +121,7 @@ public strictfp class Carrier {
                 }
                 if (robot != null) {
                     storedLocations.storeOpponentLocation(robot.getLocation());
-                    state = 4;
+                    state = 5;
                 }
 
                 runState();
@@ -135,7 +135,7 @@ public strictfp class Carrier {
                 }
                 if (robot != null) {
                     storedLocations.storeOpponentLocation(robot.getLocation());
-                    state = 4;
+                    state = 5;
                 }
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Carrier");
