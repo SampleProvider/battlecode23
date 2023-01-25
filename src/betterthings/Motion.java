@@ -544,6 +544,115 @@ public class Motion {
         return new Direction[] { lastDirection, null };
     }
 
+    protected static Direction[] bug2retreat(RobotController rc, MapLocation dest, Direction lastDirection, boolean clockwiseRotation, RobotInfo[] friendlyRobotInfo, StringBuilder indicatorString) throws GameActionException {
+        boolean oldClockwiseRotation = clockwiseRotation;
+        while (rc.isMovementReady()) {
+            MapLocation me = rc.getLocation();
+            if (me.equals(dest)) {
+                return new Direction[] { Direction.CENTER, null };
+            }
+            Direction direction = me.directionTo(dest).opposite();
+            MapLocation prioritizedFriendlyRobotInfoLocation = null;
+            for (RobotInfo w : friendlyRobotInfo) {
+                if (w.getType() != RobotType.LAUNCHER) {
+                    continue;
+                }
+                if (prioritizedFriendlyRobotInfoLocation == null) {
+                    prioritizedFriendlyRobotInfoLocation = w.getLocation();
+                    continue;
+                }
+                if (me.distanceSquaredTo(prioritizedFriendlyRobotInfoLocation) > me.distanceSquaredTo(w.getLocation())) {
+                    prioritizedFriendlyRobotInfoLocation = w.getLocation();
+                }
+            }
+            if (me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 1) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 2) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 3) % 8) {
+                direction = direction.rotateRight();
+                if (!rc.canMove(direction)) {
+                    direction = direction.rotateLeft();
+                }
+            }
+            if (me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 7) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 6) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 5) % 8) {
+                direction = direction.rotateLeft();
+                if (!rc.canMove(direction)) {
+                    direction = direction.rotateRight();
+                }
+            }
+            boolean moved = false;
+            if (rc.canMove(direction) && rc.senseMapInfo(me.translate(direction.dx, direction.dy)).getCurrentDirection() != direction.opposite()) {
+                boolean touchingTheWallBefore = false;
+                for (int i = -1; i <= 1; i++) {
+                    for (int j = -1; j <= 1; j++) {
+                        if (i == 0 && j == 0) {
+                            continue;
+                        }
+                        MapLocation translatedMapLocation = me.translate(i, j);
+                        if (rc.onTheMap(translatedMapLocation)) {
+                            if (rc.sensePassability(translatedMapLocation) == false || rc.senseRobotAtLocation(translatedMapLocation) != null) {
+                                touchingTheWallBefore = true;
+                            }
+                        }
+                    }
+                }
+                rc.move(direction);
+                lastDirection = direction;
+                // boolean touchingTheWallAfter = false;
+                // for (int i = -1;i <= 1;i++) {
+                //     for (int j = -1;j <= 1;j++) {
+                //         if (rc.onTheMap(me.translate(i,j))) {
+                //             if (rc.sensePassability(me.translate(i,j)) == false) {
+                //                 touchingTheWallAfter = true;
+                //             }
+                //         }
+                //     }
+                // }
+                if (touchingTheWallBefore) {
+                    clockwiseRotation = !clockwiseRotation;
+                }
+                continue;
+            }
+            if (clockwiseRotation) {
+                for (int i = 0; i < 7; i++) {
+                    direction = direction.rotateLeft();
+                    int f = bug2f(rc, me, direction, lastDirection);
+                    if (f == 1) {
+                        lastDirection = direction;
+                        moved = true;
+                        break;
+                    } else if (f == 2) {
+                        lastDirection = Direction.CENTER;
+                        clockwiseRotation = !clockwiseRotation;
+                        moved = true;
+                        break;
+                    }
+                }
+            } else {
+                for (int i = 0; i < 7; i++) {
+                    direction = direction.rotateRight();
+                    int f = bug2f(rc, me, direction, lastDirection);
+                    if (f == 1) {
+                        lastDirection = direction;
+                        moved = true;
+                        break;
+                    } else if (f == 2) {
+                        lastDirection = Direction.CENTER;
+                        clockwiseRotation = !clockwiseRotation;
+                        moved = true;
+                        break;
+                    }
+                }
+            }
+            if (moved == false) {
+                lastDirection = Direction.CENTER;
+                break;
+            }
+        }
+        indicatorString.append("BUG-LD=" + DIRABBREV[lastDirection.getDirectionOrderNum()] + "; BUG-CW=" + clockwiseRotation + "; ");
+        if (oldClockwiseRotation != clockwiseRotation) {
+            return new Direction[] { lastDirection, Direction.CENTER };
+        }
+        return new Direction[] { lastDirection, null };
+    }
+
     private static int bug2f(RobotController rc, MapLocation me, Direction direction, Direction lastDirection) throws GameActionException {
         if (rc.canMove(direction) && lastDirection != direction.opposite() && rc.senseMapInfo(me.translate(direction.dx, direction.dy)).getCurrentDirection() != direction.opposite()) {
             rc.move(direction);

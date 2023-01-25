@@ -108,35 +108,34 @@ public strictfp class Carrier {
                 storedLocations.detectIslandLocations();
                 storedLocations.writeToGlobalArray();
 
-                if (rc.getHealth() != lastHealth) {
-                    state = 5;
-                }
-                lastHealth = rc.getHealth();
-
-                // 😐
+                // if (rc.getHealth() != lastHealth) {
+                //     state = 5;
+                // }
+                // lastHealth = rc.getHealth();
 
                 RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                MapLocation loc = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
-                if (loc == null) {
+                RobotInfo robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
+                if (robot == null) {
                     robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
-                    loc = Attack.senseOpponent(rc, me, robotInfo);
+                    robot = Attack.senseOpponent(rc, me, robotInfo);
                 }
-                if (loc != null) {
-                    storedLocations.storeOpponentLocation(loc);
-                    state = 5;
+                if (robot != null) {
+                    storedLocations.storeOpponentLocation(robot.getLocation());
+                    state = 4;
                 }
 
                 runState();
                 
                 me = rc.getLocation();
                 robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                loc = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
-                if (loc == null) {
+                robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
+                if (robot == null) {
                     robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
-                    loc = Attack.senseOpponent(rc, me, robotInfo);
+                    robot = Attack.senseOpponent(rc, me, robotInfo);
                 }
-                if (loc != null) {
-                    storedLocations.storeOpponentLocation(loc);
+                if (robot != null) {
+                    storedLocations.storeOpponentLocation(robot.getLocation());
+                    state = 4;
                 }
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Carrier");
@@ -181,15 +180,15 @@ public strictfp class Carrier {
                     }
                     attemptCollection();
                     me = rc.getLocation();
-                    if (GlobalArray.DEBUG_INFO >= 2) {
+                    if (GlobalArray.DEBUG_INFO >= 3) {
                         rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
-                    } else if (GlobalArray.DEBUG_INFO > 0) {
+                    }
+                    else if (GlobalArray.DEBUG_INFO >= 2) {
                         rc.setIndicatorDot(me, 255, 75, 75);
                     }
                     return;
                 }
             }
-            state = 6;
             Motion.spreadRandomly(rc, me);
         } else if (state == 1) {
             updatePrioritizedWell();

@@ -1,7 +1,6 @@
 package SPAARK;
 
 import battlecode.common.*;
-
 import java.util.Random;
 
 public strictfp class Launcher {
@@ -41,15 +40,6 @@ public strictfp class Launcher {
     private Direction lastDirection = Direction.CENTER;
 
     private int lastHealth = 0;
-
-    private int state = 0;
-    // state
-    // 0 is wander
-    // 1 is travelling to amplifier
-    // 2 is travelling with amplifier
-    // 3 is defense
-    // 4 is pathfinding to opponent
-    // 5 is testing
 
     private StringBuilder indicatorString = new StringBuilder();
 

@@ -4,13 +4,13 @@ import battlecode.common.*;
 
 public strictfp class StoredLocations {
     protected RobotController rc;
-    
+
     public static final int FULL_WELL_TIME = 100;
-    
+
     public static final int MIN_EXISTING_DISTANCE_SQUARED = 16;
 
     protected boolean detectedNewLocations = false;
-    
+
     protected MapLocation[] headquarters = new MapLocation[0];
 
     protected WellInfo[] wells = new WellInfo[8];
@@ -147,7 +147,10 @@ public strictfp class StoredLocations {
     }
 
     public void detectOpponentLocations() throws GameActionException {
-        detectedNewLocations = storeOpponentLocation(Attack.senseOpponent(rc, rc.getLocation(), rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent()))) || detectedNewLocations;
+        RobotInfo robot = Attack.senseOpponent(rc, rc.getLocation(), rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent()));
+        if (robot != null) {
+            detectedNewLocations = storeOpponentLocation(robot.getLocation()) || detectedNewLocations;
+        }
     }
 
     public boolean storeIslandLocation(MapLocation m, int id) throws GameActionException {
@@ -159,7 +162,8 @@ public strictfp class StoredLocations {
             islandTeams[id2] = rc.senseTeamOccupyingIsland(id);
             if (id2 == id) {
                 islandIsOutOfRange[id2] = false;
-            } else {
+            }
+            else {
                 islandIsOutOfRange[id2] = true;
             }
             return true;
