@@ -97,7 +97,7 @@ public strictfp class Amplifier {
                     randomExploreTime++;
                     if (randomExploreTime > 50 || randomExploreLocation.distanceSquaredTo(me) <= 4) randomExploreLocation = null;
                 } else {
-                    indicatorString.append("RAND");
+                    indicatorString.append("RAND; ");
                     Motion.moveRandomly(rc);
                 }
 
@@ -213,6 +213,7 @@ public strictfp class Amplifier {
         MapLocation[] knownWells = GlobalArray.getKnownWellLocations(rc);
         int iteration = 0;
         search: while (randomExploreLocation == null && iteration < 16) {
+            iteration++;
             randomExploreLocation = new MapLocation(rng.nextInt(rc.getMapWidth()), rng.nextInt(rc.getMapHeight()));
             for (MapLocation well : knownWells) {
                 if (well != null && well.distanceSquaredTo(randomExploreLocation) < randomExploreMinKnownWellDistSquared) {
@@ -226,7 +227,6 @@ public strictfp class Amplifier {
                     continue search;
                 }
             }
-            iteration++;
         }
     }
 }
