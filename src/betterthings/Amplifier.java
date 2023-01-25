@@ -20,6 +20,7 @@ public strictfp class Amplifier {
     private boolean clockwiseRotation = true;
     private Direction lastDirection = Direction.CENTER;
 
+    private boolean isRandomExplorer = false;
     private MapLocation randomExploreLocation;
     private int randomExploreTime = 0;
     private final int randomExploreMinKnownWellDistSquared = 81;
@@ -80,25 +81,85 @@ public strictfp class Amplifier {
                 
                 indicatorString = new StringBuilder();
 
-                updateRandomExploreLocation();
-                if (randomExploreLocation != null) {
-                    indicatorString.append("EXPL-" + randomExploreLocation.toString() + "; ");
-                    Direction[] bug2array = Motion.bug2(rc, randomExploreLocation, lastDirection, clockwiseRotation, indicatorString);
-                    lastDirection = bug2array[0];
-                    if (bug2array[1] == Direction.CENTER) {
-                        clockwiseRotation = !clockwiseRotation;
+                if (isRandomExplorer) {
+                    updateRandomExploreLocation();
+                    if (randomExploreLocation != null) {
+                        indicatorString.append("EXPL-" + randomExploreLocation.toString() + "; ");
+                        Direction[] bug2array = Motion.bug2(rc, randomExploreLocation, lastDirection, clockwiseRotation, indicatorString);
+                        lastDirection = bug2array[0];
+                        if (bug2array[1] == Direction.CENTER) {
+                            clockwiseRotation = !clockwiseRotation;
+                        }
+                        if (GlobalArray.DEBUG_INFO >= 2) {
+                            rc.setIndicatorLine(me, randomExploreLocation, 0, 175, 0);
+                        } else if (GlobalArray.DEBUG_INFO > 0) {
+                            rc.setIndicatorDot(me, 0, 175, 0);
+                            rc.setIndicatorDot(randomExploreLocation, 0, 175, 0);
+                        }
+                        randomExploreTime++;
+                        if (randomExploreTime > 50 || randomExploreLocation.distanceSquaredTo(me) <= 4) randomExploreLocation = null;
+                    } else {
+                        indicatorString.append("RAND; ");
+                        Motion.moveRandomly(rc);
                     }
-                    if (GlobalArray.DEBUG_INFO >= 2) {
-                        rc.setIndicatorLine(me, randomExploreLocation, 0, 175, 0);
-                    } else if (GlobalArray.DEBUG_INFO > 0) {
-                        rc.setIndicatorDot(me, 0, 175, 0);
-                        rc.setIndicatorDot(randomExploreLocation, 0, 175, 0);
-                    }
-                    randomExploreTime++;
-                    if (randomExploreTime > 50 || randomExploreLocation.distanceSquaredTo(me) <= 4) randomExploreLocation = null;
                 } else {
-                    indicatorString.append("RAND; ");
-                    Motion.moveRandomly(rc);
+                    int[] islands = rc.senseNearbyIslands();
+                    MapLocation prioritizedIslandLocation = null;
+                    for (int id : islands) {
+                        if (rc.senseTeamOccupyingIsland(id) == rc.getTeam().opponent()) {
+                            MapLocation[] islandLocations = rc.senseNearbyIslandLocations(id);
+                            for (MapLocation m : islandLocations) {
+                                if (prioritizedIslandLocation == null) {
+                                    prioritizedIslandLocation = m;
+                                } else if (m.distanceSquaredTo(me) < prioritizedIslandLocation.distanceSquaredTo(me)) {
+                                    prioritizedIslandLocation = m;
+                                }
+                            }
+                        }
+                    }
+                    if (prioritizedIslandLocation != null) {
+                        Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, indicatorString);
+                        lastDirection = bug2array[0];
+                        if (bug2array[1] == Direction.CENTER) {
+                            clockwiseRotation = !clockwiseRotation;
+                        }
+                        me = rc.getLocation();
+                        if (GlobalArray.DEBUG_INFO >= 2) {
+                            rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 255, 255);
+                        } else if (GlobalArray.DEBUG_INFO > 0) {
+                            rc.setIndicatorDot(me, 75, 255, 255);
+                        }
+                    } else {
+                        // get island location from global array
+                        MapLocation[] islandLocations = GlobalArray.getKnownIslandLocations(rc, rc.getTeam().opponent());
+                        for (MapLocation m : islandLocations) {
+                            if (m == null) {
+                                continue;
+                            }
+                            if (prioritizedIslandLocation == null) {
+                                prioritizedIslandLocation = m;
+                            }
+                            else if (m.distanceSquaredTo(me) < prioritizedIslandLocation.distanceSquaredTo(me)) {
+                                prioritizedIslandLocation = m;
+                            }
+                        }
+                        if (prioritizedIslandLocation != null) {
+                            Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, indicatorString);
+                            lastDirection = bug2array[0];
+                            if (bug2array[1] == Direction.CENTER) {
+                                clockwiseRotation = !clockwiseRotation;
+                            }
+                            me = rc.getLocation();
+                            if (GlobalArray.DEBUG_INFO >= 2) {
+                                rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 255, 255);
+                            } else if (GlobalArray.DEBUG_INFO > 0) {
+                                rc.setIndicatorDot(me, 75, 255, 255);
+                            }
+                        }
+                        else {
+                            Motion.spreadRandomly(rc, me);
+                        }
+                    }
                 }
 
                 // if (me.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) <= centerRange) {

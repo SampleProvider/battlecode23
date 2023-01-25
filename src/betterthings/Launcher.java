@@ -169,9 +169,9 @@ public strictfp class Launcher {
             }
             if (prioritizedOpponentLocation != null && prioritizedOpponentLocation.distanceSquaredTo(me) <= defenseRange) {
                 // if carrier/amplifier/hq writes opponent location, try to go there
-                if (GlobalArray.DEBUG_INFO >= 3) {
+                if (GlobalArray.DEBUG_INFO >= 4) {
                     rc.setIndicatorLine(me, prioritizedOpponentLocation, 75, 255, 75);
-                } else if (GlobalArray.DEBUG_INFO >= 2) {
+                } else if (GlobalArray.DEBUG_INFO > 0) {
                     rc.setIndicatorDot(me, 75, 255, 75);
                 }
                 if (storedLocations.removedOpponents[prioritizedOpponentLocationIndex] == true) {
@@ -229,9 +229,9 @@ public strictfp class Launcher {
                                 clockwiseRotation = !clockwiseRotation;
                             }
                             me = rc.getLocation();
-                            if (GlobalArray.DEBUG_INFO >= 3) {
+                            if (GlobalArray.DEBUG_INFO >= 4) {
                                 rc.setIndicatorLine(me, opponent.getLocation(), 255, 125, 25);
-                            } else if (GlobalArray.DEBUG_INFO >= 2) {
+                            } else if (GlobalArray.DEBUG_INFO > 0) {
                                 rc.setIndicatorDot(me, 255, 125, 25);
                             }
                             if (me.distanceSquaredTo(opponent.getLocation()) <= 5) {
@@ -267,10 +267,9 @@ public strictfp class Launcher {
                                             clockwiseRotation = !clockwiseRotation;
                                         }
                                         me = rc.getLocation();
-                                        if (GlobalArray.DEBUG_INFO >= 3) {
+                                        if (GlobalArray.DEBUG_INFO >= 4) {
                                             rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 255, 255);
-                                        }
-                                        if (GlobalArray.DEBUG_INFO >= 2) {
+                                        } else if (GlobalArray.DEBUG_INFO > 0) {
                                             rc.setIndicatorDot(me, 75, 255, 255);
                                         }
                                     } else {
@@ -294,10 +293,9 @@ public strictfp class Launcher {
                                                 clockwiseRotation = !clockwiseRotation;
                                             }
                                             me = rc.getLocation();
-                                            if (GlobalArray.DEBUG_INFO >= 3) {
+                                            if (GlobalArray.DEBUG_INFO >= 4) {
                                                 rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 255, 255);
-                                            }
-                                            if (GlobalArray.DEBUG_INFO >= 2) {
+                                            } else if (GlobalArray.DEBUG_INFO > 0) {
                                                 rc.setIndicatorDot(me, 75, 255, 255);
                                             }
                                         } else {
@@ -326,9 +324,9 @@ public strictfp class Launcher {
                         lastLauncherLocation = null;
                     } else {
                         if (opponent != null) {
-                            if (GlobalArray.DEBUG_INFO >= 3) {
+                            if (GlobalArray.DEBUG_INFO >= 4) {
                                 rc.setIndicatorLine(me, opponent.getLocation(), 255, 125, 25);
-                            } else if (GlobalArray.DEBUG_INFO >= 2) {
+                            } else if (GlobalArray.DEBUG_INFO > 0) {
                                 rc.setIndicatorDot(me, 255, 125, 25);
                             }
                             Direction[] bug2array = Motion.bug2(rc, opponent.getLocation(), lastDirection, clockwiseRotation, indicatorString);
@@ -372,7 +370,7 @@ public strictfp class Launcher {
                         me = rc.getLocation();
                         if (GlobalArray.DEBUG_INFO >= 3) {
                             rc.setIndicatorLine(me, lowestIdFriendlyRobotInfo.getLocation(), 255, 255, 75);
-                        } else if (GlobalArray.DEBUG_INFO >= 2) {
+                        } else if (GlobalArray.DEBUG_INFO > 0) {
                             rc.setIndicatorDot(me, 255, 255, 75);
                         }
                     }
@@ -450,10 +448,7 @@ public strictfp class Launcher {
                 }
             }
             me = rc.getLocation();
-            if (GlobalArray.DEBUG_INFO >= 3) {
-                rc.setIndicatorDot(me, 75, 255, 75);
-            }
-            else if (GlobalArray.DEBUG_INFO >= 2) {
+            if (GlobalArray.DEBUG_INFO > 0) {
                 rc.setIndicatorDot(me, 75, 255, 75);
             }
         }

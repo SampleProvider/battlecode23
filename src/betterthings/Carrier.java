@@ -180,10 +180,9 @@ public strictfp class Carrier {
                     }
                     attemptCollection();
                     me = rc.getLocation();
-                    if (GlobalArray.DEBUG_INFO >= 3) {
+                    if (GlobalArray.DEBUG_INFO >= 4) {
                         rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
-                    }
-                    else if (GlobalArray.DEBUG_INFO >= 2) {
+                    } else if (GlobalArray.DEBUG_INFO > 0) {
                         rc.setIndicatorDot(me, 255, 75, 75);
                     }
                     return;
@@ -205,7 +204,7 @@ public strictfp class Carrier {
             }
             attemptCollection();
             me = rc.getLocation();
-            if (GlobalArray.DEBUG_INFO >= 2) {
+            if (GlobalArray.DEBUG_INFO >= 4) {
                 rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
             } else if (GlobalArray.DEBUG_INFO > 0) {
                 rc.setIndicatorDot(me, 255, 75, 75);
@@ -216,7 +215,7 @@ public strictfp class Carrier {
                 rc.collectResource(prioritizedWell, -1);
                 Motion.circleAroundTarget(rc, me, prioritizedWell);
                 me = rc.getLocation();
-                if (GlobalArray.DEBUG_INFO >= 2) {
+                if (GlobalArray.DEBUG_INFO >= 3) {
                     rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
                 } else if (GlobalArray.DEBUG_INFO > 0) {
                     rc.setIndicatorDot(me, 255, 75, 75);
@@ -236,7 +235,7 @@ public strictfp class Carrier {
                 attemptTransfer();
             }
             me = rc.getLocation();
-            if (GlobalArray.DEBUG_INFO >= 3) {
+            if (GlobalArray.DEBUG_INFO >= 4) {
                 rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 25, 255);
             } else if (GlobalArray.DEBUG_INFO > 0) {
                 rc.setIndicatorDot(me, 125, 25, 255);
@@ -330,7 +329,7 @@ public strictfp class Carrier {
                 state = 0;
             }
             me = rc.getLocation();
-            if (GlobalArray.DEBUG_INFO >= 3) {
+            if (GlobalArray.DEBUG_INFO >= 4) {
                 rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 255, 0);
             } else if (GlobalArray.DEBUG_INFO > 0) {
                 rc.setIndicatorDot(me, 125, 255, 0);
@@ -347,7 +346,7 @@ public strictfp class Carrier {
                 }
                 attemptCollection();
                 me = rc.getLocation();
-                if (GlobalArray.DEBUG_INFO >= 2) {
+                if (GlobalArray.DEBUG_INFO >= 4) {
                     rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
                 } else if (GlobalArray.DEBUG_INFO > 0) {
                     rc.setIndicatorDot(me, 255, 75, 75);

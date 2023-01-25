@@ -30,7 +30,12 @@ public strictfp class GlobalArray {
     public static final int UPGRADE_WELLS = 5;
     public static final int CONVERSION_WELL_ID = 6;
     public static final int MAP_SYMMETRY = 7;
-    
+
+    // 0 - nothing
+    // 1 - dots
+    // 2 - dots + carrier random explore + carrier island target + amplifier random explore + amplifier targets
+    // 3 - dots + carrier random explore + carrier island target + carrier collect + amplifier random explore + amplifier targets + launcher swarms
+    // 4 - everything
     public static final int DEBUG_INFO = 2;
 
     private static final ResourceType[] resourceTypes = new ResourceType[] {
