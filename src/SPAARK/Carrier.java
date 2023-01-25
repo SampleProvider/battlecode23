@@ -144,7 +144,8 @@ public strictfp class Carrier {
     private void runState() throws GameActionException {
         if (state == 0) {
             updatePrioritizedHeadquarters();
-            if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD)) {
+            MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
+            if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD) && islands.length > 0) {
                 rc.takeAnchor(prioritizedHeadquarters, Anchor.STANDARD);
             }
 

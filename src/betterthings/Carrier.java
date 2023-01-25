@@ -113,8 +113,6 @@ public strictfp class Carrier {
                 }
                 lastHealth = rc.getHealth();
 
-                // 😐
-
                 RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
                 MapLocation loc = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
                 if (loc == null) {
