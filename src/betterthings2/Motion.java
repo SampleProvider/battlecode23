@@ -1,4 +1,4 @@
-package SPAARK;
+package betterthings2;
 
 import battlecode.common.*;
 
@@ -543,7 +543,6 @@ public class Motion {
         }
         return new Direction[] { lastDirection, null };
     }
-
     protected static Direction[] bug2retreat(RobotController rc, MapLocation dest, Direction lastDirection, boolean clockwiseRotation, RobotInfo[] friendlyRobotInfo, StringBuilder indicatorString) throws GameActionException {
         boolean oldClockwiseRotation = clockwiseRotation;
         while (rc.isMovementReady()) {

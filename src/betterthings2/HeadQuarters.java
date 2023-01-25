@@ -1,4 +1,4 @@
-package SPAARK;
+package betterthings2;
 
 import battlecode.common.*;
 
@@ -10,18 +10,21 @@ public strictfp class HeadQuarters {
 
     protected int hqIndex;
     private int locInt;
-    private int hqCount;
+    private int hqCount = 4;
 
-    private int anchorCooldown = 0;
-
-    private int carriers = 0;
+    private int anchorCooldown = 100;
     private int carrierCooldown = 0;
-
-    private int launchers = 0;
     private int launcherCooldown = 0;
+    private int amplifierCooldown = 0;
+    private int carriers = 0;
+    private int launchers = 0;
+    private int amplifiers = 0;
+    private int nearbyCarriers = 0;
+    private int nearbyLaunchers = 0;
 
     private int possibleSpawningLocations = 0;
 
+    private int mapSizeFactor = 100;
     private StoredLocations storedLocations;
 
     private boolean isPrimaryHQ = false;
@@ -30,6 +33,7 @@ public strictfp class HeadQuarters {
     protected int mana = 0;
     protected int lastAdamantium = 0;
     protected int lastMana = 0;
+    protected int deltaResources = 0;
 
     private StringBuilder indicatorString = new StringBuilder();
 
@@ -38,6 +42,12 @@ public strictfp class HeadQuarters {
             this.rc = rc;
             // setting headquarter locations
             locInt = GlobalArray.intifyLocation(rc.getLocation());
+            // hqIndex = rc.getID()/2;
+            // if (rc.getID() % 2 == 0)
+            //     hqIndex--;
+            // rc.writeSharedArray(GlobalArray.HEADQUARTERS+hqIndex, locInt);
+            // if (hqIndex == 0)
+            //     isPrimaryHQ = true;
             if (!GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.HEADQUARTERS))) {
                 rc.writeSharedArray(GlobalArray.HEADQUARTERS, locInt);
                 hqIndex = GlobalArray.HEADQUARTERS;
@@ -74,26 +84,20 @@ public strictfp class HeadQuarters {
                 globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
                 adamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
                 mana = rc.getResourceAmount(ResourceType.MANA);
+                deltaResources = (int) ((0.7 * deltaResources) + (0.3 * (adamantium - lastAdamantium + mana - lastMana)));
 
                 indicatorString = new StringBuilder();
 
-                if (isPrimaryHQ) {
-                    for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS + GlobalArray.AMPLIFIERS_LENGTH; a++) {
-                        int arrAmp = rc.readSharedArray(a);
-                        if (GlobalArray.hasLocation(arrAmp)) {
-                            if ((arrAmp >> 15) == round % 2) {
-                                rc.writeSharedArray(a, 0);
-                                indicatorString.append("AMP " + a + " die; ");
-                            }
-                        }
-                    }
-                }
+                indicatorString.append(hqIndex - GlobalArray.HEADQUARTERS + "; ");
 
+                indicatorString.append("DR=" + deltaResources + "; ");
+
+                // detect stuff
                 storedLocations.detectWells();
                 storedLocations.detectOpponentLocations();
                 storedLocations.detectIslandLocations();
                 storedLocations.writeToGlobalArray();
-                
+
                 if (GlobalArray.DEBUG_INFO >= 1 && isPrimaryHQ) {
                     MapLocation[] wells = GlobalArray.getKnownWellLocations(rc);
                     for (MapLocation m : wells) {
@@ -132,110 +136,104 @@ public strictfp class HeadQuarters {
                     }
                 }
 
-                // if (round > 200) {
-                // rc.resign();
-                // }
-                // int amplifierIndex = 0;
-                // for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS +
-                // GlobalArray.AMPLIFIERS_LENGTH; a++) {
-                // if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
-                // amplifierIndex = a;
-                // break;
-                // }
-                // }
-                // if (amplifierIndex != 0) {
-                // rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
-                // rc.writeSharedArray(amplifierIndex,
-                // GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 14,
-                // 1));
-                // }
-                // Clock.yield();
-                // continue;
-                while (rc.isActionReady()) {
-                    MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
-                    MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
-                    boolean builtRobot = false;
-                    if (anchorCooldown <= 0 && round >= 200 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
-                        if (adamantium >= 100 && mana >= 100) {
-                            rc.buildAnchor(Anchor.STANDARD);
-                            indicatorString.append("PROD ANC; ");
-                            anchorCooldown = 100;
-                        } else {
-                            indicatorString.append("TRY PROD ANC; ");
-                            if (adamantium >= 150) {
-                                if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 8) {
-                                    rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
-                                    carriers += 1;
-                                    builtRobot = true;
-                                    indicatorString.append("PROD CAR; ");
-                                    if (GlobalArray.DEBUG_INFO >= 3) {
-                                        rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
-                                    }
-                                }
-                            }
-                            if (mana >= 160) {
-                                if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
-                                    rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
-                                    launchers++;
-                                    builtRobot = true;
-                                    indicatorString.append("PROD LAU; ");
-                                    if (GlobalArray.DEBUG_INFO >= 3) {
-                                        rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        int amplifierIndex = 0;
-                        for (int a = GlobalArray.AMPLIFIERS; a < GlobalArray.AMPLIFIERS
-                                + GlobalArray.AMPLIFIERS_LENGTH; a++) {
-                            if (!GlobalArray.hasLocation(rc.readSharedArray(a))) {
-                                amplifierIndex = a;
-                                break;
-                            }
-                        }
-                        if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
-                            rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
-                            launchers++;
-                            builtRobot = true;
-                            indicatorString.append("PROD LAU; ");
-                            if (GlobalArray.DEBUG_INFO >= 3) {
-                                rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                            }
-                        }
-                        else if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && possibleSpawningLocations >= 6 && launchers > 10) {
-                            rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
-                            launchers = 0;
-                            builtRobot = true;
-                            // rc.writeSharedArray(amplifierIndex, GlobalArray.setBit(GlobalArray.setBit(GlobalArray.intifyLocation(optimalSpawningLocation), 14, 1), 15, round % 2));
-                            indicatorString.append("PROD AMP; ");
-                            if (GlobalArray.DEBUG_INFO >= 3) {
-                                rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                            }
-                        }
-                        else if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell) && possibleSpawningLocations >= 8) {
-                            rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
-                            carriers += 1;
-                            builtRobot = true;
-                            indicatorString.append("PROD CAR; ");
-                            if (GlobalArray.DEBUG_INFO >= 3) {
-                                rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
-                            }
-                        }
+                // track bots
+                if (round % 2 == 1) {
+                    carriers = rc.readSharedArray(GlobalArray.CARRIERCOUNT);
+                    launchers = rc.readSharedArray(GlobalArray.LAUNCHERCOUNT);
+                    amplifiers = rc.readSharedArray(GlobalArray.AMPLIFIERCOUNT) & 0b11111111;
+                    nearbyCarriers = 0;
+                    nearbyLaunchers = 0;
+                    RobotInfo[] nearbyBots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
+                    for (RobotInfo r : nearbyBots) {
+                        if (r.getType() == RobotType.LAUNCHER)
+                            nearbyLaunchers++;
+                        else if (r.getType() == RobotType.CARRIER)
+                            nearbyCarriers++;
                     }
-                    if (!builtRobot) {
-                        break;
+                    indicatorString.append("C-L-A-NC-NL[" + carriers + ", " + launchers + ", " + amplifiers + ", " + nearbyCarriers + ", " + nearbyLaunchers + "]; ");
+                }
+                if (isPrimaryHQ) {
+                    if (round % 2 == 0) {
+                        rc.writeSharedArray(GlobalArray.CARRIERCOUNT, 0);
+                        rc.writeSharedArray(GlobalArray.LAUNCHERCOUNT, 0);
+                        rc.writeSharedArray(GlobalArray.AMPLIFIERCOUNT, rc.readSharedArray(GlobalArray.AMPLIFIERCOUNT) & 0b1111111100000000);
                     }
                 }
-                anchorCooldown -= 1;
+
+                // spawn things
+                int carriersProduced = 0;
+                int launchersProduced = 0;
+                MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
+                boolean canProduceAnchor = islands.length > 0;
+                if (anchorCooldown <= 0 && rc.getNumAnchors(Anchor.STANDARD) == 0 && canProduceAnchor) {
+                    if (adamantium > 100 && mana > 100) {
+                        rc.buildAnchor(Anchor.STANDARD);
+                        indicatorString.append("P ANC; ");
+                        anchorCooldown = 50;
+                    } else {
+                        indicatorString.append("TP ANC; ");
+                        while (rc.isActionReady()) {
+                            MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
+                            MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
+                            if (mana > 160 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
+                                    && (launchers < 40 * hqCount * mapSizeFactor || nearbyLaunchers < 15 || launcherCooldown <= 0) && possibleSpawningLocations >= 3) {
+                                rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
+                                launchersProduced++;
+                                if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                                launcherCooldown = 5;
+                            } else if (adamantium > 150 && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
+                                    && ((deltaResources < 0 && nearbyCarriers < 15) || carriers < 20 * hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 4) {
+                                rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
+                                carriersProduced++;
+                                if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
+                                carrierCooldown = 30;
+                            } else break;
+                        }
+                    }
+                } else {
+                    while (rc.isActionReady()) {
+                        MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
+                        MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
+                        if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
+                                && ((deltaResources < 0 && nearbyCarriers < 15) || carriers < 20 * hqCount || carrierCooldown <= 0)
+                                && (round > 1 || carriersProduced < 2) && possibleSpawningLocations >= 3) {
+                            rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
+                            carriersProduced++;
+                            if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
+                            carrierCooldown = 50;
+                        } else if (optimalSpawningLocation != null && possibleSpawningLocations >= 2) {
+                            if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
+                                    && launchers > 10 && carriers > 0 && amplifiers < 5 && amplifierCooldown <= 0) {
+                                rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
+                                indicatorString.append("P AMP; ");
+                                if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                                amplifierCooldown = 30;
+                                amplifiers = Integer.MAX_VALUE;
+                            } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
+                                    && (launchers < 40 * hqCount * mapSizeFactor || nearbyLaunchers < 15 || launcherCooldown <= 0)) {
+                                rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
+                                launchersProduced++;
+                                if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                                launcherCooldown = 0;
+                            } else break;
+                        } else break;
+                    }
+                }
+                if (carriersProduced > 0)
+                    indicatorString.append("P CAR-x" + carriersProduced + "; ");
+                if (launchersProduced > 0)
+                    indicatorString.append("P LAU-x" + launchersProduced + "; ");
+                anchorCooldown--;
+                carrierCooldown--;
+                launcherCooldown--;
+                amplifierCooldown--;
+
                 // store
                 GlobalArray.storeHeadquarters(this);
+
                 // prioritized resources
-                double deviation = 0;
-                if ((mana + (adamantium * 10)) != 0) {
-                    deviation = (mana - (adamantium * 10)) / (mana + (adamantium * 10));
-                }
-                if (Math.abs(deviation) < 0.2) {
+                double deviation = (mana - (adamantium * 10.0)) / (mana + (adamantium * 10.0));
+                if (Math.abs(deviation) < 0.1) {
                     globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE, hqIndex);
                     indicatorString.append("PR=NO; ");
                 } else if (deviation < 0) {
@@ -245,18 +243,20 @@ public strictfp class HeadQuarters {
                     globalArray.setPrioritizedResource(ResourceType.ADAMANTIUM, hqIndex);
                     indicatorString.append("PR=AD; ");
                 }
-                if (round == 2) {
-                    for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
-                        if (GlobalArray.hasLocation(rc.readSharedArray(i)))
-                        hqCount++;
-                    }
-                    MapLocation headquarters[] = new MapLocation[hqCount];
-                    for (int i = 0; i < hqCount; i++) {
-                        headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
-                    }
-                    storedLocations.headquarters = headquarters;
-                }
+                // primary headquarters stuff
                 if (isPrimaryHQ) {
+                    if (round == 2) {
+                        for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
+                            if (GlobalArray.hasLocation(rc.readSharedArray(i)))
+                            hqCount++;
+                        }
+                        MapLocation headquarters[] = new MapLocation[hqCount];
+                        for (int i = 0; i < hqCount; i++) {
+                            headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
+                        }
+                        storedLocations.headquarters = headquarters;
+                        mapSizeFactor = (rc.getMapWidth() * rc.getMapHeight()) / 400;
+                    }
                     // set upgrade wells if resources adequate
                     boolean upgradeWells = true;
                     for (int i = GlobalArray.HEADQUARTERS; i <= GlobalArray.HEADQUARTERS + hqCount; i++) {
@@ -269,7 +269,7 @@ public strictfp class HeadQuarters {
                     globalArray.setUpgradeWells(upgradeWells);
                     // set target elixir well
                     if (round > 200 && !setTargetElixirWell) {
-                        // setTargetElixirWell();
+                        setTargetElixirWell();
                     }
                 }
                 // save game state
@@ -281,8 +281,8 @@ public strictfp class HeadQuarters {
                 System.out.println("Exception at HeadQuarters");
                 e.printStackTrace();
             } finally {
-                lastAdamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
-                lastMana = rc.getResourceAmount(ResourceType.MANA);
+                lastAdamantium = adamantium;
+                lastMana = mana;
                 rc.setIndicatorString(indicatorString.toString());
                 Clock.yield();
             }
@@ -327,7 +327,7 @@ public strictfp class HeadQuarters {
         if (wellInfo.length > 0 && well) {
             WellInfo prioritizedWellInfo = wellInfo[0];
             MapLocation prioritizedWellInfoLocation = wellInfo[0].getMapLocation();
-            ResourceType prioritizedResourceType = ResourceType.MANA;
+            ResourceType prioritizedResourceType = ResourceType.ELIXIR;
             for (WellInfo w : wellInfo) {
                 if (prioritizedWellInfo.getResourceType() == prioritizedResourceType) {
                     if (w.getResourceType() == prioritizedResourceType && prioritizedWellInfo.getMapLocation().distanceSquaredTo(me) > w.getMapLocation().distanceSquaredTo(me)) {
