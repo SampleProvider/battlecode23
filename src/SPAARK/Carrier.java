@@ -95,10 +95,10 @@ public strictfp class Carrier {
                 storedLocations.detectIslandLocations();
                 storedLocations.writeToGlobalArray();
 
-                // if (rc.getHealth() != lastHealth) {
-                //     state = 4;
-                // }
-                // lastHealth = rc.getHealth();
+                if (rc.getHealth() != lastHealth && state != 3) {
+                    state = 4;
+                }
+                lastHealth = rc.getHealth();
 
                 RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
                 RobotInfo robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
@@ -106,9 +106,11 @@ public strictfp class Carrier {
                     robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                     robot = Attack.senseOpponent(rc, me, robotInfo);
                 }
-                if (robot != null) {
+                if (robot != null && robot.getType() == prioritizedRobotType) {
                     storedLocations.storeOpponentLocation(robot.getLocation());
-                    state = 4;
+                    if (state != 3) {
+                        state = 4;
+                    }
                 }
 
                 runState();
@@ -120,9 +122,11 @@ public strictfp class Carrier {
                     robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                     robot = Attack.senseOpponent(rc, me, robotInfo);
                 }
-                if (robot != null) {
+                if (robot != null && robot.getType() == prioritizedRobotType) {
                     storedLocations.storeOpponentLocation(robot.getLocation());
-                    state = 4;
+                    if (state != 3) {
+                        state = 4;
+                    }
                 }
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Carrier");

@@ -95,7 +95,7 @@ public strictfp class Carrier {
                 storedLocations.detectIslandLocations();
                 storedLocations.writeToGlobalArray();
 
-                if (rc.getHealth() != lastHealth) {
+                if (rc.getHealth() != lastHealth && state != 3) {
                     state = 4;
                 }
                 lastHealth = rc.getHealth();
