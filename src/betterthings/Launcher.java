@@ -146,7 +146,7 @@ public strictfp class Launcher {
             opponent = robot;
         }
         
-        if (round % 3 != 0) {
+        if (round % 2 == 0) {
 
             MapLocation[] opponentLocations = GlobalArray.getKnownOpponentLocations(rc);
             MapLocation prioritizedOpponentLocation = null;
