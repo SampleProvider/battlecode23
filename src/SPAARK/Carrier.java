@@ -106,7 +106,7 @@ public strictfp class Carrier {
                     robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                     robot = Attack.senseOpponent(rc, me, robotInfo);
                 }
-                if (robot != null) {
+                if (robot != null && robot.getType() == prioritizedRobotType) {
                     storedLocations.storeOpponentLocation(robot.getLocation());
                     if (state != 3) {
                         state = 4;
@@ -122,7 +122,7 @@ public strictfp class Carrier {
                     robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                     robot = Attack.senseOpponent(rc, me, robotInfo);
                 }
-                if (robot != null) {
+                if (robot != null && robot.getType() == prioritizedRobotType) {
                     storedLocations.storeOpponentLocation(robot.getLocation());
                     if (state != 3) {
                         state = 4;
