@@ -27,7 +27,7 @@ public strictfp class Launcher {
 
     private int headquarterCircleRange = 16;
 
-    private int defenseRange = 256;
+    private int defenseRange = 144;
     private int edgeRange = 4;
 
     private MapLocation lastLauncherLocation;
