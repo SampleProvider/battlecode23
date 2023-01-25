@@ -106,7 +106,6 @@ public strictfp class Carrier {
 
                 storedLocations.updateFullWells();
                 storedLocations.detectIslandLocations();
-                if (storedLocations.detectedNewLocations && state == 6) state = 3;
                 storedLocations.writeToGlobalArray();
 
                 if (rc.getHealth() != lastHealth) {
@@ -369,7 +368,12 @@ public strictfp class Carrier {
                     rc.setIndicatorDot(randomExploreLocation, 0, 175, 0);
                 }
                 randomExploreTime++;
-                if (randomExploreTime > 50 || randomExploreLocation.distanceSquaredTo(me) <= 4) randomExploreLocation = null;
+                if (randomExploreTime > 50 || randomExploreLocation.distanceSquaredTo(me) <= 4) {
+                    randomExploreLocation = null;
+                    if (storedLocations.detectedNewLocations) {
+                        state = 3;
+                    }
+                }
             } else {
                 Motion.spreadRandomly(rc, me);
             }

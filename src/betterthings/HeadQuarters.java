@@ -166,7 +166,7 @@ public strictfp class HeadQuarters {
                 GlobalArray.storeHeadquarters(this);
 
                 // prioritized resources
-                double deviation = (mana - (adamantium * 10.0)) / (mana + (adamantium * 10.0));
+                double deviation = ((mana + adamantium) != 0) ? (mana - (adamantium * 10.0)) / (mana + (adamantium * 10.0)) : 0;
                 if (Math.abs(deviation) < 0.1) {
                     globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE, hqIndex);
                     indicatorString.append("PR=NO; ");
@@ -224,11 +224,12 @@ public strictfp class HeadQuarters {
     }
 
     private void spawnBots() throws GameActionException {
+        // alsso makees anchors
         int carriersProduced = 0;
         int launchersProduced = 0;
         MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
         boolean canProduceAnchor = islands.length > 0;
-        if (anchorCooldown <= 0 && rc.getNumAnchors(Anchor.STANDARD) == 0 && canProduceAnchor) {
+        if (anchorCooldown <= 0 && nearbyLaunchers > 5 && rc.getNumAnchors(Anchor.STANDARD) == 0 && canProduceAnchor) {
             if (adamantium > 100 && mana > 100) {
                 rc.buildAnchor(Anchor.STANDARD);
                 indicatorString.append("P ANC; ");

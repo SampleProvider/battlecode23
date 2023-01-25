@@ -37,7 +37,7 @@ public strictfp class GlobalArray {
      * 2 - all dots + launcher swarming/defense lines + spawning lines
      * 3 - all lines
      */
-    public static final int DEBUG_INFO = 1;
+    public static final int DEBUG_INFO = 2;
 
     private static final ResourceType[] resourceTypes = new ResourceType[] {
             ResourceType.NO_RESOURCE,
