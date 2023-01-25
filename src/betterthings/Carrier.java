@@ -101,7 +101,7 @@ public strictfp class Carrier {
 
                 indicatorString = new StringBuilder();
 
-                indicatorString.append(prioritizedHeadquarterIndex + "; ");
+                indicatorString.append(state + "; ");
                 indicatorString.append("PR=" + (prioritizedResourceType == ResourceType.MANA ? "MN" : prioritizedResourceType.toString().substring(0, 2)) + "; ");
 
                 storedLocations.updateFullWells();
