@@ -1,4 +1,4 @@
-package SPAARK;
+package betterthings2;
 
 import java.util.Arrays;
 
@@ -12,14 +12,15 @@ public strictfp class GlobalArray {
     public static final int MANA_WELLS_LENGTH = 6;
     public static final int ADAMANTIUM_WELLS = 11;
     public static final int ADAMANTIUM_WELLS_LENGTH = 6;
-    public static final int AMPLIFIERS = 17;
-    public static final int AMPLIFIERS_LENGTH = 6;
-    public static final int OPPONENTS = 23;
+    public static final int OPPONENTS = 17;
     public static final int OPPONENTS_LENGTH = 8;
-    public static final int OPPONENT_HEADQUARTERS = 31;
+    public static final int OPPONENT_HEADQUARTERS = 25;
     public static final int OPPONENT_HEADQUARTERS_LENGTH = 4;
-    public static final int ISLANDS = 35;
+    public static final int ISLANDS = 29;
     public static final int ISLANDS_LENGTH = 16;
+    public static final int CARRIERCOUNT = 45;
+    public static final int LAUNCHERCOUNT = 46;
+    public static final int AMPLIFIERCOUNT = 47;
 
     public static final int PRIORITIZED_RESOURCE_HQ1 = 0;
     public static final int PRIORITIZED_RESOURCE_HQ2 = 1;
@@ -30,7 +31,13 @@ public strictfp class GlobalArray {
     public static final int CONVERSION_WELL_ID = 6;
     public static final int MAP_SYMMETRY = 7;
 
-    public static final int DEBUG_INFO = 3;
+    /*
+     * 0 - points of interest dots only
+     * 1 - all dots + spawning lines
+     * 2 - all dots + launcher swarming/defense lines + spawning lines
+     * 3 - all lines
+     */
+    public static final int DEBUG_INFO = 1;
 
     private static final ResourceType[] resourceTypes = new ResourceType[] {
             ResourceType.NO_RESOURCE,
@@ -54,6 +61,7 @@ public strictfp class GlobalArray {
      *  No extra bits
      * Islands:
      *  Bits 13-14  team controlling island
+     *  Bit 15      is out of range
      */
 
     // general location/data parsing/writing
@@ -158,6 +166,7 @@ public strictfp class GlobalArray {
         }
         return false;
     }
+
     public static MapLocation[] getKnownOpponentLocations(RobotController rc) throws GameActionException {
         MapLocation[] opponentLocations = new MapLocation[OPPONENTS_LENGTH];
         for (int i = OPPONENTS; i < OPPONENTS + OPPONENTS_LENGTH; i++) {

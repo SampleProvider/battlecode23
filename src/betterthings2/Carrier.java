@@ -1,4 +1,4 @@
-package SPAARK;
+package betterthings2;
 
 import battlecode.common.*;
 
@@ -19,7 +19,7 @@ public strictfp class Carrier {
             Direction.NORTHEAST,
     };
 
-    private ResourceType prioritizedResourceType = ResourceType.MANA;
+    private ResourceType prioritizedResourceType = ResourceType.ELIXIR;
     private int adamantiumAmount = 0;
     private int manaAmount = 0;
     private int elixirAmount = 0;
@@ -95,10 +95,10 @@ public strictfp class Carrier {
                 storedLocations.detectIslandLocations();
                 storedLocations.writeToGlobalArray();
 
-                // if (rc.getHealth() != lastHealth) {
-                //     state = 4;
-                // }
-                // lastHealth = rc.getHealth();
+                if (rc.getHealth() != lastHealth) {
+                    state = 4;
+                }
+                lastHealth = rc.getHealth();
 
                 RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
                 RobotInfo robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
@@ -161,8 +161,10 @@ public strictfp class Carrier {
                     attemptTransfer();
                 }
                 me = rc.getLocation();
-                if (GlobalArray.DEBUG_INFO >= 4) {
+                if (GlobalArray.DEBUG_INFO >= 3) {
                     rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 25, 255);
+                } else if (GlobalArray.DEBUG_INFO > 0) {
+                    rc.setIndicatorDot(me, 125, 25, 255);
                 }
                 return;
             } else {
@@ -177,10 +179,9 @@ public strictfp class Carrier {
                     }
                     attemptCollection();
                     me = rc.getLocation();
-                    if (GlobalArray.DEBUG_INFO >= 3) {
+                    if (GlobalArray.DEBUG_INFO >= 2) {
                         rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
-                    }
-                    else if (GlobalArray.DEBUG_INFO >= 2) {
+                    } else if (GlobalArray.DEBUG_INFO > 0) {
                         rc.setIndicatorDot(me, 255, 75, 75);
                     }
                     return;
@@ -202,10 +203,9 @@ public strictfp class Carrier {
             }
             attemptCollection();
             me = rc.getLocation();
-            if (GlobalArray.DEBUG_INFO >= 3) {
+            if (GlobalArray.DEBUG_INFO >= 2) {
                 rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
-            }
-            else if (GlobalArray.DEBUG_INFO >= 2) {
+            } else if (GlobalArray.DEBUG_INFO > 0) {
                 rc.setIndicatorDot(me, 255, 75, 75);
             }
         } else if (state == 2) {
@@ -215,10 +215,9 @@ public strictfp class Carrier {
                 rc.collectResource(prioritizedWell, -1);
                 Motion.circleAroundTarget(rc, me, prioritizedWell);
                 me = rc.getLocation();
-                if (GlobalArray.DEBUG_INFO >= 3) {
+                if (GlobalArray.DEBUG_INFO >= 2) {
                     rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
-                }
-                else if (GlobalArray.DEBUG_INFO >= 2) {
+                } else if (GlobalArray.DEBUG_INFO > 0) {
                     rc.setIndicatorDot(me, 255, 75, 75);
                 }
             } else {
@@ -254,10 +253,9 @@ public strictfp class Carrier {
                         state = 0;
                     }
                 }
-                if (GlobalArray.DEBUG_INFO >= 3) {
-                    rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 125, 255);
-                }
                 if (GlobalArray.DEBUG_INFO >= 2) {
+                    rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 125, 255);
+                } else if (GlobalArray.DEBUG_INFO > 0) {
                     rc.setIndicatorDot(me, 75, 125, 255);
                 }
             } else {
@@ -288,10 +286,9 @@ public strictfp class Carrier {
                             state = 0;
                         }
                     }
-                    if (GlobalArray.DEBUG_INFO >= 3) {
-                        rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 125, 255);
-                    }
                     if (GlobalArray.DEBUG_INFO >= 2) {
+                        rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 125, 255);
+                    } else if (GlobalArray.DEBUG_INFO > 0) {
                         rc.setIndicatorDot(me, 75, 125, 255);
                     }
                 }
@@ -313,8 +310,10 @@ public strictfp class Carrier {
                 state = 0;
             }
             me = rc.getLocation();
-            if (GlobalArray.DEBUG_INFO >= 4) {
+            if (GlobalArray.DEBUG_INFO >= 3) {
                 rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 255, 0);
+            } else if (GlobalArray.DEBUG_INFO > 0) {
+                rc.setIndicatorDot(me, 125, 255, 0);
             }
         }
     }
@@ -433,6 +432,6 @@ public strictfp class Carrier {
         if (fullSpots + emptySpots == 0) {
             return true;
         }
-        return emptySpots >= 2;
+        return emptySpots >= 1;
     }
 }

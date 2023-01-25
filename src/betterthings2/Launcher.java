@@ -1,4 +1,4 @@
-package SPAARK;
+package betterthings2;
 
 import battlecode.common.*;
 
@@ -11,6 +11,16 @@ public strictfp class Launcher {
     private int round = 0;
 
     private final Random rng = new Random(2023);
+    private static final Direction[] DIRECTIONS = {
+            Direction.SOUTHWEST,
+            Direction.SOUTH,
+            Direction.SOUTHEAST,
+            Direction.WEST,
+            Direction.EAST,
+            Direction.NORTHWEST,
+            Direction.NORTH,
+            Direction.NORTHEAST,
+    };
 
     private MapLocation[] headquarters;
     private MapLocation prioritizedHeadquarters;

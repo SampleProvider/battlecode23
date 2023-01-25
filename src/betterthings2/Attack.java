@@ -1,4 +1,4 @@
-package SPAARK;
+package betterthings2;
 
 import battlecode.common.*;
 
