@@ -44,6 +44,7 @@ public strictfp class Carrier {
     private int randomExploreTime = 0;
     private final int randomExploreMinKnownWellDistSquared = 81;
     private final int randomExploreMinKnownHQDistSquared = 144;
+    private boolean returningToStorePOI = false;
 
     private int lastHealth = 0;
 
@@ -106,7 +107,7 @@ public strictfp class Carrier {
 
                 storedLocations.updateFullWells();
                 storedLocations.detectIslandLocations();
-                storedLocations.writeToGlobalArray();
+                if (storedLocations.writeToGlobalArray()) returningToStorePOI = false;
 
                 if (rc.getHealth() != lastHealth && state != 4) {
                     state = 5;
@@ -161,6 +162,7 @@ public strictfp class Carrier {
             if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD) && islands.length > 0) {
                 rc.takeAnchor(prioritizedHeadquarters, Anchor.STANDARD);
             }
+            // put anchor back?
 
             if (rc.getAnchor() != null) {
                 state = 4;
@@ -236,6 +238,7 @@ public strictfp class Carrier {
             if (bug2array[1] == Direction.CENTER) {
                 clockwiseRotation = !clockwiseRotation;
             }
+            // if too many robots then linger aroudn edges to let bots out
             if (prioritizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
                 attemptTransfer();
             }
@@ -245,7 +248,7 @@ public strictfp class Carrier {
             } else if (GlobalArray.DEBUG_INFO > 0) {
                 rc.setIndicatorDot(me, 125, 25, 255);
             }
-            if (adamantiumAmount + manaAmount + elixirAmount == 0) {
+            if (adamantiumAmount + manaAmount + elixirAmount == 0 && !returningToStorePOI) {
                 state = 0;
             }
         } else if (state == 4) {
@@ -357,8 +360,9 @@ public strictfp class Carrier {
                 randomExploreTime++;
                 if (randomExploreTime > 50 || randomExploreLocation.distanceSquaredTo(me) <= 4) {
                     randomExploreLocation = null;
-                    if (storedLocations.detectedNewLocations) {
+                    if (storedLocations.foundNewLocations()) {
                         state = 3;
+                        returningToStorePOI = true;
                     }
                 }
             } else {

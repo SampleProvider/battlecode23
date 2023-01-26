@@ -199,6 +199,17 @@ public strictfp class GlobalArray {
         return false;
     }
 
+    public static MapLocation[] getKnownIslandLocations(RobotController rc) throws GameActionException {
+        MapLocation[] islandLocations = new MapLocation[ISLANDS_LENGTH];
+        for (int i = ISLANDS; i < ISLANDS + ISLANDS_LENGTH; i++) {
+            int arrayIslandLocation = rc.readSharedArray(i);
+            if (hasLocation(arrayIslandLocation)) {
+                islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
+            }
+        }
+        return islandLocations;
+    }
+
     public static MapLocation[] getKnownIslandLocations(RobotController rc, Team team) throws GameActionException {
         MapLocation[] islandLocations = new MapLocation[ISLANDS_LENGTH];
         for (int i = ISLANDS; i < ISLANDS + ISLANDS_LENGTH; i++) {
