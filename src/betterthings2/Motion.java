@@ -497,7 +497,8 @@ public class Motion {
             }
             Direction direction = me.directionTo(dest);
             boolean moved = false;
-            if (rc.canMove(direction) && lastDirection != direction.opposite() && rc.senseMapInfo(me.add(direction)).getCurrentDirection() != direction.opposite()) {
+            Direction currentDirection = rc.senseMapInfo(me.add(direction)).getCurrentDirection();
+            if (rc.canMove(direction) && lastDirection != direction.opposite() && currentDirection != direction.opposite() && currentDirection != direction.opposite().rotateLeft() && currentDirection != direction.opposite().rotateRight()) {
                 boolean touchingTheWallBefore = false;
                 for (int i = -1; i <= 1; i++) {
                     for (int j = -1; j <= 1; j++) {
@@ -643,7 +644,8 @@ public class Motion {
                 }
             }
             boolean moved = false;
-            if (rc.canMove(direction) && lastDirection != direction.opposite() && rc.senseMapInfo(me.add(direction)).getCurrentDirection() != direction.opposite()) {
+            Direction currentDirection = rc.senseMapInfo(me.add(direction)).getCurrentDirection();
+            if (rc.canMove(direction) && lastDirection != direction.opposite() && currentDirection != direction.opposite() && currentDirection != direction.opposite().rotateLeft() && currentDirection != direction.opposite().rotateRight()) {
                 boolean touchingTheWallBefore = false;
                 for (int i = -1; i <= 1; i++) {
                     for (int j = -1; j <= 1; j++) {
@@ -757,7 +759,8 @@ public class Motion {
         if (avoidClouds && rc.senseCloud(rc.getLocation().add(direction))) {
             return 0;
         }
-        if (rc.canMove(direction) && lastDirection != direction.opposite() && rc.senseMapInfo(me.add(direction)).getCurrentDirection() != direction.opposite()) {
+        Direction currentDirection = rc.senseMapInfo(me.add(direction)).getCurrentDirection();
+        if (rc.canMove(direction) && lastDirection != direction.opposite() && currentDirection != direction.opposite() && currentDirection != direction.opposite().rotateLeft() && currentDirection != direction.opposite().rotateRight()) {
             rc.move(direction);
             return 1;
         }
@@ -770,7 +773,8 @@ public class Motion {
         if (avoidClouds && rc.senseCloud(rc.getLocation().add(direction))) {
             return 0;
         }
-        if (rc.canMove(direction) && rc.senseMapInfo(me.add(direction)).getCurrentDirection() != direction.opposite()) {
+        Direction currentDirection = rc.senseMapInfo(me.add(direction)).getCurrentDirection();
+        if (rc.canMove(direction) && currentDirection != direction.opposite() && currentDirection != direction.opposite().rotateLeft() && currentDirection != direction.opposite().rotateRight()) {
             rc.move(direction);
             return 1;
         }

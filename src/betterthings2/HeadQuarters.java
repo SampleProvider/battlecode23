@@ -230,7 +230,7 @@ public strictfp class HeadQuarters {
         MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
         boolean canProduceAnchor = islands.length > 0;
         if (anchorCooldown <= 0 && nearbyLaunchers > 5 && rc.getNumAnchors(Anchor.STANDARD) == 0 && canProduceAnchor) {
-            if (adamantium > 100 && mana > 100) {
+            if (adamantium > Anchor.STANDARD.adamantiumCost && mana > Anchor.STANDARD.manaCost) {
                 rc.buildAnchor(Anchor.STANDARD);
                 indicatorString.append("P ANC; ");
                 anchorCooldown = 50;
@@ -239,13 +239,13 @@ public strictfp class HeadQuarters {
                 while (rc.isActionReady()) {
                     MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
                     MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
-                    if (mana > 160 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
+                    if (mana > Anchor.STANDARD.manaCost + 60 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
                             && (launchers < 40 * hqCount * mapSizeFactor || nearbyLaunchers < 15 || launcherCooldown <= 0) && possibleSpawningLocations >= 3) {
                         rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                         launchersProduced++;
                         if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                         launcherCooldown = 5;
-                    } else if (adamantium > 150 && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
+                    } else if (adamantium > Anchor.STANDARD.adamantiumCost + 50 && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
                             && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 4) {
                         rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                         carriersProduced++;
