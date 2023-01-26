@@ -113,11 +113,12 @@ public strictfp class Carrier {
                 // }
                 // lastHealth = rc.getHealth();
 
+                updatePrioritizedHeadquarters();
                 RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                RobotInfo robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
+                RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, prioritizedRobotType, false, indicatorString);
                 if (robot == null) {
                     robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
-                    robot = Attack.senseOpponent(rc, me, robotInfo);
+                    robot = Attack.senseOpponent(rc, robotInfo);
                 }
                 if (robot != null) {
                     storedLocations.storeOpponentLocation(robot.getLocation());
@@ -126,12 +127,12 @@ public strictfp class Carrier {
 
                 runState();
                 
-                me = rc.getLocation();
+                updatePrioritizedHeadquarters();
                 robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
+                robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, prioritizedRobotType, false, indicatorString);
                 if (robot == null) {
                     robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
-                    robot = Attack.senseOpponent(rc, me, robotInfo);
+                    robot = Attack.senseOpponent(rc, robotInfo);
                 }
                 if (robot != null) {
                     storedLocations.storeOpponentLocation(robot.getLocation());
@@ -152,7 +153,6 @@ public strictfp class Carrier {
 
     private void runState() throws GameActionException {
         if (state == 0) {
-            updatePrioritizedHeadquarters();
             MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
             if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD) && islands.length > 0) {
                 rc.takeAnchor(prioritizedHeadquarters, Anchor.STANDARD);
@@ -317,7 +317,6 @@ public strictfp class Carrier {
                 return;
             }
         } else if (state == 5) {
-            updatePrioritizedHeadquarters();
             indicatorString.append("RET; ");
             Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, indicatorString);
             lastDirection = bug2array[0];

@@ -147,7 +147,7 @@ public strictfp class StoredLocations {
     }
 
     public void detectOpponentLocations() throws GameActionException {
-        RobotInfo robot = Attack.senseOpponent(rc, rc.getLocation(), rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent()));
+        RobotInfo robot = Attack.senseOpponent(rc, rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent()));
         if (robot != null) {
             detectedNewLocations = storeOpponentLocation(robot.getLocation()) || detectedNewLocations;
         }

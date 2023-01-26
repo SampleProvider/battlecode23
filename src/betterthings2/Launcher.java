@@ -80,14 +80,18 @@ public strictfp class Launcher {
                 storedLocations.detectIslandLocations();
                 storedLocations.writeToGlobalArray();
 
+                updatePrioritizedHeadquarters();
+
                 runState();
 
+                updatePrioritizedHeadquarters();
+
                 RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                RobotInfo robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, true, indicatorString);
+                RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, prioritizedRobotType, true, indicatorString);
                 robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
         
                 if (robot == null) {
-                    robot = Attack.senseOpponent(rc, me, robotInfo);
+                    robot = Attack.senseOpponent(rc, robotInfo);
                 }
 
                 if (robot != null) {
@@ -110,18 +114,9 @@ public strictfp class Launcher {
 
     private void runState() throws GameActionException {
 
-        prioritizedHeadquarters = headquarters[0];
-        for (MapLocation hq : headquarters) {
-            if (hq != null) {
-                if (prioritizedHeadquarters.distanceSquaredTo(me) > hq.distanceSquaredTo(me)) {
-                    prioritizedHeadquarters = hq;
-                }
-            }
-        }
-
         RobotInfo[] friendlyRobotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam());
         RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-        RobotInfo robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, true, indicatorString);
+        RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, prioritizedRobotType, true, indicatorString);
         if (robot != null && robot.getType() == RobotType.LAUNCHER) {
             Direction[] bug2array = Motion.bug2retreat(rc, robot.getLocation(), lastDirection, clockwiseRotation, false, friendlyRobotInfo, indicatorString);
             lastDirection = bug2array[0];
@@ -145,7 +140,7 @@ public strictfp class Launcher {
         }
 
         if (robot == null) {
-            robot = Attack.senseOpponent(rc, me, robotInfo);
+            robot = Attack.senseOpponent(rc, robotInfo);
         }
 
         if (rc.getHealth() != lastHealth) {
@@ -518,6 +513,16 @@ public strictfp class Launcher {
         return false;
     }
 
+    private void updatePrioritizedHeadquarters() throws GameActionException {
+        prioritizedHeadquarters = headquarters[0];
+        for (int i = 0; i < headquarters.length; i++) {
+            if (headquarters[i] != null) {
+                if (prioritizedHeadquarters.distanceSquaredTo(me) > headquarters[i].distanceSquaredTo(me)) {
+                    prioritizedHeadquarters = headquarters[i];
+                }
+            }
+        }
+    }
     private void updatePrioritizedOpponentHeadquarters(RobotInfo[] robotInfo) throws GameActionException {
         prioritizedOpponentHeadquarters = null;
         for (RobotInfo r : robotInfo) {
