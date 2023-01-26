@@ -120,6 +120,18 @@ public strictfp class Launcher {
             return;
         }
         robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+
+        updatePrioritizedOpponentHeadquarters(robotInfo);
+
+        if (prioritizedOpponentHeadquarters != null && me.distanceSquaredTo(prioritizedOpponentHeadquarters) <= RobotType.HEADQUARTERS.actionRadiusSquared) {
+            Direction[] bug2array = Motion.bug2retreat(rc, prioritizedOpponentHeadquarters, lastDirection, clockwiseRotation, false, friendlyRobotInfo, indicatorString);
+            lastDirection = bug2array[0];
+            if (bug2array[1] == Direction.CENTER) {
+                clockwiseRotation = !clockwiseRotation;
+            }
+            return;
+        }
+
         if (robot == null) {
             robot = Attack.senseOpponent(rc, me, robotInfo);
         }
@@ -133,7 +145,8 @@ public strictfp class Launcher {
                 }
                 opponent = robot;
                 return;
-            } else {
+            }
+            else {
                 Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, true, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
