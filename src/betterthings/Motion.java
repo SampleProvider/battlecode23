@@ -1,4 +1,4 @@
-package betterthings;
+package SPAARK;
 
 import battlecode.common.*;
 
@@ -628,16 +628,18 @@ public class Motion {
                     prioritizedFriendlyRobotInfoLocation = w.getLocation();
                 }
             }
-            if (me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 1) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 2) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 3) % 8) {
-                direction = direction.rotateRight();
-                if (!rc.canMove(direction)) {
-                    direction = direction.rotateLeft();
-                }
-            }
-            if (me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 7) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 6) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 5) % 8) {
-                direction = direction.rotateLeft();
-                if (!rc.canMove(direction)) {
+            if (prioritizedFriendlyRobotInfoLocation != null) {
+                if (me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 1) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 2) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 3) % 8) {
                     direction = direction.rotateRight();
+                    if (!rc.canMove(direction)) {
+                        direction = direction.rotateLeft();
+                    }
+                }
+                if (me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 7) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 6) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 5) % 8) {
+                    direction = direction.rotateLeft();
+                    if (!rc.canMove(direction)) {
+                        direction = direction.rotateRight();
+                    }
                 }
             }
             boolean moved = false;
