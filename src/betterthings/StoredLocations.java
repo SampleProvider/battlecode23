@@ -76,11 +76,10 @@ public strictfp class StoredLocations {
     public boolean foundNewLocations() throws GameActionException {
         MapLocation[] wellLocations = GlobalArray.getKnownWellLocations(rc);
         for (MapLocation m : wellLocations) {
-            if (m == null) {
-                continue;
-            }
+            if (m == null) continue;
             boolean found = true;
             for (WellInfo w : wells) {
+                if (w == null ) continue;
                 if (w.getMapLocation().equals(m)) {
                     found = false;
                     break;
@@ -90,11 +89,10 @@ public strictfp class StoredLocations {
         }
         MapLocation[] islandLocations = GlobalArray.getKnownIslandLocations(rc);
         for (MapLocation m : islandLocations) {
-            if (m == null) {
-                continue;
-            }
+            if (m == null) continue;
             boolean found = true;
             for (MapLocation m2 : islands) {
+                if (m2 == null) continue;
                 if (m2.equals(m)) {
                     found = false;
                     break;
