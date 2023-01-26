@@ -82,6 +82,18 @@ public strictfp class Launcher {
 
                 runState();
 
+                RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+                RobotInfo robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, true, indicatorString);
+                robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+        
+                if (robot == null) {
+                    robot = Attack.senseOpponent(rc, me, robotInfo);
+                }
+
+                if (robot != null) {
+                    opponent = robot;
+                }
+        
                 lastHealth = rc.getHealth();
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Launcher");
