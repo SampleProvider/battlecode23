@@ -77,6 +77,7 @@ public strictfp class Carrier {
             lastHealth = rc.getHealth();
             storedLocations = new StoredLocations(rc, headquarters);
             rng = new Random(rc.getRoundNum());
+            if (round % 3 == 2) state = 6;
         } catch (GameActionException e) {
             System.out.println("GameActionException at Carrier constructor");
             e.printStackTrace();
@@ -232,6 +233,7 @@ public strictfp class Carrier {
                 runState();
             }
         } else if (state == 3) {
+            updatePrioritizedHeadquarters();
             indicatorString.append("PATH->HQ; ");
             Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, indicatorString);
             lastDirection = bug2array[0];
@@ -320,7 +322,9 @@ public strictfp class Carrier {
                     }
                 }
                 else {
-                    Motion.moveRandomly(rc);
+                    state = 6;
+                    runState();
+                    if (state == 6) state = 4;
                 }
                 return;
             }
