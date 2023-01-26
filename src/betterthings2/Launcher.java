@@ -1,7 +1,6 @@
 package betterthings2;
 
 import battlecode.common.*;
-
 import java.util.Random;
 
 public strictfp class Launcher {
@@ -11,16 +10,6 @@ public strictfp class Launcher {
     private int round = 0;
 
     private final Random rng = new Random(2023);
-    private static final Direction[] DIRECTIONS = {
-            Direction.SOUTHWEST,
-            Direction.SOUTH,
-            Direction.SOUTHEAST,
-            Direction.WEST,
-            Direction.EAST,
-            Direction.NORTHWEST,
-            Direction.NORTH,
-            Direction.NORTHEAST,
-    };
 
     private MapLocation[] headquarters;
     private MapLocation prioritizedHeadquarters;
@@ -38,7 +27,7 @@ public strictfp class Launcher {
 
     private int headquarterCircleRange = 16;
 
-    private int defenseRange = 256;
+    private int defenseRange = 144;
     private int edgeRange = 4;
 
     private MapLocation lastLauncherLocation;
@@ -51,15 +40,6 @@ public strictfp class Launcher {
     private Direction lastDirection = Direction.CENTER;
 
     private int lastHealth = 0;
-
-    private int state = 0;
-    // state
-    // 0 is wander
-    // 1 is travelling to amplifier
-    // 2 is travelling with amplifier
-    // 3 is defense
-    // 4 is pathfinding to opponent
-    // 5 is testing
 
     private StringBuilder indicatorString = new StringBuilder();
 
@@ -131,7 +111,7 @@ public strictfp class Launcher {
         RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
         RobotInfo robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, true, indicatorString);
         if (robot != null && robot.getType() == RobotType.LAUNCHER) {
-            Direction[] bug2array = Motion.bug2retreat(rc, robot.getLocation(), lastDirection, clockwiseRotation, robotInfo, indicatorString);
+            Direction[] bug2array = Motion.bug2retreat(rc, robot.getLocation(), lastDirection, clockwiseRotation, false, friendlyRobotInfo, indicatorString);
             lastDirection = bug2array[0];
             if (bug2array[1] == Direction.CENTER) {
                 clockwiseRotation = !clockwiseRotation;
@@ -140,13 +120,25 @@ public strictfp class Launcher {
             return;
         }
         robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+
+        updatePrioritizedOpponentHeadquarters(robotInfo);
+
+        if (prioritizedOpponentHeadquarters != null && me.distanceSquaredTo(prioritizedOpponentHeadquarters) <= RobotType.HEADQUARTERS.actionRadiusSquared) {
+            Direction[] bug2array = Motion.bug2retreat(rc, prioritizedOpponentHeadquarters, lastDirection, clockwiseRotation, false, friendlyRobotInfo, indicatorString);
+            lastDirection = bug2array[0];
+            if (bug2array[1] == Direction.CENTER) {
+                clockwiseRotation = !clockwiseRotation;
+            }
+            return;
+        }
+
         if (robot == null) {
             robot = Attack.senseOpponent(rc, me, robotInfo);
         }
 
         if (rc.getHealth() != lastHealth) {
             if (robot != null && robot.getType() == RobotType.LAUNCHER) {
-                Direction[] bug2array = Motion.bug2retreat(rc, robot.getLocation(), lastDirection, clockwiseRotation, robotInfo, indicatorString);
+                Direction[] bug2array = Motion.bug2retreat(rc, robot.getLocation(), lastDirection, clockwiseRotation, true, friendlyRobotInfo, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
                     clockwiseRotation = !clockwiseRotation;
@@ -155,7 +147,7 @@ public strictfp class Launcher {
                 return;
             }
             else {
-                Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, indicatorString);
+                Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, true, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
                     clockwiseRotation = !clockwiseRotation;
@@ -168,8 +160,7 @@ public strictfp class Launcher {
             opponent = robot;
         }
         
-        if (round % 3 != 0) {
-
+        if (round % 2 == 0) {
             MapLocation[] opponentLocations = GlobalArray.getKnownOpponentLocations(rc);
             MapLocation prioritizedOpponentLocation = null;
             int prioritizedOpponentLocationIndex = -1;
@@ -198,13 +189,13 @@ public strictfp class Launcher {
                     rc.setIndicatorDot(me, 75, 255, 75);
                 }
                 if (storedLocations.removedOpponents[prioritizedOpponentLocationIndex] == true) {
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, indicatorString);
+                    Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, true, indicatorString);
                     lastDirection = bug2array[0];
                     if (bug2array[1] == Direction.CENTER) {
                         clockwiseRotation = !clockwiseRotation;
                     }
                 } else {
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedOpponentLocation, lastDirection, clockwiseRotation, indicatorString);
+                    Direction[] bug2array = Motion.bug2(rc, prioritizedOpponentLocation, lastDirection, clockwiseRotation, true, indicatorString);
                     lastDirection = bug2array[0];
                     if (bug2array[1] == Direction.CENTER) {
                         clockwiseRotation = !clockwiseRotation;
@@ -242,11 +233,11 @@ public strictfp class Launcher {
                         highestIdFriendlyRobotInfo = w;
                     }
                 }
-                if (surroundingLaunchers >= 3) {
+                if (surroundingLaunchers >= 5) {
                     // try to swarm
                     if (lowestIdFriendlyRobotInfo.ID > rc.getID()) {
                         if (opponent != null) {
-                            Direction[] bug2array = Motion.bug2(rc, opponent.getLocation(), lastDirection, clockwiseRotation, indicatorString);
+                            Direction[] bug2array = Motion.bug2(rc, opponent.getLocation(), lastDirection, clockwiseRotation, true, indicatorString);
                             lastDirection = bug2array[0];
                             if (bug2array[1] == Direction.CENTER) {
                                 clockwiseRotation = !clockwiseRotation;
@@ -264,7 +255,7 @@ public strictfp class Launcher {
                         } else {
                             if (surroundingLaunchers >= 3) {
                                 if (prioritizedHeadquarters.distanceSquaredTo(me) <= 100) {
-                                    Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, indicatorString);
+                                    Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, true, indicatorString);
                                     lastDirection = bug2array[0];
                                     if (bug2array[1] == Direction.CENTER) {
                                         clockwiseRotation = !clockwiseRotation;
@@ -285,7 +276,7 @@ public strictfp class Launcher {
                                         }
                                     }
                                     if (prioritizedIslandLocation != null) {
-                                        Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, indicatorString);
+                                        Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, true, indicatorString);
                                         lastDirection = bug2array[0];
                                         if (bug2array[1] == Direction.CENTER) {
                                             clockwiseRotation = !clockwiseRotation;
@@ -312,7 +303,7 @@ public strictfp class Launcher {
                                             }
                                         }
                                         if (prioritizedIslandLocation != null) {
-                                            Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, indicatorString);
+                                            Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, false, indicatorString);
                                             lastDirection = bug2array[0];
                                             if (bug2array[1] == Direction.CENTER) {
                                                 clockwiseRotation = !clockwiseRotation;
@@ -339,9 +330,9 @@ public strictfp class Launcher {
                                             clockwiseRotation = !clockwiseRotation;
                                         }
                                     }
-                                    clockwiseRotation = Motion.circleAroundTarget(rc, me, prioritizedHeadquarters, headquarterCircleRange, clockwiseRotation);
+                                    clockwiseRotation = Motion.circleAroundTarget(rc, prioritizedHeadquarters, headquarterCircleRange, clockwiseRotation, true);
                                 } else {
-                                    Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, indicatorString);
+                                    Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, true, indicatorString);
                                     lastDirection = bug2array[0];
                                     if (bug2array[1] == Direction.CENTER) {
                                         clockwiseRotation = !clockwiseRotation;
@@ -358,7 +349,7 @@ public strictfp class Launcher {
                             else if (GlobalArray.DEBUG_INFO >= 2) {
                                 rc.setIndicatorDot(me, 255, 125, 25);
                             }
-                            Direction[] bug2array = Motion.bug2(rc, opponent.getLocation(), lastDirection, clockwiseRotation, indicatorString);
+                            Direction[] bug2array = Motion.bug2retreat(rc, opponent.getLocation(), lastDirection, clockwiseRotation, true, friendlyRobotInfo, indicatorString);
                             lastDirection = bug2array[0];
                             if (bug2array[1] == Direction.CENTER) {
                                 clockwiseRotation = !clockwiseRotation;
@@ -369,13 +360,13 @@ public strictfp class Launcher {
                             //         opponent = null;
                             //     }
                             // }
-                            if (me.distanceSquaredTo(opponent.getLocation()) <= 5) {
+                            if (me.distanceSquaredTo(opponent.getLocation()) > RobotType.LAUNCHER.visionRadiusSquared) {
                                 opponent = null;
                             }
                             lastLauncherLocation = null;
                         } else {
                             if (prioritizedHeadquarters.distanceSquaredTo(me) <= 100) {
-                                Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, indicatorString);
+                                Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, true, indicatorString);
                                 lastDirection = bug2array[0];
                                 if (bug2array[1] == Direction.CENTER) {
                                     clockwiseRotation = !clockwiseRotation;
@@ -387,11 +378,11 @@ public strictfp class Launcher {
                             }
                             else {
                                 if (me.distanceSquaredTo(lowestIdFriendlyRobotInfo.getLocation()) <= launcherCircleRange * 1.5) {
-                                    clockwiseRotation = Motion.circleAroundTarget(rc, me, lowestIdFriendlyRobotInfo.getLocation(), launcherCircleRange, clockwiseRotation);
+                                    clockwiseRotation = Motion.circleAroundTarget(rc, lowestIdFriendlyRobotInfo.getLocation(), launcherCircleRange, clockwiseRotation, true);
                                     lastLauncherLocation = lowestIdFriendlyRobotInfo.getLocation();
                                 }
                                 else {
-                                    Direction[] bug2array = Motion.bug2(rc, lowestIdFriendlyRobotInfo.getLocation(), lastDirection, clockwiseRotation, indicatorString);
+                                    Direction[] bug2array = Motion.bug2(rc, lowestIdFriendlyRobotInfo.getLocation(), lastDirection, clockwiseRotation, true, indicatorString);
                                     lastDirection = bug2array[0];
                                     if (bug2array[1] == Direction.CENTER) {
                                         clockwiseRotation = !clockwiseRotation;
@@ -413,7 +404,7 @@ public strictfp class Launcher {
                     if (lowestIdFriendlyRobotInfo.ID > rc.getID()) {
                         headquarterCircleRange = 16 + surroundingLaunchers / 3;
                         if (prioritizedHeadquarters.distanceSquaredTo(me) <= 100) {
-                            Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, indicatorString);
+                            Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, true, indicatorString);
                             lastDirection = bug2array[0];
                             if (bug2array[1] == Direction.CENTER) {
                                 clockwiseRotation = !clockwiseRotation;
@@ -425,7 +416,7 @@ public strictfp class Launcher {
                                     clockwiseRotation = !clockwiseRotation;
                                 }
                             }
-                            clockwiseRotation = Motion.circleAroundTarget(rc, me, prioritizedHeadquarters, 100, clockwiseRotation);
+                            clockwiseRotation = Motion.circleAroundTarget(rc, prioritizedHeadquarters, 100, clockwiseRotation, true);
                         }
                     }
                     else {
@@ -435,11 +426,11 @@ public strictfp class Launcher {
                         }
                         else {
                             if (me.distanceSquaredTo(lowestIdFriendlyRobotInfo.getLocation()) <= launcherCircleRange * 1.5) {
-                                clockwiseRotation = Motion.circleAroundTarget(rc, me, lowestIdFriendlyRobotInfo.getLocation(), launcherCircleRange, clockwiseRotation);
+                                clockwiseRotation = Motion.circleAroundTarget(rc, lowestIdFriendlyRobotInfo.getLocation(), launcherCircleRange, clockwiseRotation, true);
                                 lastLauncherLocation = lowestIdFriendlyRobotInfo.getLocation();
                             }
                             else {
-                                Direction[] bug2array = Motion.bug2(rc, lowestIdFriendlyRobotInfo.getLocation(), lastDirection, clockwiseRotation, indicatorString);
+                                Direction[] bug2array = Motion.bug2(rc, lowestIdFriendlyRobotInfo.getLocation(), lastDirection, clockwiseRotation, true, indicatorString);
                                 lastDirection = bug2array[0];
                                 if (bug2array[1] == Direction.CENTER) {
                                     clockwiseRotation = !clockwiseRotation;
@@ -474,9 +465,9 @@ public strictfp class Launcher {
                         clockwiseRotation = !clockwiseRotation;
                     }
                 }
-                clockwiseRotation = Motion.circleAroundTarget(rc, me, prioritizedHeadquarters, headquarterCircleRange, clockwiseRotation);
+                clockwiseRotation = Motion.circleAroundTarget(rc, prioritizedHeadquarters, headquarterCircleRange, clockwiseRotation, true);
             } else {
-                Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, indicatorString);
+                Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
                     clockwiseRotation = !clockwiseRotation;

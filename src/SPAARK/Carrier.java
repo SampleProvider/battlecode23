@@ -157,7 +157,7 @@ public strictfp class Carrier {
 
             if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
                 indicatorString.append("PATH->HQ; ");
-                Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, indicatorString);
+                Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
                     clockwiseRotation = !clockwiseRotation;
@@ -175,7 +175,7 @@ public strictfp class Carrier {
                 if (prioritizedWell != null) {
                     state = 1;
                     indicatorString.append("PATH->WELL; ");
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, indicatorString);
+                    Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, true, indicatorString);
                     lastDirection = bug2array[0];
                     if (bug2array[1] == Direction.CENTER) {
                         clockwiseRotation = !clockwiseRotation;
@@ -200,7 +200,7 @@ public strictfp class Carrier {
                 return;
             }
             indicatorString.append("PATH->WELL; ");
-            Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, indicatorString);
+            Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, true, indicatorString);
             lastDirection = bug2array[0];
             if (bug2array[1] == Direction.CENTER) {
                 clockwiseRotation = !clockwiseRotation;
@@ -246,7 +246,7 @@ public strictfp class Carrier {
                 }
             }
             if (prioritizedIslandLocation != null) {
-                Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, indicatorString);
+                Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, true, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
                     clockwiseRotation = !clockwiseRotation;
@@ -280,7 +280,7 @@ public strictfp class Carrier {
                     }
                 }
                 if (prioritizedIslandLocation != null) {
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, indicatorString);
+                    Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, false, indicatorString);
                     lastDirection = bug2array[0];
                     if (bug2array[1] == Direction.CENTER) {
                         clockwiseRotation = !clockwiseRotation;
@@ -308,7 +308,7 @@ public strictfp class Carrier {
         } else if (state == 4) {
             updatePrioritizedHeadquarters();
             indicatorString.append("RET; ");
-            Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, indicatorString);
+            Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, indicatorString);
             lastDirection = bug2array[0];
             if (bug2array[1] == Direction.CENTER) {
                 clockwiseRotation = !clockwiseRotation;

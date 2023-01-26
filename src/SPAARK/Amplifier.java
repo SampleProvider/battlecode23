@@ -108,7 +108,7 @@ public strictfp class Amplifier {
                     }
                 }
                 if (prioritizedIslandLocation != null) {
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, indicatorString);
+                    Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, true, indicatorString);
                     lastDirection = bug2array[0];
                     if (bug2array[1] == Direction.CENTER) {
                         clockwiseRotation = !clockwiseRotation;
@@ -135,7 +135,7 @@ public strictfp class Amplifier {
                         }
                     }
                     if (prioritizedIslandLocation != null) {
-                        Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, indicatorString);
+                        Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, false, indicatorString);
                         lastDirection = bug2array[0];
                         if (bug2array[1] == Direction.CENTER) {
                             clockwiseRotation = !clockwiseRotation;

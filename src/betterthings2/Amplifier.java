@@ -9,17 +9,6 @@ public strictfp class Amplifier {
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
-    private final Direction[] directions = {
-            Direction.SOUTHWEST,
-            Direction.SOUTH,
-            Direction.SOUTHEAST,
-            Direction.WEST,
-            Direction.EAST,
-            Direction.NORTHWEST,
-            Direction.NORTH,
-            Direction.NORTHEAST,
-    };
-
     private Random rng = new Random(2023);
 
     private MapLocation[] headquarters;
@@ -31,6 +20,7 @@ public strictfp class Amplifier {
     private boolean clockwiseRotation = true;
     private Direction lastDirection = Direction.CENTER;
 
+    private boolean isRandomExplorer = false;
     private MapLocation randomExploreLocation;
     private int randomExploreTime = 0;
     private final int randomExploreMinKnownWellDistSquared = 81;
@@ -91,23 +81,28 @@ public strictfp class Amplifier {
                 
                 indicatorString = new StringBuilder();
 
-                updateRandomExploreLocation();
-                if (randomExploreLocation != null) {
-                    indicatorString.append("EXPL-" + randomExploreLocation.toString() + "; ");
-                    Direction[] bug2array = Motion.bug2(rc, randomExploreLocation, lastDirection, clockwiseRotation, indicatorString);
-                    lastDirection = bug2array[0];
-                    if (bug2array[1] == Direction.CENTER) {
-                        clockwiseRotation = !clockwiseRotation;
+                if (isRandomExplorer) {
+                    updateRandomExploreLocation();
+                    if (randomExploreLocation != null) {
+                        indicatorString.append("EXPL-" + randomExploreLocation.toString() + "; ");
+                        Direction[] bug2array = Motion.bug2(rc, randomExploreLocation, lastDirection, clockwiseRotation, false, indicatorString);
+                        lastDirection = bug2array[0];
+                        if (bug2array[1] == Direction.CENTER) {
+                            clockwiseRotation = !clockwiseRotation;
+                        }
+                        if (GlobalArray.DEBUG_INFO >= 2) {
+                            rc.setIndicatorLine(me, randomExploreLocation, 0, 175, 0);
+                        } else if (GlobalArray.DEBUG_INFO > 0) {
+                            rc.setIndicatorDot(me, 0, 175, 0);
+                            rc.setIndicatorDot(randomExploreLocation, 0, 175, 0);
+                        }
+                        randomExploreTime++;
+                        if (randomExploreTime > 50 || randomExploreLocation.distanceSquaredTo(me) <= 4) randomExploreLocation = null;
+                    } else {
+                        indicatorString.append("RAND; ");
+                        Motion.moveRandomly(rc);
                     }
-                    if (GlobalArray.DEBUG_INFO >= 2) {
-                        rc.setIndicatorLine(me, randomExploreLocation, 0, 175, 0);
-                    } else if (GlobalArray.DEBUG_INFO > 0) {
-                        rc.setIndicatorDot(randomExploreLocation, 0, 175, 0);
-                    }
-                    randomExploreTime++;
-                    if (randomExploreTime > 50 || randomExploreLocation.distanceSquaredTo(me) <= 4) randomExploreLocation = null;
                 } else {
-                    indicatorString.append("RAND");
                     int[] islands = rc.senseNearbyIslands();
                     MapLocation prioritizedIslandLocation = null;
                     for (int id : islands) {
@@ -123,16 +118,15 @@ public strictfp class Amplifier {
                         }
                     }
                     if (prioritizedIslandLocation != null) {
-                        Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, indicatorString);
+                        Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, true, indicatorString);
                         lastDirection = bug2array[0];
                         if (bug2array[1] == Direction.CENTER) {
                             clockwiseRotation = !clockwiseRotation;
                         }
                         me = rc.getLocation();
-                        if (GlobalArray.DEBUG_INFO >= 3) {
-                            rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 255, 255);
-                        }
                         if (GlobalArray.DEBUG_INFO >= 2) {
+                            rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 255, 255);
+                        } else if (GlobalArray.DEBUG_INFO > 0) {
                             rc.setIndicatorDot(me, 75, 255, 255);
                         }
                     } else {
@@ -150,16 +144,15 @@ public strictfp class Amplifier {
                             }
                         }
                         if (prioritizedIslandLocation != null) {
-                            Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, indicatorString);
+                            Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, false, indicatorString);
                             lastDirection = bug2array[0];
                             if (bug2array[1] == Direction.CENTER) {
                                 clockwiseRotation = !clockwiseRotation;
                             }
                             me = rc.getLocation();
-                            if (GlobalArray.DEBUG_INFO >= 3) {
-                                rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 255, 255);
-                            }
                             if (GlobalArray.DEBUG_INFO >= 2) {
+                                rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 255, 255);
+                            } else if (GlobalArray.DEBUG_INFO > 0) {
                                 rc.setIndicatorDot(me, 75, 255, 255);
                             }
                         }
@@ -281,6 +274,7 @@ public strictfp class Amplifier {
         MapLocation[] knownWells = GlobalArray.getKnownWellLocations(rc);
         int iteration = 0;
         search: while (randomExploreLocation == null && iteration < 16) {
+            iteration++;
             randomExploreLocation = new MapLocation(rng.nextInt(rc.getMapWidth()), rng.nextInt(rc.getMapHeight()));
             for (MapLocation well : knownWells) {
                 if (well != null && well.distanceSquaredTo(randomExploreLocation) < randomExploreMinKnownWellDistSquared) {
@@ -294,7 +288,6 @@ public strictfp class Amplifier {
                     continue search;
                 }
             }
-            iteration++;
         }
     }
 }
