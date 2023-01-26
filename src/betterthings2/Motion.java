@@ -349,69 +349,69 @@ public class Motion {
                 }
             }
             if (me.equals(rc.getLocation())) {
-                // direction = me.directionTo(target);
-                // if (me.distanceSquaredTo(target) > (int) distance * 1.25) {
-                //     if (clockwiseRotation) {
-                //         for (int i = 0; i < 2; i++) {
-                //             direction = direction.rotateLeft();
-                //             if (rc.canMove(direction)) {
-                //                 rc.move(direction);
-                //                 stuck = false;
-                //                 break;
-                //             }
-                //         }
-                //     } else {
-                //         for (int i = 0; i < 2; i++) {
-                //             direction = direction.rotateRight();
-                //             if (rc.canMove(direction)) {
-                //                 rc.move(direction);
-                //                 stuck = false;
-                //                 break;
-                //             }
-                //         }
-                //     }
-                // } else if (me.distanceSquaredTo(target) < (int) distance * 0.75) {
-                //     direction = direction.opposite();
-                //     if (rc.canMove(direction)) {
-                //         rc.move(direction);
-                //         stuck = false;
-                //         continue;
-                //     }
-                //     direction = direction.rotateLeft();
-                //     if (rc.canMove(direction)) {
-                //         rc.move(direction);
-                //         stuck = false;
-                //         continue;
-                //     }
-                //     direction = direction.rotateRight().rotateRight();
-                //     if (rc.canMove(direction)) {
-                //         rc.move(direction);
-                //         stuck = false;
-                //         continue;
-                //     }
-                // } else {
-                //     if (clockwiseRotation) {
-                //         direction = direction.rotateLeft();
-                //         for (int i = 0; i < 2; i++) {
-                //             direction = direction.rotateLeft();
-                //             if (rc.canMove(direction)) {
-                //                 rc.move(direction);
-                //                 stuck = false;
-                //                 break;
-                //             }
-                //         }
-                //     } else {
-                //         direction = direction.rotateRight();
-                //         for (int i = 0; i < 2; i++) {
-                //             direction = direction.rotateRight();
-                //             if (rc.canMove(direction)) {
-                //                 rc.move(direction);
-                //                 stuck = false;
-                //                 break;
-                //             }
-                //         }
-                //     }
-                // }
+                direction = me.directionTo(target);
+                if (me.distanceSquaredTo(target) > (int) distance * 1.25) {
+                    if (clockwiseRotation) {
+                        for (int i = 0; i < 2; i++) {
+                            direction = direction.rotateLeft();
+                            if (rc.canMove(direction)) {
+                                rc.move(direction);
+                                stuck = false;
+                                break;
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < 2; i++) {
+                            direction = direction.rotateRight();
+                            if (rc.canMove(direction)) {
+                                rc.move(direction);
+                                stuck = false;
+                                break;
+                            }
+                        }
+                    }
+                } else if (me.distanceSquaredTo(target) < (int) distance * 0.75) {
+                    direction = direction.opposite();
+                    if (rc.canMove(direction)) {
+                        rc.move(direction);
+                        stuck = false;
+                        continue;
+                    }
+                    direction = direction.rotateLeft();
+                    if (rc.canMove(direction)) {
+                        rc.move(direction);
+                        stuck = false;
+                        continue;
+                    }
+                    direction = direction.rotateRight().rotateRight();
+                    if (rc.canMove(direction)) {
+                        rc.move(direction);
+                        stuck = false;
+                        continue;
+                    }
+                } else {
+                    if (clockwiseRotation) {
+                        direction = direction.rotateLeft();
+                        for (int i = 0; i < 2; i++) {
+                            direction = direction.rotateLeft();
+                            if (rc.canMove(direction)) {
+                                rc.move(direction);
+                                stuck = false;
+                                break;
+                            }
+                        }
+                    } else {
+                        direction = direction.rotateRight();
+                        for (int i = 0; i < 2; i++) {
+                            direction = direction.rotateRight();
+                            if (rc.canMove(direction)) {
+                                rc.move(direction);
+                                stuck = false;
+                                break;
+                            }
+                        }
+                    }
+                }
                 clockwiseRotation = !clockwiseRotation;
                 if (me.equals(rc.getLocation())) {
                     if (stuck == true) {
@@ -563,37 +563,37 @@ public class Motion {
             
             if (moved == false) {
                 direction = me.directionTo(dest);
-                // if (clockwiseRotation) {
-                //     for (int i = 0; i < 7; i++) {
-                //         direction = direction.rotateLeft();
-                //         int f = bug2f(rc, me, direction, lastDirection, false);
-                //         if (f == 1) {
-                //             lastDirection = direction;
-                //             moved = true;
-                //             break;
-                //         } else if (f == 2) {
-                //             lastDirection = Direction.CENTER;
-                //             clockwiseRotation = !clockwiseRotation;
-                //             moved = true;
-                //             break;
-                //         }
-                //     }
-                // } else {
-                //     for (int i = 0; i < 7; i++) {
-                //         direction = direction.rotateRight();
-                //         int f = bug2f(rc, me, direction, lastDirection, false);
-                //         if (f == 1) {
-                //             lastDirection = direction;
-                //             moved = true;
-                //             break;
-                //         } else if (f == 2) {
-                //             lastDirection = Direction.CENTER;
-                //             clockwiseRotation = !clockwiseRotation;
-                //             moved = true;
-                //             break;
-                //         }
-                //     }
-                // }
+                if (clockwiseRotation) {
+                    for (int i = 0; i < 7; i++) {
+                        direction = direction.rotateLeft();
+                        int f = bug2f(rc, me, direction, lastDirection, false);
+                        if (f == 1) {
+                            lastDirection = direction;
+                            moved = true;
+                            break;
+                        } else if (f == 2) {
+                            lastDirection = Direction.CENTER;
+                            clockwiseRotation = !clockwiseRotation;
+                            moved = true;
+                            break;
+                        }
+                    }
+                } else {
+                    for (int i = 0; i < 7; i++) {
+                        direction = direction.rotateRight();
+                        int f = bug2f(rc, me, direction, lastDirection, false);
+                        if (f == 1) {
+                            lastDirection = direction;
+                            moved = true;
+                            break;
+                        } else if (f == 2) {
+                            lastDirection = Direction.CENTER;
+                            clockwiseRotation = !clockwiseRotation;
+                            moved = true;
+                            break;
+                        }
+                    }
+                }
                 if (moved == false) {
                     lastDirection = Direction.CENTER;
                     break;
@@ -709,37 +709,37 @@ public class Motion {
             
             if (moved == false) {
                 direction = me.directionTo(dest);
-                // if (clockwiseRotation) {
-                //     for (int i = 0; i < 7; i++) {
-                //         direction = direction.rotateLeft();
-                //         int f = bug2r(rc, me, direction, false);
-                //         if (f == 1) {
-                //             lastDirection = direction;
-                //             moved = true;
-                //             break;
-                //         } else if (f == 2) {
-                //             lastDirection = Direction.CENTER;
-                //             clockwiseRotation = !clockwiseRotation;
-                //             moved = true;
-                //             break;
-                //         }
-                //     }
-                // } else {
-                //     for (int i = 0; i < 7; i++) {
-                //         direction = direction.rotateRight();
-                //         int f = bug2r(rc, me, direction, false);
-                //         if (f == 1) {
-                //             lastDirection = direction;
-                //             moved = true;
-                //             break;
-                //         } else if (f == 2) {
-                //             lastDirection = Direction.CENTER;
-                //             clockwiseRotation = !clockwiseRotation;
-                //             moved = true;
-                //             break;
-                //         }
-                //     }
-                // }
+                if (clockwiseRotation) {
+                    for (int i = 0; i < 7; i++) {
+                        direction = direction.rotateLeft();
+                        int f = bug2r(rc, me, direction, false);
+                        if (f == 1) {
+                            lastDirection = direction;
+                            moved = true;
+                            break;
+                        } else if (f == 2) {
+                            lastDirection = Direction.CENTER;
+                            clockwiseRotation = !clockwiseRotation;
+                            moved = true;
+                            break;
+                        }
+                    }
+                } else {
+                    for (int i = 0; i < 7; i++) {
+                        direction = direction.rotateRight();
+                        int f = bug2r(rc, me, direction, false);
+                        if (f == 1) {
+                            lastDirection = direction;
+                            moved = true;
+                            break;
+                        } else if (f == 2) {
+                            lastDirection = Direction.CENTER;
+                            clockwiseRotation = !clockwiseRotation;
+                            moved = true;
+                            break;
+                        }
+                    }
+                }
                 if (moved == false) {
                     lastDirection = Direction.CENTER;
                     break;
