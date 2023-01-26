@@ -613,7 +613,7 @@ public class Motion {
             if (clockwiseRotation) {
                 for (int i = 0; i < 7; i++) {
                     direction = direction.rotateLeft();
-                    int f = bug2f(rc, me, direction, lastDirection);
+                    int f = bug2r(rc, me, direction);
                     if (f == 1) {
                         lastDirection = direction;
                         moved = true;
@@ -628,7 +628,7 @@ public class Motion {
             } else {
                 for (int i = 0; i < 7; i++) {
                     direction = direction.rotateRight();
-                    int f = bug2f(rc, me, direction, lastDirection);
+                    int f = bug2r(rc, me, direction);
                     if (f == 1) {
                         lastDirection = direction;
                         moved = true;
@@ -655,6 +655,16 @@ public class Motion {
 
     private static int bug2f(RobotController rc, MapLocation me, Direction direction, Direction lastDirection) throws GameActionException {
         if (rc.canMove(direction) && lastDirection != direction.opposite() && rc.senseMapInfo(me.translate(direction.dx, direction.dy)).getCurrentDirection() != direction.opposite()) {
+            rc.move(direction);
+            return 1;
+        }
+        if (!rc.onTheMap(rc.getLocation().translate(direction.dx, direction.dy))) {
+            return 2;
+        }
+        return 0;
+    }
+    private static int bug2r(RobotController rc, MapLocation me, Direction direction) throws GameActionException {
+        if (rc.canMove(direction) && rc.senseMapInfo(me.translate(direction.dx, direction.dy)).getCurrentDirection() != direction.opposite()) {
             rc.move(direction);
             return 1;
         }
