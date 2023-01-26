@@ -56,6 +56,7 @@ public strictfp class Amplifier {
             // }
             storedLocations = new StoredLocations(rc, headquarters);
             rng = new Random(amplifierID);
+            isRandomExplorer = amplifierID % 2 == 0;
         } catch (GameActionException e) {
             System.out.println("GameActionException at Amplifier constructor");
             e.printStackTrace();
@@ -85,7 +86,7 @@ public strictfp class Amplifier {
                     updateRandomExploreLocation();
                     if (randomExploreLocation != null) {
                         indicatorString.append("EXPL-" + randomExploreLocation.toString() + "; ");
-                        Direction[] bug2array = Motion.bug2(rc, randomExploreLocation, lastDirection, clockwiseRotation, indicatorString);
+                        Direction[] bug2array = Motion.bug2(rc, randomExploreLocation, lastDirection, clockwiseRotation, false, indicatorString);
                         lastDirection = bug2array[0];
                         if (bug2array[1] == Direction.CENTER) {
                             clockwiseRotation = !clockwiseRotation;
@@ -118,7 +119,7 @@ public strictfp class Amplifier {
                         }
                     }
                     if (prioritizedIslandLocation != null) {
-                        Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, indicatorString);
+                        Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, true, indicatorString);
                         lastDirection = bug2array[0];
                         if (bug2array[1] == Direction.CENTER) {
                             clockwiseRotation = !clockwiseRotation;
@@ -144,15 +145,16 @@ public strictfp class Amplifier {
                             }
                         }
                         if (prioritizedIslandLocation != null) {
-                            Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, indicatorString);
+                            Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, false, indicatorString);
                             lastDirection = bug2array[0];
                             if (bug2array[1] == Direction.CENTER) {
                                 clockwiseRotation = !clockwiseRotation;
                             }
                             me = rc.getLocation();
-                            if (GlobalArray.DEBUG_INFO >= 2) {
+                            if (GlobalArray.DEBUG_INFO >= 3) {
                                 rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 255, 255);
-                            } else if (GlobalArray.DEBUG_INFO > 0) {
+                            }
+                            if (GlobalArray.DEBUG_INFO >= 2) {
                                 rc.setIndicatorDot(me, 75, 255, 255);
                             }
                         }

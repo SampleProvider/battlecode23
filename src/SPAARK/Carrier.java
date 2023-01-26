@@ -215,8 +215,7 @@ public strictfp class Carrier {
             }
         } else if (state == 2) {
             indicatorString.append("COLLECT; ");
-            if (rc.canCollectResource(prioritizedWell, -1)
-                    && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
+            if (rc.canCollectResource(prioritizedWell, -1) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
                 rc.collectResource(prioritizedWell, -1);
                 Motion.circleAroundTarget(rc, me, prioritizedWell);
                 me = rc.getLocation();
