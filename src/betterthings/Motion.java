@@ -281,34 +281,144 @@ public class Motion {
         }
     }
 
-    protected static boolean circleAroundTarget(RobotController rc, MapLocation me, MapLocation target, int distance, boolean clockwiseRotation) throws GameActionException {
+    protected static boolean circleAroundTarget(RobotController rc, MapLocation target, int distance, boolean clockwiseRotation, boolean avoidClouds) throws GameActionException {
         boolean stuck = false;
         while (rc.isMovementReady()) {
+            MapLocation me = rc.getLocation();
             Direction direction = me.directionTo(target);
             if (me.distanceSquaredTo(target) > (int) distance * 1.25) {
                 if (clockwiseRotation) {
-                    direction = direction.rotateLeft();
+                    for (int i = 0; i < 2; i++) {
+                        direction = direction.rotateLeft();
+                        if (rc.canMove(direction) && !(avoidClouds && rc.senseCloud(me.add(direction)))) {
+                            rc.move(direction);
+                            stuck = false;
+                            break;
+                        }
+                    }
                 } else {
-                    direction = direction.rotateRight();
+                    for (int i = 0; i < 2; i++) {
+                        direction = direction.rotateRight();
+                        if (rc.canMove(direction) && !(avoidClouds && rc.senseCloud(me.add(direction)))) {
+                            rc.move(direction);
+                            stuck = false;
+                            break;
+                        }
+                    }
                 }
             } else if (me.distanceSquaredTo(target) < (int) distance * 0.75) {
                 direction = direction.opposite();
+                if (rc.canMove(direction) && !(avoidClouds && rc.senseCloud(me.add(direction)))) {
+                    rc.move(direction);
+                    stuck = false;
+                    continue;
+                }
+                direction = direction.rotateLeft();
+                if (rc.canMove(direction) && !(avoidClouds && rc.senseCloud(me.add(direction)))) {
+                    rc.move(direction);
+                    stuck = false;
+                    continue;
+                }
+                direction = direction.rotateRight().rotateRight();
+                if (rc.canMove(direction) && !(avoidClouds && rc.senseCloud(me.add(direction)))) {
+                    rc.move(direction);
+                    stuck = false;
+                    continue;
+                }
             } else {
                 if (clockwiseRotation) {
-                    direction = direction.rotateLeft().rotateLeft();
+                    direction = direction.rotateLeft();
+                    for (int i = 0; i < 2; i++) {
+                        direction = direction.rotateLeft();
+                        if (rc.canMove(direction) && !(avoidClouds && rc.senseCloud(me.add(direction)))) {
+                            rc.move(direction);
+                            stuck = false;
+                            break;
+                        }
+                    }
                 } else {
-                    direction = direction.rotateRight().rotateRight();
+                    direction = direction.rotateRight();
+                    for (int i = 0; i < 2; i++) {
+                        direction = direction.rotateRight();
+                        if (rc.canMove(direction) && !(avoidClouds && rc.senseCloud(me.add(direction)))) {
+                            rc.move(direction);
+                            stuck = false;
+                            break;
+                        }
+                    }
                 }
             }
-            if (rc.canMove(direction)) {
-                rc.move(direction);
-                stuck = false;
-            } else {
+            if (me.equals(rc.getLocation())) {
+                // direction = me.directionTo(target);
+                // if (me.distanceSquaredTo(target) > (int) distance * 1.25) {
+                //     if (clockwiseRotation) {
+                //         for (int i = 0; i < 2; i++) {
+                //             direction = direction.rotateLeft();
+                //             if (rc.canMove(direction)) {
+                //                 rc.move(direction);
+                //                 stuck = false;
+                //                 break;
+                //             }
+                //         }
+                //     } else {
+                //         for (int i = 0; i < 2; i++) {
+                //             direction = direction.rotateRight();
+                //             if (rc.canMove(direction)) {
+                //                 rc.move(direction);
+                //                 stuck = false;
+                //                 break;
+                //             }
+                //         }
+                //     }
+                // } else if (me.distanceSquaredTo(target) < (int) distance * 0.75) {
+                //     direction = direction.opposite();
+                //     if (rc.canMove(direction)) {
+                //         rc.move(direction);
+                //         stuck = false;
+                //         continue;
+                //     }
+                //     direction = direction.rotateLeft();
+                //     if (rc.canMove(direction)) {
+                //         rc.move(direction);
+                //         stuck = false;
+                //         continue;
+                //     }
+                //     direction = direction.rotateRight().rotateRight();
+                //     if (rc.canMove(direction)) {
+                //         rc.move(direction);
+                //         stuck = false;
+                //         continue;
+                //     }
+                // } else {
+                //     if (clockwiseRotation) {
+                //         direction = direction.rotateLeft();
+                //         for (int i = 0; i < 2; i++) {
+                //             direction = direction.rotateLeft();
+                //             if (rc.canMove(direction)) {
+                //                 rc.move(direction);
+                //                 stuck = false;
+                //                 break;
+                //             }
+                //         }
+                //     } else {
+                //         direction = direction.rotateRight();
+                //         for (int i = 0; i < 2; i++) {
+                //             direction = direction.rotateRight();
+                //             if (rc.canMove(direction)) {
+                //                 rc.move(direction);
+                //                 stuck = false;
+                //                 break;
+                //             }
+                //         }
+                //     }
+                // }
                 clockwiseRotation = !clockwiseRotation;
-                if (stuck == true) {
-                    break;
+                if (me.equals(rc.getLocation())) {
+                    if (stuck == true) {
+                        break;
+                    }
+                    stuck = true;
                 }
-                stuck = true;
             }
         }
         return clockwiseRotation;
@@ -377,90 +487,8 @@ public class Motion {
             // moveRandomly(rc);
         }
     }
-
-    protected static boolean bug(RobotController rc, MapLocation dest, boolean clockwiseRotation, StringBuilder indicatorString) throws GameActionException {
-        Direction lastDirection = Direction.CENTER;
-        while (rc.isMovementReady()) {
-            MapLocation me = rc.getLocation();
-            if (me.equals(dest)) {
-                return clockwiseRotation;
-            }
-            Direction direction = me.directionTo(dest);
-            if (rc.canMove(direction)) {
-                rc.move(direction);
-                lastDirection = direction;
-            } else {
-                indicatorString.append("BUG-D=" + DIRABBREV[direction.getDirectionOrderNum()] + "; BUG-CW=" + clockwiseRotation + "; ");
-                if (clockwiseRotation) {
-                    if (rc.canMove(direction.rotateLeft()) && lastDirection != direction.rotateLeft().opposite()) {
-                        rc.move(direction.rotateLeft());
-                        lastDirection = direction.rotateLeft();
-                    } else if (rc.canMove(direction.rotateLeft().rotateLeft()) && lastDirection != direction.rotateLeft().rotateLeft().opposite()) {
-                        rc.move(direction.rotateLeft().rotateLeft());
-                        lastDirection = direction.rotateLeft().rotateLeft();
-                    } else if (rc.canMove(direction.rotateLeft().rotateLeft().rotateLeft()) && lastDirection != direction.rotateLeft().rotateLeft().rotateLeft().opposite()) {
-                        rc.move(direction.rotateLeft().rotateLeft().rotateLeft());
-                        lastDirection = direction.rotateLeft().rotateLeft().rotateLeft();
-                    } else if (rc.canMove(direction.opposite()) && lastDirection != direction) {
-                        rc.move(direction.opposite());
-                        lastDirection = direction.opposite();
-                        // clockwiseRotation = !clockwiseRotation;
-                    } else {
-                        clockwiseRotation = !clockwiseRotation;
-                        if (rc.canMove(direction.rotateRight()) && lastDirection != direction.rotateRight().opposite()) {
-                            rc.move(direction.rotateRight());
-                            lastDirection = direction.rotateRight();
-                        } else if (rc.canMove(direction.rotateRight().rotateRight()) && lastDirection != direction.rotateRight().rotateRight().opposite()) {
-                            rc.move(direction.rotateRight().rotateRight());
-                            lastDirection = direction.rotateRight().rotateRight();
-                        } else if (rc.canMove(direction.rotateRight().rotateRight().rotateRight()) && lastDirection != direction.rotateRight().rotateRight().rotateRight().opposite()) {
-                            rc.move(direction.rotateRight().rotateRight().rotateRight());
-                            lastDirection = direction.rotateRight().rotateRight().rotateRight();
-                        }
-                    }
-                } else {
-                    if (rc.canMove(direction.rotateRight()) && lastDirection != direction.rotateRight().opposite()) {
-                        rc.move(direction.rotateRight());
-                        lastDirection = direction.rotateRight();
-                    } else if (rc.canMove(direction.rotateRight().rotateRight()) && lastDirection != direction.rotateRight().rotateRight().opposite()) {
-                        rc.move(direction.rotateRight().rotateRight());
-                        lastDirection = direction.rotateRight().rotateRight();
-                    } else if (rc.canMove(direction.rotateRight().rotateRight().rotateRight()) && lastDirection != direction.rotateRight().rotateRight().rotateRight().opposite()) {
-                        rc.move(direction.rotateRight().rotateRight().rotateRight());
-                        lastDirection = direction.rotateRight().rotateRight().rotateRight();
-                    } else if (rc.canMove(direction.opposite()) && lastDirection != direction) {
-                        rc.move(direction.opposite());
-                        lastDirection = direction.opposite();
-                        clockwiseRotation = !clockwiseRotation;
-                    } else {
-                        clockwiseRotation = !clockwiseRotation;
-                        if (rc.canMove(direction.rotateLeft()) && lastDirection != direction.rotateLeft().opposite()) {
-                            rc.move(direction.rotateLeft());
-                            lastDirection = direction.rotateLeft();
-                        } else if (rc.canMove(direction.rotateLeft().rotateLeft()) && lastDirection != direction.rotateLeft().rotateLeft().opposite()) {
-                            rc.move(direction.rotateLeft().rotateLeft());
-                            lastDirection = direction.rotateLeft().rotateLeft();
-                        } else if (rc.canMove(direction.rotateLeft().rotateLeft().rotateLeft()) && lastDirection != direction.rotateLeft().rotateLeft().rotateLeft().opposite()) {
-                            rc.move(direction.rotateLeft().rotateLeft().rotateLeft());
-                            lastDirection = direction.rotateLeft().rotateLeft().rotateLeft();
-                        }
-                    }
-                }
-                boolean stuck = true;
-                for (Direction d : Direction.allDirections()) {
-                    if (rc.canMove(d)) {
-                        stuck = false;
-                    }
-                }
-                if (stuck) {
-                    break;
-                }
-            }
-        }
-        return clockwiseRotation;
-    }
-
-    protected static Direction[] bug2(RobotController rc, MapLocation dest, Direction lastDirection, boolean clockwiseRotation, StringBuilder indicatorString) throws GameActionException {
+    
+    protected static Direction[] bug2(RobotController rc, MapLocation dest, Direction lastDirection, boolean clockwiseRotation, boolean avoidClouds, StringBuilder indicatorString) throws GameActionException {
         boolean oldClockwiseRotation = clockwiseRotation;
         while (rc.isMovementReady()) {
             MapLocation me = rc.getLocation();
@@ -469,7 +497,7 @@ public class Motion {
             }
             Direction direction = me.directionTo(dest);
             boolean moved = false;
-            if (rc.canMove(direction) && lastDirection != direction.opposite() && rc.senseMapInfo(me.translate(direction.dx, direction.dy)).getCurrentDirection() != direction.opposite()) {
+            if (rc.canMove(direction) && lastDirection != direction.opposite() && rc.senseMapInfo(me.add(direction)).getCurrentDirection() != direction.opposite()) {
                 boolean touchingTheWallBefore = false;
                 for (int i = -1; i <= 1; i++) {
                     for (int j = -1; j <= 1; j++) {
@@ -504,7 +532,7 @@ public class Motion {
             if (clockwiseRotation) {
                 for (int i = 0; i < 7; i++) {
                     direction = direction.rotateLeft();
-                    int f = bug2f(rc, me, direction, lastDirection);
+                    int f = bug2f(rc, me, direction, lastDirection, avoidClouds);
                     if (f == 1) {
                         lastDirection = direction;
                         moved = true;
@@ -519,7 +547,7 @@ public class Motion {
             } else {
                 for (int i = 0; i < 7; i++) {
                     direction = direction.rotateRight();
-                    int f = bug2f(rc, me, direction, lastDirection);
+                    int f = bug2f(rc, me, direction, lastDirection, avoidClouds);
                     if (f == 1) {
                         lastDirection = direction;
                         moved = true;
@@ -532,9 +560,44 @@ public class Motion {
                     }
                 }
             }
+            
             if (moved == false) {
-                lastDirection = Direction.CENTER;
-                break;
+                direction = me.directionTo(dest);
+                // if (clockwiseRotation) {
+                //     for (int i = 0; i < 7; i++) {
+                //         direction = direction.rotateLeft();
+                //         int f = bug2f(rc, me, direction, lastDirection, false);
+                //         if (f == 1) {
+                //             lastDirection = direction;
+                //             moved = true;
+                //             break;
+                //         } else if (f == 2) {
+                //             lastDirection = Direction.CENTER;
+                //             clockwiseRotation = !clockwiseRotation;
+                //             moved = true;
+                //             break;
+                //         }
+                //     }
+                // } else {
+                //     for (int i = 0; i < 7; i++) {
+                //         direction = direction.rotateRight();
+                //         int f = bug2f(rc, me, direction, lastDirection, false);
+                //         if (f == 1) {
+                //             lastDirection = direction;
+                //             moved = true;
+                //             break;
+                //         } else if (f == 2) {
+                //             lastDirection = Direction.CENTER;
+                //             clockwiseRotation = !clockwiseRotation;
+                //             moved = true;
+                //             break;
+                //         }
+                //     }
+                // }
+                if (moved == false) {
+                    lastDirection = Direction.CENTER;
+                    break;
+                }
             }
         }
         indicatorString.append("BUG-LD=" + DIRABBREV[lastDirection.getDirectionOrderNum()] + "; BUG-CW=" + clockwiseRotation + "; ");
@@ -544,7 +607,7 @@ public class Motion {
         return new Direction[] { lastDirection, null };
     }
 
-    protected static Direction[] bug2retreat(RobotController rc, MapLocation dest, Direction lastDirection, boolean clockwiseRotation, RobotInfo[] friendlyRobotInfo, StringBuilder indicatorString) throws GameActionException {
+    protected static Direction[] bug2retreat(RobotController rc, MapLocation dest, Direction lastDirection, boolean clockwiseRotation, boolean avoidClouds, RobotInfo[] friendlyRobotInfo, StringBuilder indicatorString) throws GameActionException {
         boolean oldClockwiseRotation = clockwiseRotation;
         while (rc.isMovementReady()) {
             MapLocation me = rc.getLocation();
@@ -578,7 +641,7 @@ public class Motion {
                 }
             }
             boolean moved = false;
-            if (rc.canMove(direction) && rc.senseMapInfo(me.translate(direction.dx, direction.dy)).getCurrentDirection() != direction.opposite()) {
+            if (rc.canMove(direction) && lastDirection != direction.opposite() && rc.senseMapInfo(me.add(direction)).getCurrentDirection() != direction.opposite()) {
                 boolean touchingTheWallBefore = false;
                 for (int i = -1; i <= 1; i++) {
                     for (int j = -1; j <= 1; j++) {
@@ -613,7 +676,7 @@ public class Motion {
             if (clockwiseRotation) {
                 for (int i = 0; i < 7; i++) {
                     direction = direction.rotateLeft();
-                    int f = bug2r(rc, me, direction);
+                    int f = bug2r(rc, me, direction, avoidClouds);
                     if (f == 1) {
                         lastDirection = direction;
                         moved = true;
@@ -628,7 +691,7 @@ public class Motion {
             } else {
                 for (int i = 0; i < 7; i++) {
                     direction = direction.rotateRight();
-                    int f = bug2r(rc, me, direction);
+                    int f = bug2r(rc, me, direction, avoidClouds);
                     if (f == 1) {
                         lastDirection = direction;
                         moved = true;
@@ -641,9 +704,44 @@ public class Motion {
                     }
                 }
             }
+            
             if (moved == false) {
-                lastDirection = Direction.CENTER;
-                break;
+                direction = me.directionTo(dest);
+                // if (clockwiseRotation) {
+                //     for (int i = 0; i < 7; i++) {
+                //         direction = direction.rotateLeft();
+                //         int f = bug2r(rc, me, direction, false);
+                //         if (f == 1) {
+                //             lastDirection = direction;
+                //             moved = true;
+                //             break;
+                //         } else if (f == 2) {
+                //             lastDirection = Direction.CENTER;
+                //             clockwiseRotation = !clockwiseRotation;
+                //             moved = true;
+                //             break;
+                //         }
+                //     }
+                // } else {
+                //     for (int i = 0; i < 7; i++) {
+                //         direction = direction.rotateRight();
+                //         int f = bug2r(rc, me, direction, false);
+                //         if (f == 1) {
+                //             lastDirection = direction;
+                //             moved = true;
+                //             break;
+                //         } else if (f == 2) {
+                //             lastDirection = Direction.CENTER;
+                //             clockwiseRotation = !clockwiseRotation;
+                //             moved = true;
+                //             break;
+                //         }
+                //     }
+                // }
+                if (moved == false) {
+                    lastDirection = Direction.CENTER;
+                    break;
+                }
             }
         }
         indicatorString.append("BUG-LD=" + DIRABBREV[lastDirection.getDirectionOrderNum()] + "; BUG-CW=" + clockwiseRotation + "; ");
@@ -653,22 +751,28 @@ public class Motion {
         return new Direction[] { lastDirection, null };
     }
 
-    private static int bug2f(RobotController rc, MapLocation me, Direction direction, Direction lastDirection) throws GameActionException {
-        if (rc.canMove(direction) && lastDirection != direction.opposite() && rc.senseMapInfo(me.translate(direction.dx, direction.dy)).getCurrentDirection() != direction.opposite()) {
+    private static int bug2f(RobotController rc, MapLocation me, Direction direction, Direction lastDirection, boolean avoidClouds) throws GameActionException {
+        if (avoidClouds && rc.senseCloud(rc.getLocation().add(direction))) {
+            return 0;
+        }
+        if (rc.canMove(direction) && lastDirection != direction.opposite() && rc.senseMapInfo(me.add(direction)).getCurrentDirection() != direction.opposite()) {
             rc.move(direction);
             return 1;
         }
-        if (!rc.onTheMap(rc.getLocation().translate(direction.dx, direction.dy))) {
+        if (!rc.onTheMap(rc.getLocation().add(direction))) {
             return 2;
         }
         return 0;
     }
-    private static int bug2r(RobotController rc, MapLocation me, Direction direction) throws GameActionException {
-        if (rc.canMove(direction) && rc.senseMapInfo(me.translate(direction.dx, direction.dy)).getCurrentDirection() != direction.opposite()) {
+    private static int bug2r(RobotController rc, MapLocation me, Direction direction, boolean avoidClouds) throws GameActionException {
+        if (avoidClouds && rc.senseCloud(rc.getLocation().add(direction))) {
+            return 0;
+        }
+        if (rc.canMove(direction) && rc.senseMapInfo(me.add(direction)).getCurrentDirection() != direction.opposite()) {
             rc.move(direction);
             return 1;
         }
-        if (!rc.onTheMap(rc.getLocation().translate(direction.dx, direction.dy))) {
+        if (!rc.onTheMap(rc.getLocation().add(direction))) {
             return 2;
         }
         return 0;

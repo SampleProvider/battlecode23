@@ -4,9 +4,9 @@ import battlecode.common.*;
 
 public strictfp class StoredLocations {
     protected RobotController rc;
-
+    
     public static final int FULL_WELL_TIME = 100;
-
+    
     public static final int MIN_EXISTING_DISTANCE_SQUARED = 16;
 
     protected boolean detectedNewLocations = false;
