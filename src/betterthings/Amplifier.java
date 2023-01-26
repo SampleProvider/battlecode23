@@ -85,6 +85,14 @@ public strictfp class Amplifier {
                 if (isRandomExplorer) {
                     updateRandomExploreLocation();
                     if (randomExploreLocation != null) {
+                        if (rc.canSenseLocation(randomExploreLocation) && !rc.sensePassability(randomExploreLocation)) {
+                            randomExploreLocation = null;
+                            updateRandomExploreLocation();
+                            if (randomExploreLocation == null) {
+                                indicatorString.append("RAND; ");
+                                Motion.moveRandomly(rc);
+                            }
+                        }
                         indicatorString.append("EXPL-" + randomExploreLocation.toString() + "; ");
                         Direction[] bug2array = Motion.bug2(rc, randomExploreLocation, lastDirection, clockwiseRotation, false, indicatorString);
                         lastDirection = bug2array[0];

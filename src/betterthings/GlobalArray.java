@@ -82,8 +82,11 @@ public strictfp class GlobalArray {
     }
 
     public static void storeHeadquarters(HeadQuarters hq) throws GameActionException {
-        int adequateResources = (((hq.adamantium - hq.lastAdamantium) >= 0 && (hq.mana - hq.lastMana) >= 0) ? 1 : 0);
-        hq.rc.writeSharedArray(hq.hqIndex, (adequateResources << 13) | intifyLocation(hq.me));
+        hq.rc.writeSharedArray(hq.hqIndex, (hq.tooManyBots ? 0b1000000000000 : 0) | intifyLocation(hq.me));
+    }
+
+    public static boolean hasTooManyBots(int n) {
+        return n >> 13 == 1;
     }
 
     public static MapLocation[] getKnownHeadQuarterLocations(RobotController rc) throws GameActionException {

@@ -57,8 +57,9 @@ public strictfp class Carrier {
     // 4 is pathfinding to island
     // 5 is retreat
     // 6 is explore
+    // 7 is attack (lol)
 
-    // new carrier strat? carrier stays away from crowded headquarters to let otehr carriers out
+    // carriers with non-prioritized resources (adamantium) will go and attack if headquarters si crowded
 
     private StringBuilder indicatorString = new StringBuilder();
 

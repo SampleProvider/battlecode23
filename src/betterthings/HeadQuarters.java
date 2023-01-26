@@ -21,6 +21,7 @@ public strictfp class HeadQuarters {
     private int amplifiers = 0;
     private int nearbyCarriers = 0;
     private int nearbyLaunchers = 0;
+    protected boolean tooManyBots = false;
 
     private int possibleSpawningLocations = 0;
 
@@ -150,6 +151,7 @@ public strictfp class HeadQuarters {
                         else if (r.getType() == RobotType.CARRIER)
                             nearbyCarriers++;
                     }
+                    tooManyBots = nearbyCarriers > 30;
                     indicatorString.append("C-L-A-NC-NL[" + carriers + ", " + launchers + ", " + amplifiers + ", " + nearbyCarriers + ", " + nearbyLaunchers + "]; ");
                 }
                 if (isPrimaryHQ) {
