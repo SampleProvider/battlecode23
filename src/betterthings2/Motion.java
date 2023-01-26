@@ -759,10 +759,12 @@ public class Motion {
         if (avoidClouds && rc.senseCloud(rc.getLocation().add(direction))) {
             return 0;
         }
-        Direction currentDirection = rc.senseMapInfo(me.add(direction)).getCurrentDirection();
-        if (rc.canMove(direction) && lastDirection != direction.opposite() && currentDirection != direction.opposite() && currentDirection != direction.opposite().rotateLeft() && currentDirection != direction.opposite().rotateRight()) {
-            rc.move(direction);
-            return 1;
+        if (rc.canMove(direction) && lastDirection != direction.opposite()) {
+            Direction currentDirection = rc.senseMapInfo(me.add(direction)).getCurrentDirection();
+            if (currentDirection != direction.opposite() && currentDirection != direction.opposite().rotateLeft() && currentDirection != direction.opposite().rotateRight()) {
+                rc.move(direction);
+                return 1;
+            }
         }
         if (!rc.onTheMap(rc.getLocation().add(direction))) {
             return 2;
@@ -773,10 +775,12 @@ public class Motion {
         if (avoidClouds && rc.senseCloud(rc.getLocation().add(direction))) {
             return 0;
         }
-        Direction currentDirection = rc.senseMapInfo(me.add(direction)).getCurrentDirection();
-        if (rc.canMove(direction) && currentDirection != direction.opposite() && currentDirection != direction.opposite().rotateLeft() && currentDirection != direction.opposite().rotateRight()) {
-            rc.move(direction);
-            return 1;
+        if (rc.canMove(direction)) {
+            Direction currentDirection = rc.senseMapInfo(me.add(direction)).getCurrentDirection();
+            if (currentDirection != direction.opposite() && currentDirection != direction.opposite().rotateLeft() && currentDirection != direction.opposite().rotateRight()) {
+                rc.move(direction);
+                return 1;
+            }
         }
         if (!rc.onTheMap(rc.getLocation().add(direction))) {
             return 2;
