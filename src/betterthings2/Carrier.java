@@ -419,7 +419,7 @@ public strictfp class Carrier {
         if (wellInfo.length > 0) {
             WellInfo prioritizedWellInfo = null;
             for (WellInfo w : wellInfo) {
-                if (testFullWell(w.getMapLocation())) {
+                if (testValidWell(w.getMapLocation())) {
                     storedLocations.storeWell(w);
                     if (prioritizedWell == null) {
                         prioritizedWellInfo = w;
@@ -453,13 +453,13 @@ public strictfp class Carrier {
                 continue;
             }
             if (prioritizedWell == null) {
-                if (testFullWell(m)) {
+                if (testValidWell(m)) {
                     prioritizedWell = m;
                 }
             }
             else if (prioritizedWell.distanceSquaredTo(me) > m
                     .distanceSquaredTo(me)) {
-                if (testFullWell(m)) {
+                if (testValidWell(m)) {
                     prioritizedWell = m;
                 }
             }
@@ -489,7 +489,16 @@ public strictfp class Carrier {
         }
     }
 
-    private boolean testFullWell(MapLocation well) throws GameActionException {
+    private boolean testValidWell(MapLocation well) throws GameActionException {
+        MapLocation[] opponentLocations = GlobalArray.getKnownOpponentLocations(rc);
+        for (MapLocation m : opponentLocations) {
+            if (m == null) {
+                continue;
+            }
+            if (m.distanceSquaredTo(well) <= StoredLocations.MIN_EXISTING_DISTANCE_SQUARED) {
+                return false;
+            }
+        }
         int emptySpots = 0;
         int fullSpots = 0;
         for (Direction d : DIRECTIONS) {
