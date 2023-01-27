@@ -644,38 +644,40 @@ public class Motion {
                 }
             }
             boolean moved = false;
-            Direction currentDirection = rc.senseMapInfo(me.add(direction)).getCurrentDirection();
-            if (rc.canMove(direction) && lastDirection != direction.opposite() && currentDirection != direction.opposite() && currentDirection != direction.opposite().rotateLeft() && currentDirection != direction.opposite().rotateRight()) {
-                boolean touchingTheWallBefore = false;
-                for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        if (i == 0 && j == 0) {
-                            continue;
-                        }
-                        MapLocation translatedMapLocation = me.translate(i, j);
-                        if (rc.onTheMap(translatedMapLocation)) {
-                            if (rc.sensePassability(translatedMapLocation) == false || rc.senseRobotAtLocation(translatedMapLocation) != null) {
-                                touchingTheWallBefore = true;
+            if (rc.onTheMap(me.add(direction))) {
+                Direction currentDirection = rc.senseMapInfo(me.add(direction)).getCurrentDirection();
+                if (rc.canMove(direction) && lastDirection != direction.opposite() && currentDirection != direction.opposite() && currentDirection != direction.opposite().rotateLeft() && currentDirection != direction.opposite().rotateRight()) {
+                    boolean touchingTheWallBefore = false;
+                    for (int i = -1; i <= 1; i++) {
+                        for (int j = -1; j <= 1; j++) {
+                            if (i == 0 && j == 0) {
+                                continue;
+                            }
+                            MapLocation translatedMapLocation = me.translate(i, j);
+                            if (rc.onTheMap(translatedMapLocation)) {
+                                if (rc.sensePassability(translatedMapLocation) == false || rc.senseRobotAtLocation(translatedMapLocation) != null) {
+                                    touchingTheWallBefore = true;
+                                }
                             }
                         }
                     }
+                    rc.move(direction);
+                    lastDirection = direction;
+                    // boolean touchingTheWallAfter = false;
+                    // for (int i = -1;i <= 1;i++) {
+                    //     for (int j = -1;j <= 1;j++) {
+                    //         if (rc.onTheMap(me.translate(i,j))) {
+                    //             if (rc.sensePassability(me.translate(i,j)) == false) {
+                    //                 touchingTheWallAfter = true;
+                    //             }
+                    //         }
+                    //     }
+                    // }
+                    if (touchingTheWallBefore) {
+                        clockwiseRotation = !clockwiseRotation;
+                    }
+                    continue;
                 }
-                rc.move(direction);
-                lastDirection = direction;
-                // boolean touchingTheWallAfter = false;
-                // for (int i = -1;i <= 1;i++) {
-                //     for (int j = -1;j <= 1;j++) {
-                //         if (rc.onTheMap(me.translate(i,j))) {
-                //             if (rc.sensePassability(me.translate(i,j)) == false) {
-                //                 touchingTheWallAfter = true;
-                //             }
-                //         }
-                //     }
-                // }
-                if (touchingTheWallBefore) {
-                    clockwiseRotation = !clockwiseRotation;
-                }
-                continue;
             }
             if (clockwiseRotation) {
                 for (int i = 0; i < 7; i++) {
