@@ -11,17 +11,6 @@ public strictfp class Carrier {
 
     private Random rng = new Random(2023);
 
-    private static final Direction[] DIRECTIONS = {
-            Direction.SOUTHWEST,
-            Direction.SOUTH,
-            Direction.SOUTHEAST,
-            Direction.WEST,
-            Direction.EAST,
-            Direction.NORTHWEST,
-            Direction.NORTH,
-            Direction.NORTHEAST,
-    };
-
     private ResourceType prioritizedResourceType = ResourceType.MANA;
     private int adamantiumAmount = 0;
     private int manaAmount = 0;
@@ -501,7 +490,7 @@ public strictfp class Carrier {
     private boolean testFullWell(MapLocation well) throws GameActionException {
         int emptySpots = 0;
         int fullSpots = 0;
-        for (Direction d : DIRECTIONS) {
+        for (Direction d : StoredLocations.DIRECTIONS) {
             MapLocation adjSpot = well.add(d);
             if (!rc.canSenseLocation(adjSpot)) {
                 continue;
