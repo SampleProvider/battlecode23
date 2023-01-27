@@ -330,6 +330,7 @@ public strictfp class Carrier {
                     } else if (GlobalArray.DEBUG_INFO > 0) {
                         rc.setIndicatorDot(me, 75, 125, 255);
                     }
+                    return;
                 }
             }
             updateRandomExploreLocation();
