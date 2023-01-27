@@ -1,4 +1,4 @@
-package betterthings;
+package SPAARK;
 
 import battlecode.common.*;
 import java.util.Random;
@@ -100,7 +100,7 @@ public strictfp class Amplifier {
 
                 RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                 RobotInfo robot = Attack.senseOpponent(rc, robotInfo);
-                if (robot != null && robot.getType() != RobotType.HEADQUARTERS && robot.getType() != RobotType.CARRIER) {
+                if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
                     storedLocations.storeOpponentLocation(robot.getLocation());
                     state = 2;
                 }
@@ -109,7 +109,7 @@ public strictfp class Amplifier {
                 
                 robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                 robot = Attack.senseOpponent(rc, robotInfo);
-                if (robot != null && robot.getType() != RobotType.HEADQUARTERS && robot.getType() != RobotType.CARRIER) {
+                if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
                     storedLocations.storeOpponentLocation(robot.getLocation());
                     state = 2;
                 }

@@ -1,4 +1,4 @@
-package SPAARK;
+package betterthings2;
 
 import battlecode.common.*;
 
@@ -14,13 +14,13 @@ public strictfp class HeadQuarters {
 
     private int anchorCooldown = 100;
     private int carrierCooldown = 0;
+    private int launcherCooldown = 0;
     private int amplifierCooldown = 0;
     private int carriers = 0;
     private int launchers = 0;
     private int amplifiers = 0;
     private int nearbyCarriers = 0;
     private int nearbyLaunchers = 0;
-    protected boolean tooManyBots = false;
 
     private int possibleSpawningLocations = 0;
 
@@ -150,7 +150,6 @@ public strictfp class HeadQuarters {
                         else if (r.getType() == RobotType.CARRIER)
                             nearbyCarriers++;
                     }
-                    tooManyBots = nearbyCarriers > 30;
                     indicatorString.append("C-L-A-NC-NL[" + carriers + ", " + launchers + ", " + amplifiers + ", " + nearbyCarriers + ", " + nearbyLaunchers + "]; ");
                 }
                 if (isPrimaryHQ) {
@@ -230,8 +229,8 @@ public strictfp class HeadQuarters {
         int launchersProduced = 0;
         MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
         boolean canProduceAnchor = islands.length > 0;
-        if (anchorCooldown <= 0 && rc.getNumAnchors(Anchor.STANDARD) == 0 && canProduceAnchor) {
-            if (adamantium > 100 && mana > 100) {
+        if (anchorCooldown <= 0 && nearbyLaunchers > 5 && rc.getNumAnchors(Anchor.STANDARD) == 0 && canProduceAnchor) {
+            if (adamantium > Anchor.STANDARD.adamantiumCost && mana > Anchor.STANDARD.manaCost) {
                 rc.buildAnchor(Anchor.STANDARD);
                 indicatorString.append("P ANC; ");
                 anchorCooldown = 50;
@@ -240,11 +239,13 @@ public strictfp class HeadQuarters {
                 while (rc.isActionReady()) {
                     MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
                     MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
-                    if (mana > 160 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
+                    if (mana > Anchor.STANDARD.manaCost + 60 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
+                            && (launchers < 40 * hqCount * mapSizeFactor || nearbyLaunchers < 15 || launcherCooldown <= 0) && possibleSpawningLocations >= 3) {
                         rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                         launchersProduced++;
                         if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                    } else if (adamantium > 150 && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
+                        launcherCooldown = 5;
+                    } else if (adamantium > Anchor.STANDARD.adamantiumCost + 50 && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
                             && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 4) {
                         rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                         carriersProduced++;
@@ -266,16 +267,18 @@ public strictfp class HeadQuarters {
                     carrierCooldown = 50;
                 } else if (optimalSpawningLocation != null && possibleSpawningLocations >= 2) {
                     if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
-                            && launchers > 10 && carriers > 0 && amplifiers < 3 * mapSizeFactor && amplifierCooldown <= 0) {
+                            && launchers > 10 && carriers > 0 && amplifiers < 5 && amplifierCooldown <= 0) {
                         rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                         indicatorString.append("P AMP; ");
                         if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                         amplifierCooldown = 30;
                         amplifiers = Integer.MAX_VALUE;
-                    } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
+                    } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
+                            && (launchers < 40 * hqCount * mapSizeFactor || nearbyLaunchers < 15 || launcherCooldown <= 0)) {
                         rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                         launchersProduced++;
                         if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                        launcherCooldown = 0;
                     } else break;
                 } else break;
             }
@@ -286,6 +289,7 @@ public strictfp class HeadQuarters {
             indicatorString.append("P LAU-x" + launchersProduced + "; ");
         anchorCooldown--;
         carrierCooldown--;
+        launcherCooldown--;
         amplifierCooldown--;
     }
 

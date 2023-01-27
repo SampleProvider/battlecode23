@@ -1,4 +1,4 @@
-package SPAARK;
+package betterthings2;
 
 import battlecode.common.*;
 import java.util.Random;
@@ -19,6 +19,10 @@ public strictfp class Launcher {
 
     private RobotInfo opponent;
 
+    private RobotType prioritizedRobotType = RobotType.LAUNCHER;
+    private int amplifierSensingRange = 25;
+    private int amplifierCircleRange = 7;
+
     private int launcherCircleRange = 2;
 
     private int headquarterCircleRange = 16;
@@ -29,6 +33,8 @@ public strictfp class Launcher {
     private MapLocation lastLauncherLocation;
 
     protected int amplifierID = -1;
+
+    private MapLocation prioritizedAmplifierLocation;
 
     private boolean clockwiseRotation = true;
     private Direction lastDirection = Direction.CENTER;
@@ -81,7 +87,7 @@ public strictfp class Launcher {
                 updatePrioritizedHeadquarters();
 
                 RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                RobotInfo robot = Attack.attack(rc, robotInfo, true, indicatorString);
+                RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, prioritizedRobotType, true, indicatorString);
                 robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
         
                 if (robot == null) {
@@ -110,8 +116,8 @@ public strictfp class Launcher {
 
         RobotInfo[] friendlyRobotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam());
         RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-        RobotInfo robot = Attack.attack(rc, robotInfo, true, indicatorString);
-        if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
+        RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, prioritizedRobotType, true, indicatorString);
+        if (robot != null && robot.getType() == RobotType.LAUNCHER) {
             Direction[] bug2array = Motion.bug2retreat(rc, robot.getLocation(), lastDirection, clockwiseRotation, false, friendlyRobotInfo, indicatorString);
             lastDirection = bug2array[0];
             if (bug2array[1] == Direction.CENTER) {
@@ -140,7 +146,7 @@ public strictfp class Launcher {
 
         if (rc.getHealth() != lastHealth) {
             // aa i got hit
-            if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
+            if (robot != null && robot.getType() == RobotType.LAUNCHER) {
                 Direction[] bug2array = Motion.bug2retreat(rc, robot.getLocation(), lastDirection, clockwiseRotation, true, friendlyRobotInfo, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
@@ -470,6 +476,29 @@ public strictfp class Launcher {
                 rc.setIndicatorDot(me, 75, 255, 75);
             }
         }
+    }
+
+    private boolean detectAmplifier() throws GameActionException {
+        // prioritizedAmplifierLocation = null;
+        // for (int a = 0; a < GlobalArray.AMPLIFIERS_LENGTH; a++) {
+        //     int amplifierArray = rc.readSharedArray(GlobalArray.AMPLIFIERS + a);
+        //     if (amplifierArray != 0) {
+        //         MapLocation amplifierLocation = GlobalArray.parseLocation(amplifierArray);
+        //         if (amplifierLocation.distanceSquaredTo(me) < amplifierSensingRange) {
+        //             if (prioritizedAmplifierLocation == null) {
+        //                 prioritizedAmplifierLocation = amplifierLocation;
+        //                 amplifierID = GlobalArray.AMPLIFIERS + a;
+        //             } else if (amplifierLocation.distanceSquaredTo(me) < prioritizedAmplifierLocation.distanceSquaredTo(me)) {
+        //                 prioritizedAmplifierLocation = amplifierLocation;
+        //                 amplifierID = GlobalArray.AMPLIFIERS + a;
+        //             }
+        //         }
+        //     }
+        // }
+        // if (prioritizedAmplifierLocation != null) {
+        //     return true;
+        // }
+        return false;
     }
 
     private void updatePrioritizedHeadquarters() throws GameActionException {

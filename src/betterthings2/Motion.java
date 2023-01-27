@@ -1,4 +1,4 @@
-package SPAARK;
+package betterthings2;
 
 import battlecode.common.*;
 
@@ -422,6 +422,70 @@ public class Motion {
             }
         }
         return clockwiseRotation;
+    }
+
+    public static void swarm(RobotController rc, MapLocation me, RobotType robotType) throws GameActionException {
+        RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+        if (robotInfo.length > 0) {
+            RobotInfo prioritizedRobotInfo = null;
+            for (RobotInfo w : robotInfo) {
+                if (w.getType() != robotType) {
+                    continue;
+                }
+                if (prioritizedRobotInfo == null) {
+                    prioritizedRobotInfo = w;
+                    continue;
+                }
+                if (prioritizedRobotInfo.ID > w.ID) {
+                    prioritizedRobotInfo = w;
+                }
+            }
+            Direction direction = null;
+            if (prioritizedRobotInfo != null) {
+                direction = me.directionTo(prioritizedRobotInfo.getLocation());
+            }
+            if (direction != null) {
+                while (rc.isMovementReady()) {
+                    if (rc.canMove(direction)) {
+                        rc.move(direction);
+                        continue;
+                    }
+                    if (rc.canMove(direction.rotateLeft())) {
+                        rc.move(direction.rotateLeft());
+                        continue;
+                    }
+                    if (rc.canMove(direction.rotateRight())) {
+                        rc.move(direction.rotateRight());
+                        continue;
+                    }
+                    if (rc.canMove(direction.rotateLeft().rotateLeft())) {
+                        rc.move(direction.rotateLeft().rotateLeft());
+                        continue;
+                    }
+                    if (rc.canMove(direction.rotateRight().rotateRight())) {
+                        rc.move(direction.rotateRight().rotateRight());
+                        continue;
+                    }
+                    if (rc.canMove(direction.rotateLeft().rotateLeft().rotateLeft())) {
+                        rc.move(direction.rotateLeft().rotateLeft().rotateLeft());
+                        continue;
+                    }
+                    if (rc.canMove(direction.rotateRight().rotateRight().rotateRight())) {
+                        rc.move(direction.rotateRight().rotateRight().rotateRight());
+                        continue;
+                    }
+                    if (rc.canMove(direction.opposite())) {
+                        rc.move(direction.opposite());
+                        continue;
+                    }
+                    break;
+                }
+            } else {
+                moveRandomly(rc);
+            }
+        } else {
+            // moveRandomly(rc);
+        }
     }
     
     protected static Direction[] bug2(RobotController rc, MapLocation dest, Direction lastDirection, boolean clockwiseRotation, boolean avoidClouds, StringBuilder indicatorString) throws GameActionException {
