@@ -262,7 +262,7 @@ public strictfp class Amplifier {
                     clockwiseRotation = !clockwiseRotation;
                 }
                 me = rc.getLocation();
-                if (GlobalArray.DEBUG_INFO >= 4) {
+                if (GlobalArray.DEBUG_INFO >= 2) {
                     rc.setIndicatorLine(me, prioritizedLauncherLocation, 75, 255, 255);
                 } else if (GlobalArray.DEBUG_INFO > 0) {
                     rc.setIndicatorDot(me, 75, 255, 255);

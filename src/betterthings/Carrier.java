@@ -307,24 +307,6 @@ public strictfp class Carrier {
                 rc.setIndicatorDot(me, 175, 255, 0);
             }
         } else if (state == 6) {
-            updatePrioritizedWell();
-            if (prioritizedWell != null) {
-                state = 1;
-                indicatorString.append("PATH->WELL; ");
-                Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, true, indicatorString);
-                lastDirection = bug2array[0];
-                if (bug2array[1] == Direction.CENTER) {
-                    clockwiseRotation = !clockwiseRotation;
-                }
-                attemptCollection();
-                me = rc.getLocation();
-                if (GlobalArray.DEBUG_INFO >= 4) {
-                    rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
-                } else if (GlobalArray.DEBUG_INFO > 0) {
-                    rc.setIndicatorDot(me, 255, 75, 75);
-                }
-                return;
-            }
             if (rc.getAnchor() != null) {
                 updatePrioritizedIsland();
                 if (prioritizedIslandLocation != null) {
@@ -346,6 +328,25 @@ public strictfp class Carrier {
                         rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 125, 255);
                     } else if (GlobalArray.DEBUG_INFO > 0) {
                         rc.setIndicatorDot(me, 75, 125, 255);
+                    }
+                    return;
+                }
+            } else {
+                updatePrioritizedWell();
+                if (prioritizedWell != null) {
+                    state = 1;
+                    indicatorString.append("PATH->WELL; ");
+                    Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, true, indicatorString);
+                    lastDirection = bug2array[0];
+                    if (bug2array[1] == Direction.CENTER) {
+                        clockwiseRotation = !clockwiseRotation;
+                    }
+                    attemptCollection();
+                    me = rc.getLocation();
+                    if (GlobalArray.DEBUG_INFO >= 4) {
+                        rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
+                    } else if (GlobalArray.DEBUG_INFO > 0) {
+                        rc.setIndicatorDot(me, 255, 75, 75);
                     }
                     return;
                 }
