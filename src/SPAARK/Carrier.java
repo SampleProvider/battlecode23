@@ -77,8 +77,7 @@ public strictfp class Carrier {
             }
             lastHealth = rc.getHealth();
             storedLocations = new StoredLocations(rc, headquarters);
-            rng = new Random(rc.getRoundNum());
-            if (round % 3 == 2) state = 6;
+            rng = new Random(rc.getID());
         } catch (GameActionException e) {
             System.out.println("GameActionException at Carrier constructor");
             e.printStackTrace();
@@ -165,7 +164,9 @@ public strictfp class Carrier {
             if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD) && islands.length > 0) {
                 rc.takeAnchor(prioritizedHeadquarters, Anchor.STANDARD);
             }
-            // put anchor back?
+            if (rc.canReturnAnchor(prioritizedHeadquarters) && islands.length == 0) {
+                rc.returnAnchor(prioritizedHeadquarters);
+            }
 
             if (rc.getAnchor() != null) {
                 state = 4;
@@ -261,6 +262,11 @@ public strictfp class Carrier {
                 state = 0;
             }
         } else if (state == 4) {
+            MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
+            if (islands.length == 0) {
+                state = 3;
+                returningToStorePOI = true;
+            }
             updatePrioritizedIsland();
             if (prioritizedIslandLocation != null) {
                 Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, false, indicatorString);
@@ -327,6 +333,24 @@ public strictfp class Carrier {
                         rc.setIndicatorDot(me, 75, 125, 255);
                     }
                 }
+            }
+            updatePrioritizedWell();
+            if (prioritizedWell != null) {
+                state = 1;
+                indicatorString.append("PATH->WELL; ");
+                Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, true, indicatorString);
+                lastDirection = bug2array[0];
+                if (bug2array[1] == Direction.CENTER) {
+                    clockwiseRotation = !clockwiseRotation;
+                }
+                attemptCollection();
+                me = rc.getLocation();
+                if (GlobalArray.DEBUG_INFO >= 4) {
+                    rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
+                } else if (GlobalArray.DEBUG_INFO > 0) {
+                    rc.setIndicatorDot(me, 255, 75, 75);
+                }
+                return;
             }
             updateRandomExploreLocation();
             if (randomExploreLocation != null) {
