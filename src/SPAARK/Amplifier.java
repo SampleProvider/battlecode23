@@ -11,8 +11,6 @@ public strictfp class Amplifier {
 
     private Random rng = new Random(2023);
 
-    private RobotType prioritizedRobotType = RobotType.LAUNCHER;
-
     private MapLocation[] headquarters;
     private MapLocation prioritizedHeadquarters;
     private int prioritizedHeadquarterIndex;
@@ -100,27 +98,18 @@ public strictfp class Amplifier {
                 }
                 lastHealth = rc.getHealth();
 
-                RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                RobotInfo robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
-                if (robot == null) {
-                    robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
-                    robot = Attack.senseOpponent(rc, me, robotInfo);
-                }
-                if (robot != null && robot.getType() == prioritizedRobotType) {
+                RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+                RobotInfo robot = Attack.senseOpponent(rc, robotInfo);
+                if (robot != null && robot.getType() != RobotType.HEADQUARTERS && robot.getType() != RobotType.CARRIER) {
                     storedLocations.storeOpponentLocation(robot.getLocation());
                     state = 2;
                 }
 
                 runState();
                 
-                me = rc.getLocation();
-                robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
-                if (robot == null) {
-                    robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
-                    robot = Attack.senseOpponent(rc, me, robotInfo);
-                }
-                if (robot != null) {
+                robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+                robot = Attack.senseOpponent(rc, robotInfo);
+                if (robot != null && robot.getType() != RobotType.HEADQUARTERS && robot.getType() != RobotType.CARRIER) {
                     storedLocations.storeOpponentLocation(robot.getLocation());
                     state = 2;
                 }

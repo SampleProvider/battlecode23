@@ -36,7 +36,7 @@ public strictfp class GlobalArray {
     // 2 - dots + carrier random explore + carrier island target + amplifier random explore + amplifier targets
     // 3 - dots + carrier random explore + carrier island target + carrier collect + amplifier random explore + amplifier targets + launcher swarms
     // 4 - everything
-    public static final int DEBUG_INFO = 0;
+    public static final int DEBUG_INFO = 4;
 
     private static final ResourceType[] resourceTypes = new ResourceType[] {
             ResourceType.NO_RESOURCE,
@@ -82,8 +82,11 @@ public strictfp class GlobalArray {
     }
 
     public static void storeHeadquarters(HeadQuarters hq) throws GameActionException {
-        int adequateResources = (((hq.adamantium - hq.lastAdamantium) >= 0 && (hq.mana - hq.lastMana) >= 0) ? 1 : 0);
-        hq.rc.writeSharedArray(hq.hqIndex, (adequateResources << 13) | intifyLocation(hq.me));
+        hq.rc.writeSharedArray(hq.hqIndex, (hq.tooManyBots ? 0b1000000000000 : 0) | intifyLocation(hq.me));
+    }
+
+    public static boolean hasTooManyBots(int n) {
+        return n >> 13 == 1;
     }
 
     public static MapLocation[] getKnownHeadQuarterLocations(RobotController rc) throws GameActionException {
@@ -197,6 +200,17 @@ public strictfp class GlobalArray {
             }
         }
         return false;
+    }
+
+    public static MapLocation[] getKnownIslandLocations(RobotController rc) throws GameActionException {
+        MapLocation[] islandLocations = new MapLocation[ISLANDS_LENGTH];
+        for (int i = ISLANDS; i < ISLANDS + ISLANDS_LENGTH; i++) {
+            int arrayIslandLocation = rc.readSharedArray(i);
+            if (hasLocation(arrayIslandLocation)) {
+                islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
+            }
+        }
+        return islandLocations;
     }
 
     public static MapLocation[] getKnownIslandLocations(RobotController rc, Team team) throws GameActionException {

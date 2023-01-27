@@ -4,12 +4,10 @@ import battlecode.common.*;
 
 public strictfp class StoredLocations {
     protected RobotController rc;
-
+    
     public static final int FULL_WELL_TIME = 100;
-
+    
     public static final int MIN_EXISTING_DISTANCE_SQUARED = 16;
-
-    protected boolean detectedNewLocations = false;
 
     protected MapLocation[] headquarters = new MapLocation[0];
 
@@ -31,11 +29,10 @@ public strictfp class StoredLocations {
         this.headquarters = headquarters;
     }
 
-    public void writeToGlobalArray() throws GameActionException {
+    public boolean writeToGlobalArray() throws GameActionException {
         if (!rc.canWriteSharedArray(0, 0)) {
-            return;
+            return false;
         }
-        detectedNewLocations = false;
         if (rc.getType() == RobotType.CARRIER) {
             rc.writeSharedArray(GlobalArray.CARRIERCOUNT, rc.readSharedArray(GlobalArray.CARRIERCOUNT) + 1);
         } else if (rc.getType() == RobotType.LAUNCHER) {
@@ -73,6 +70,37 @@ public strictfp class StoredLocations {
                 }
             }
         }
+        return true;
+    }
+
+    public boolean foundNewLocations() throws GameActionException {
+        MapLocation[] wellLocations = GlobalArray.getKnownWellLocations(rc);
+        for (MapLocation m : wellLocations) {
+            if (m == null) continue;
+            boolean found = true;
+            for (WellInfo w : wells) {
+                if (w == null ) continue;
+                if (w.getMapLocation().equals(m)) {
+                    found = false;
+                    break;
+                };
+            }
+            if (found) return true;
+        }
+        MapLocation[] islandLocations = GlobalArray.getKnownIslandLocations(rc);
+        for (MapLocation m : islandLocations) {
+            if (m == null) continue;
+            boolean found = true;
+            for (MapLocation m2 : islands) {
+                if (m2 == null) continue;
+                if (m2.equals(m)) {
+                    found = false;
+                    break;
+                };
+            }
+            if (found) return true;
+        }
+        return false;
     }
 
     public boolean storeWell(WellInfo w) {
@@ -123,7 +151,7 @@ public strictfp class StoredLocations {
     public void detectWells() {
         WellInfo[] wellInfo = rc.senseNearbyWells();
         for (WellInfo w : wellInfo) {
-            detectedNewLocations = storeWell(w) || detectedNewLocations;
+            storeWell(w);
         }
     }
 
@@ -147,9 +175,9 @@ public strictfp class StoredLocations {
     }
 
     public void detectOpponentLocations() throws GameActionException {
-        RobotInfo robot = Attack.senseOpponent(rc, rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent()));
+        RobotInfo robot = Attack.senseOpponent(rc, rc.getLocation(), rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent()));
         if (robot != null) {
-            detectedNewLocations = storeOpponentLocation(robot.getLocation()) || detectedNewLocations;
+            storeOpponentLocation(robot.getLocation());
         }
     }
 
@@ -193,7 +221,7 @@ public strictfp class StoredLocations {
         int[] islands = rc.senseNearbyIslands();
         for (int id : islands) {
             MapLocation[] islandLocations = rc.senseNearbyIslandLocations(id);
-            detectedNewLocations = storeIslandLocation(islandLocations[0], id) || detectedNewLocations;
+            storeIslandLocation(islandLocations[0], id);
         }
     }
 }

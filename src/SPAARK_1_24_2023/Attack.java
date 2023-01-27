@@ -68,4 +68,8 @@ public class Attack {
             return null;
         }
     }
+
+    // protected static int prioritizedRobot(RobotType robotType) {
+
+    // }
 }
