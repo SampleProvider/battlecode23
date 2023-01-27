@@ -14,7 +14,6 @@ public strictfp class HeadQuarters {
 
     private int anchorCooldown = 100;
     private int carrierCooldown = 0;
-    private int launcherCooldown = 0;
     private int amplifierCooldown = 0;
     private int carriers = 0;
     private int launchers = 0;
@@ -168,7 +167,7 @@ public strictfp class HeadQuarters {
                 GlobalArray.storeHeadquarters(this);
 
                 // prioritized resources
-                double deviation = ((mana + adamantium) != 0) ? (mana - (adamantium * 2.5)) / (mana + (adamantium * 2.5)) : 0;
+                double deviation = ((mana + adamantium) != 0) ? (mana - (adamantium * 10.0)) / (mana + (adamantium * 10.0)) : 0;
                 if (Math.abs(deviation) < 0.1) {
                     globalArray.setPrioritizedResource(ResourceType.NO_RESOURCE, hqIndex);
                     indicatorString.append("PR=NO; ");
@@ -241,12 +240,10 @@ public strictfp class HeadQuarters {
                 while (rc.isActionReady()) {
                     MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
                     MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
-                    if (mana > 160 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
-                            && (launchers < 40 * hqCount * mapSizeFactor || nearbyLaunchers < 15 || launcherCooldown <= 0) && possibleSpawningLocations >= 3) {
+                    if (mana > 160 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
                         rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                         launchersProduced++;
                         if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                        launcherCooldown = 5;
                     } else if (adamantium > 150 && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
                             && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 4) {
                         rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
@@ -269,18 +266,16 @@ public strictfp class HeadQuarters {
                     carrierCooldown = 50;
                 } else if (optimalSpawningLocation != null && possibleSpawningLocations >= 2) {
                     if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
-                            && launchers > 10 && carriers > 0 && amplifiers < 5 && amplifierCooldown <= 0) {
+                            && launchers > 10 && carriers > 0 && amplifiers < 3 * mapSizeFactor && amplifierCooldown <= 0) {
                         rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                         indicatorString.append("P AMP; ");
                         if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                         amplifierCooldown = 30;
                         amplifiers = Integer.MAX_VALUE;
-                    } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
-                            && (launchers < 40 * hqCount * mapSizeFactor || nearbyLaunchers < 15 || launcherCooldown <= 0)) {
+                    } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
                         rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                         launchersProduced++;
                         if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                        launcherCooldown = 0;
                     } else break;
                 } else break;
             }
@@ -291,7 +286,6 @@ public strictfp class HeadQuarters {
             indicatorString.append("P LAU-x" + launchersProduced + "; ");
         anchorCooldown--;
         carrierCooldown--;
-        launcherCooldown--;
         amplifierCooldown--;
     }
 

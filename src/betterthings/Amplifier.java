@@ -68,7 +68,7 @@ public strictfp class Amplifier {
             // }
             storedLocations = new StoredLocations(rc, headquarters);
             rng = new Random(amplifierID);
-            isRandomExplorer = amplifierID % 2 == 0;
+            isRandomExplorer = amplifierID % 3 == 0;
             if (!isRandomExplorer) state = 1;
         } catch (GameActionException e) {
             System.out.println("GameActionException at Amplifier constructor");
@@ -195,7 +195,7 @@ public strictfp class Amplifier {
                 } else if (GlobalArray.DEBUG_INFO > 0) {
                     rc.setIndicatorDot(me, 75, 255, 255);
                 }
-            } else {
+            } else if (rng.nextBoolean()) {
                 // get island location from global array
                 MapLocation[] islandLocations = GlobalArray.getKnownIslandLocations(rc, rc.getTeam().opponent());
                 for (MapLocation m : islandLocations) {
@@ -225,6 +225,9 @@ public strictfp class Amplifier {
                 else {
                     Motion.spreadRandomly(rc, me);
                 }
+            } else {
+                state = 3;
+                runState();
             }
         } else if (state == 2) {
             updatePrioritizedHeadquarters();
@@ -245,6 +248,28 @@ public strictfp class Amplifier {
             }
         } else if (state == 3) {
             // follow le launcher
+            RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
+            MapLocation prioritizedLauncherLocation = null;
+            for (RobotInfo r : robots) {
+                if (r.getType() == RobotType.LAUNCHER) {
+                    prioritizedLauncherLocation = r.getLocation();
+                }
+            }
+            if (prioritizedLauncherLocation != null) {
+                Direction[] bug2array = Motion.bug2(rc, prioritizedLauncherLocation, lastDirection, clockwiseRotation, false, indicatorString);
+                lastDirection = bug2array[0];
+                if (bug2array[1] == Direction.CENTER) {
+                    clockwiseRotation = !clockwiseRotation;
+                }
+                me = rc.getLocation();
+                if (GlobalArray.DEBUG_INFO >= 4) {
+                    rc.setIndicatorLine(me, prioritizedLauncherLocation, 75, 255, 255);
+                } else if (GlobalArray.DEBUG_INFO > 0) {
+                    rc.setIndicatorDot(me, 75, 255, 255);
+                }
+            } else {
+                Motion.spreadRandomly(rc, me, prioritizedHeadquarters);
+            }
         }
     }
 

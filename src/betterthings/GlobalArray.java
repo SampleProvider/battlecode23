@@ -36,7 +36,7 @@ public strictfp class GlobalArray {
     // 2 - dots + carrier random explore + carrier island target + amplifier random explore + amplifier targets
     // 3 - dots + carrier random explore + carrier island target + carrier collect + amplifier random explore + amplifier targets + launcher swarms
     // 4 - everything
-    public static final int DEBUG_INFO = 3;
+    public static final int DEBUG_INFO = 4;
 
     private static final ResourceType[] resourceTypes = new ResourceType[] {
             ResourceType.NO_RESOURCE,
