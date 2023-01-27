@@ -259,7 +259,7 @@ public strictfp class HeadQuarters {
                 MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
                 if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
                         && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0)
-                        && (round > 1 || carriersProduced < 2) && possibleSpawningLocations >= 3) {
+                        && (round < 150 || carriersProduced < 2) && possibleSpawningLocations >= 3) {
                     rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                     carriersProduced++;
                     if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
