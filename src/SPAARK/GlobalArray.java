@@ -12,14 +12,15 @@ public strictfp class GlobalArray {
     public static final int MANA_WELLS_LENGTH = 6;
     public static final int ADAMANTIUM_WELLS = 11;
     public static final int ADAMANTIUM_WELLS_LENGTH = 6;
-    public static final int AMPLIFIERS = 17;
-    public static final int AMPLIFIERS_LENGTH = 6;
-    public static final int OPPONENTS = 23;
+    public static final int OPPONENTS = 17;
     public static final int OPPONENTS_LENGTH = 8;
-    public static final int OPPONENT_HEADQUARTERS = 31;
+    public static final int OPPONENT_HEADQUARTERS = 25;
     public static final int OPPONENT_HEADQUARTERS_LENGTH = 4;
-    public static final int ISLANDS = 35;
+    public static final int ISLANDS = 29;
     public static final int ISLANDS_LENGTH = 16;
+    public static final int CARRIERCOUNT = 45;
+    public static final int LAUNCHERCOUNT = 46;
+    public static final int AMPLIFIERCOUNT = 47;
 
     public static final int PRIORITIZED_RESOURCE_HQ1 = 0;
     public static final int PRIORITIZED_RESOURCE_HQ2 = 1;
@@ -30,6 +31,11 @@ public strictfp class GlobalArray {
     public static final int CONVERSION_WELL_ID = 6;
     public static final int MAP_SYMMETRY = 7;
 
+    // 0 - nothing
+    // 1 - dots
+    // 2 - dots + carrier random explore + carrier island target + amplifier random explore + amplifier targets
+    // 3 - dots + carrier random explore + carrier island target + carrier collect + amplifier random explore + amplifier targets + launcher swarms
+    // 4 - everything
     public static final int DEBUG_INFO = 0;
 
     private static final ResourceType[] resourceTypes = new ResourceType[] {
@@ -54,6 +60,7 @@ public strictfp class GlobalArray {
      *  No extra bits
      * Islands:
      *  Bits 13-14  team controlling island
+     *  Bit 15      is out of range
      */
 
     // general location/data parsing/writing
@@ -158,6 +165,7 @@ public strictfp class GlobalArray {
         }
         return false;
     }
+
     public static MapLocation[] getKnownOpponentLocations(RobotController rc) throws GameActionException {
         MapLocation[] opponentLocations = new MapLocation[OPPONENTS_LENGTH];
         for (int i = OPPONENTS; i < OPPONENTS + OPPONENTS_LENGTH; i++) {
