@@ -239,7 +239,6 @@ public strictfp class HeadQuarters {
         int launchersProduced = 0;
         MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
         boolean canProduceAnchor = islands.length > 0;
-        indicatorString = new StringBuilder();
         if (anchorCooldown <= 0 && rc.getNumAnchors(Anchor.STANDARD) == 0 && canProduceAnchor) {
             if (adamantium > 100 && mana > 100) {
                 rc.buildAnchor(Anchor.STANDARD);
@@ -303,7 +302,7 @@ public strictfp class HeadQuarters {
         amplifierCooldown--;
     }
 
-    private void setTargetElixirWell() throws Exception {
+    private void setTargetElixirWell() throws GameActionException {
         try {
             setTargetElixirWell = true;
             MapLocation[] wells = GlobalArray.getKnownWellLocations(rc);
@@ -333,10 +332,8 @@ public strictfp class HeadQuarters {
         }
     }
 
-    private MapLocation optimalSpawnLocation(boolean well) throws GameActionException {
-        MapLocation optimalSpawningLocation = null;
-        possibleSpawningLocations = 0;
-        if (nearbyWells.length > 0 && well) {
+    private void updatePrioritizedWell() throws GameActionException {
+        if (nearbyWells.length > 0) {
             prioritizedWellInfo = nearbyWells[0];
             for (WellInfo w : nearbyWells) {
                 if (prioritizedWellInfo.getResourceType() == prioritizedResourceType) {
@@ -349,6 +346,14 @@ public strictfp class HeadQuarters {
                     }
                 }
             }
+        }
+    }
+
+    private MapLocation optimalSpawnLocation(boolean well) throws GameActionException {
+        MapLocation optimalSpawningLocation = null;
+        possibleSpawningLocations = 0;
+        if (well) updatePrioritizedWell();
+        if (prioritizedWellInfo != null && well) {
             int optimalSpawningLocationDistance = Integer.MAX_VALUE;
             for (MapLocation m : spawningLocations) {
                 if (!rc.sensePassability(m) || rc.isLocationOccupied(m)) {
@@ -384,6 +389,7 @@ public strictfp class HeadQuarters {
 
     private MapLocation updateOptimalSpawnLocation(MapLocation currentLocation) throws GameActionException {
         if (currentLocation == null) return null;
+        if (prioritizedWellInfo == null) updatePrioritizedWell();
         MapLocation optimalSpawningLocation = null;
         int optimalSpawningLocationDistance = Integer.MAX_VALUE;
         for (Direction d : StoredLocations.DIRECTIONS) {
@@ -391,10 +397,15 @@ public strictfp class HeadQuarters {
             if (!rc.canActLocation(newLocation) || !rc.sensePassability(newLocation) || rc.isLocationOccupied(newLocation)) {
                 continue;
             }
-            int distance = newLocation.distanceSquaredTo(prioritizedWellInfo.getMapLocation());
-            if (optimalSpawningLocation == null || distance < optimalSpawningLocationDistance) {
+            if (prioritizedWellInfo != null) {
+                int distance = newLocation.distanceSquaredTo(prioritizedWellInfo.getMapLocation());
+                if (optimalSpawningLocation == null || distance < optimalSpawningLocationDistance) {
+                    optimalSpawningLocation = newLocation;
+                    optimalSpawningLocationDistance = distance;
+                }
+            } else {
                 optimalSpawningLocation = newLocation;
-                optimalSpawningLocationDistance = distance;
+                break;
             }
         }
         return optimalSpawningLocation;
