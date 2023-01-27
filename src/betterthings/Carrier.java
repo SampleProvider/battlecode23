@@ -237,8 +237,11 @@ public strictfp class Carrier {
             }
         } else if (state == 3) {
             updatePrioritizedHeadquarters();
-            if (GlobalArray.hasTooManyBots(rc.readSharedArray(prioritizedHeadquarterIndex)) && adamantiumAmount > 0) {
-                // stop going and do attacky stuff
+            if (GlobalArray.hasTooManyBots(rc.readSharedArray(prioritizedHeadquarterIndex))) {
+                // if too many robots then linger aroudn edges to let bots out
+                if (manaAmount == 0) {
+                    // stop going and do attacky stuff
+                }
             }
             indicatorString.append("PATH->HQ; ");
             Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, indicatorString);
@@ -246,7 +249,6 @@ public strictfp class Carrier {
             if (bug2array[1] == Direction.CENTER) {
                 clockwiseRotation = !clockwiseRotation;
             }
-            // if too many robots then linger aroudn edges to let bots out
             if (prioritizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
                 attemptTransfer();
             }
