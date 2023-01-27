@@ -104,7 +104,7 @@ public strictfp class Amplifier {
                 RobotInfo robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
                 if (robot == null) {
                     robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
-                    robot = Attack.senseOpponent(rc, me, robotInfo);
+                    robot = Attack.senseOpponent(rc, robotInfo);
                 }
                 if (robot != null && robot.getType() == prioritizedRobotType) {
                     storedLocations.storeOpponentLocation(robot.getLocation());
@@ -118,7 +118,7 @@ public strictfp class Amplifier {
                 robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
                 if (robot == null) {
                     robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
-                    robot = Attack.senseOpponent(rc, me, robotInfo);
+                    robot = Attack.senseOpponent(rc, robotInfo);
                 }
                 if (robot != null) {
                     storedLocations.storeOpponentLocation(robot.getLocation());
