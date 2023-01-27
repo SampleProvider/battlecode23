@@ -3,7 +3,7 @@ package SPAARK_1_24_2023;
 import battlecode.common.*;
 
 public class Attack {
-    protected static RobotInfo attack(RobotController rc, MapLocation me, RobotInfo[] robotInfo, RobotType robotType, boolean attackAll, StringBuilder indicatorString) throws GameActionException {
+    protected static RobotInfo attack(RobotController rc, MapLocation me, RobotInfo[] robotInfo, boolean attackAll, StringBuilder indicatorString) throws GameActionException {
         if (robotInfo.length > 0) {
             RobotInfo prioritizedRobotInfo = null;
             MapLocation prioritizedRobotInfoLocation = null;
@@ -11,25 +11,18 @@ public class Attack {
                 if (w.getType() == RobotType.HEADQUARTERS) {
                     continue;
                 }
-                if (w.getType() == robotType) {
-                    if (prioritizedRobotInfo == null) {
-                        prioritizedRobotInfo = w;
-                        prioritizedRobotInfoLocation = w.getLocation();
-                    } else if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
-                        prioritizedRobotInfo = w;
-                        prioritizedRobotInfoLocation = w.getLocation();
-                    }
-                } else if (attackAll) {
-                    if (prioritizedRobotInfo == null) {
-                        prioritizedRobotInfo = w;
-                        prioritizedRobotInfoLocation = w.getLocation();
-                    } else if (prioritizedRobotInfo.getType() != robotType && prioritizedRobotInfo.getHealth() > w.getHealth()) {
+                if (prioritizedRobotInfo == null) {
+                    prioritizedRobotInfo = w;
+                    prioritizedRobotInfoLocation = w.getLocation();
+                }
+                if (prioritizedRobot(prioritizedRobotInfo.getType()) <= prioritizedRobot(w.getType())) {
+                    if (prioritizedRobotInfo.getHealth() > w.getHealth()) {
                         prioritizedRobotInfo = w;
                         prioritizedRobotInfoLocation = w.getLocation();
                     }
                 }
             }
-            if (prioritizedRobotInfoLocation != null) {
+            if (prioritizedRobotInfoLocation != null && (prioritizedRobot(prioritizedRobotInfo.getType()) >= 3 || attackAll)) {
                 if (rc.canAttack(prioritizedRobotInfoLocation)) {
                     indicatorString.append("ATK-" + prioritizedRobotInfoLocation.toString() + "; ");
                     rc.attack(prioritizedRobotInfoLocation);
@@ -69,7 +62,22 @@ public class Attack {
         }
     }
 
-    // protected static int prioritizedRobot(RobotType robotType) {
-
-    // }
+    protected static int prioritizedRobot(RobotType robotType) {
+        if (robotType == RobotType.DESTABILIZER) {
+            return 5;
+        }
+        if (robotType == RobotType.LAUNCHER) {
+            return 4;
+        }
+        if (robotType == RobotType.BOOSTER) {
+            return 3;
+        }
+        if (robotType == RobotType.CARRIER) {
+            return 2;
+        }
+        if (robotType == RobotType.AMPLIFIER) {
+            return 1;
+        }
+        return 0;
+    }
 }
