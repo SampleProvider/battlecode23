@@ -87,7 +87,7 @@ public strictfp class Launcher {
                 updatePrioritizedHeadquarters();
 
                 RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, prioritizedRobotType, true, indicatorString);
+                RobotInfo robot = Attack.attack(rc, robotInfo, true, indicatorString);
                 robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
         
                 if (robot == null) {
@@ -116,7 +116,7 @@ public strictfp class Launcher {
 
         RobotInfo[] friendlyRobotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam());
         RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-        RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, prioritizedRobotType, true, indicatorString);
+        RobotInfo robot = Attack.attack(rc, robotInfo, true, indicatorString);
         if (robot != null && robot.getType() == RobotType.LAUNCHER) {
             Direction[] bug2array = Motion.bug2retreat(rc, robot.getLocation(), lastDirection, clockwiseRotation, false, friendlyRobotInfo, indicatorString);
             lastDirection = bug2array[0];
@@ -510,7 +510,7 @@ public strictfp class Launcher {
             }
         }
     }
-    
+
     private void updatePrioritizedOpponentHeadquarters(RobotInfo[] robotInfo) throws GameActionException {
         prioritizedOpponentHeadquarters = null;
         for (RobotInfo r : robotInfo) {
