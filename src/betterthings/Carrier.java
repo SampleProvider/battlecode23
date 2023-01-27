@@ -49,6 +49,7 @@ public strictfp class Carrier {
     private boolean returningToStorePOI = false;
 
     private int lastHealth = 0;
+    private int retreatTime = 0;
 
     private int state = 0;
     // state
@@ -294,15 +295,17 @@ public strictfp class Carrier {
             if (bug2array[1] == Direction.CENTER) {
                 clockwiseRotation = !clockwiseRotation;
             }
-            if (prioritizedHeadquarters.distanceSquaredTo(me) <= RobotType.HEADQUARTERS.visionRadiusSquared) {
+            if (prioritizedHeadquarters.distanceSquaredTo(me) <= RobotType.HEADQUARTERS.visionRadiusSquared || retreatTime > 30) {
                 attemptTransfer();
                 state = 0;
+                retreatTime = 0;
             }
             me = rc.getLocation();
+            retreatTime++;
             if (GlobalArray.DEBUG_INFO >= 4) {
-                rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 255, 0);
+                rc.setIndicatorLine(me, prioritizedHeadquarters, 175, 255, 0);
             } else if (GlobalArray.DEBUG_INFO > 0) {
-                rc.setIndicatorDot(me, 125, 255, 0);
+                rc.setIndicatorDot(me, 175, 255, 0);
             }
         } else if (state == 6) {
             if (rc.getAnchor() != null) {

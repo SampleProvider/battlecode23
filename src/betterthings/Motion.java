@@ -766,6 +766,7 @@ public class Motion {
         }
         return 0;
     }
+    
     private static int bug2r(RobotController rc, MapLocation me, Direction direction, boolean avoidClouds) throws GameActionException {
         if (avoidClouds && rc.senseCloud(rc.getLocation().add(direction))) {
             return 0;
