@@ -43,7 +43,7 @@ public strictfp class Carrier {
     private MapLocation randomExploreLocation;
     private int randomExploreTime = 0;
     private final int randomExploreMinKnownWellDistSquared = 81;
-    private final int randomExploreMinKnownHQDistSquared = 144;
+    private final int randomExploreMinKnownHQDistSquared = 400;
     private boolean returningToStorePOI = false;
 
     private int lastHealth = 0;
