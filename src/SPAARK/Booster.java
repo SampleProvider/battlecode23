@@ -8,7 +8,7 @@ public strictfp class Booster {
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
-    private StringBuilder indicatorString = new StringBuilder();
+    protected StringBuilder indicatorString = new StringBuilder();
 
     public Booster(RobotController rc) {
         try {

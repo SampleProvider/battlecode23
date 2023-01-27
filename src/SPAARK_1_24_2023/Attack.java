@@ -1,9 +1,9 @@
-package betterthings2;
+package SPAARK_1_24_2023;
 
 import battlecode.common.*;
 
 public class Attack {
-    protected static RobotInfo attack(RobotController rc, MapLocation prioritizedHeadquarters, RobotInfo[] robotInfo, RobotType robotType, boolean attackAll, StringBuilder indicatorString) throws GameActionException {
+    protected static RobotInfo attack(RobotController rc, MapLocation me, RobotInfo[] robotInfo, RobotType robotType, boolean attackAll, StringBuilder indicatorString) throws GameActionException {
         if (robotInfo.length > 0) {
             RobotInfo prioritizedRobotInfo = null;
             MapLocation prioritizedRobotInfoLocation = null;
@@ -39,27 +39,18 @@ public class Attack {
         } else {
             if (attackAll) {
                 MapLocation[] mapInfo = rc.senseNearbyCloudLocations(rc.getType().actionRadiusSquared);
-                if (mapInfo.length == 0) {
-                    return null;
-                }
-                MapLocation prioritizedMapLocation = null;
                 for (MapLocation m : mapInfo) {
-                    if (prioritizedMapLocation == null) {
-                        prioritizedMapLocation = m;
+                    if (rc.canAttack(m)) {
+                        rc.attack(m);
+                        return null;
                     }
-                    else if (prioritizedHeadquarters.distanceSquaredTo(m) > prioritizedHeadquarters.distanceSquaredTo(prioritizedMapLocation)) {
-                        prioritizedMapLocation = m;
-                    }
-                }
-                if (rc.canAttack(prioritizedMapLocation)) {
-                    rc.attack(prioritizedMapLocation);
                 }
             }
             return null;
         }
     }
 
-    protected static RobotInfo senseOpponent(RobotController rc, RobotInfo[] robotInfo) throws GameActionException {
+    protected static RobotInfo senseOpponent(RobotController rc, MapLocation me, RobotInfo[] robotInfo) throws GameActionException {
         if (robotInfo.length > 0) {
             RobotInfo prioritizedRobotInfo = null;
             for (RobotInfo w : robotInfo) {

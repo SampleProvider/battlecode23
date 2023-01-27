@@ -1,4 +1,4 @@
-package betterthings2;
+package SPAARK_1_24_2023;
 
 import battlecode.common.*;
 
@@ -8,7 +8,7 @@ public strictfp class Destabilizer {
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
-    protected StringBuilder indicatorString = new StringBuilder();
+    private StringBuilder indicatorString = new StringBuilder();
 
     public Destabilizer(RobotController rc) {
         try {
