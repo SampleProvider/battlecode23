@@ -383,6 +383,7 @@ public strictfp class HeadQuarters {
     }
 
     private MapLocation updateOptimalSpawnLocation(MapLocation currentLocation) throws GameActionException {
+        if (currentLocation == null) return null;
         MapLocation optimalSpawningLocation = null;
         int optimalSpawningLocationDistance = Integer.MAX_VALUE;
         for (Direction d : StoredLocations.DIRECTIONS) {

@@ -102,6 +102,17 @@ public strictfp class Carrier {
                 storedLocations.detectIslandLocations();
                 if (storedLocations.writeToGlobalArray()) returningToStorePOI = false;
 
+                updatePrioritizedHeadquarters();
+                MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
+                if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD) && islands.length > 0) {
+                    rc.takeAnchor(prioritizedHeadquarters, Anchor.STANDARD);
+                }
+                if (rc.canReturnAnchor(prioritizedHeadquarters) && islands.length == 0) {
+                    rc.returnAnchor(prioritizedHeadquarters);
+                }
+                if (rc.getAnchor() != null) {
+                    state = 4;
+                }
                 if (rc.getHealth() != lastHealth && state != 4) {
                     state = 5;
                 }
@@ -150,42 +161,23 @@ public strictfp class Carrier {
 
     private void runState() throws GameActionException {
         if (state == 0) {
-            updatePrioritizedHeadquarters();
-            MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
-            if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD) && islands.length > 0) {
-                rc.takeAnchor(prioritizedHeadquarters, Anchor.STANDARD);
-            }
-            // put anchor back?
-
-            if (rc.getAnchor() != null) {
-                state = 4;
-                runState();
-                return;
-            }
-
-            if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
-                state = 3;
-                runState();
-                return;
-            } else {
-                updatePrioritizedWell();
-                if (prioritizedWell != null) {
-                    state = 1;
-                    indicatorString.append("PATH->WELL; ");
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, true, indicatorString);
-                    lastDirection = bug2array[0];
-                    if (bug2array[1] == Direction.CENTER) {
-                        clockwiseRotation = !clockwiseRotation;
-                    }
-                    attemptCollection();
-                    me = rc.getLocation();
-                    if (GlobalArray.DEBUG_INFO >= 4) {
-                        rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
-                    } else if (GlobalArray.DEBUG_INFO > 0) {
-                        rc.setIndicatorDot(me, 255, 75, 75);
-                    }
-                    return;
+            updatePrioritizedWell();
+            if (prioritizedWell != null) {
+                state = 1;
+                indicatorString.append("PATH->WELL; ");
+                Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, true, indicatorString);
+                lastDirection = bug2array[0];
+                if (bug2array[1] == Direction.CENTER) {
+                    clockwiseRotation = !clockwiseRotation;
                 }
+                attemptCollection();
+                me = rc.getLocation();
+                if (GlobalArray.DEBUG_INFO >= 4) {
+                    rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
+                } else if (GlobalArray.DEBUG_INFO > 0) {
+                    rc.setIndicatorDot(me, 255, 75, 75);
+                }
+                return;
             }
             state = 6;
             runState();
@@ -221,7 +213,7 @@ public strictfp class Carrier {
                     rc.setIndicatorDot(me, 255, 75, 75);
                 }
             } else {
-                state = 0;
+                state = 3;
                 runState();
             }
         } else if (state == 3) {
