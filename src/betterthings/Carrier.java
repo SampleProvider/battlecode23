@@ -35,6 +35,8 @@ public strictfp class Carrier {
     private MapLocation prioritizedHeadquarters;
     private int prioritizedHeadquarterIndex;
 
+    private MapLocation prioritizedIslandLocation;
+
     private StoredLocations storedLocations;
 
     private boolean clockwiseRotation = true;
@@ -235,13 +237,18 @@ public strictfp class Carrier {
             }
         } else if (state == 3) {
             updatePrioritizedHeadquarters();
+            if (GlobalArray.hasTooManyBots(rc.readSharedArray(prioritizedHeadquarterIndex))) {
+                // if too many robots then linger aroudn edges to let bots out
+                if (manaAmount == 0) {
+                    // stop going and do attacky stuff
+                }
+            }
             indicatorString.append("PATH->HQ; ");
             Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, indicatorString);
             lastDirection = bug2array[0];
             if (bug2array[1] == Direction.CENTER) {
                 clockwiseRotation = !clockwiseRotation;
             }
-            // if too many robots then linger aroudn edges to let bots out
             if (prioritizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
                 attemptTransfer();
             }
@@ -255,22 +262,9 @@ public strictfp class Carrier {
                 state = 0;
             }
         } else if (state == 4) {
-            int[] islands = rc.senseNearbyIslands();
-            MapLocation prioritizedIslandLocation = null;
-            for (int id : islands) {
-                if (rc.senseAnchor(id) == null) {
-                    MapLocation[] islandLocations = rc.senseNearbyIslandLocations(id);
-                    for (MapLocation m : islandLocations) {
-                        if (prioritizedIslandLocation == null) {
-                            prioritizedIslandLocation = m;
-                        } else if (m.distanceSquaredTo(me) < prioritizedIslandLocation.distanceSquaredTo(me)) {
-                            prioritizedIslandLocation = m;
-                        }
-                    }
-                }
-            }
+            updatePrioritizedIsland();
             if (prioritizedIslandLocation != null) {
-                Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, true, indicatorString);
+                Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, false, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
                     clockwiseRotation = !clockwiseRotation;
@@ -289,45 +283,8 @@ public strictfp class Carrier {
                     rc.setIndicatorDot(me, 75, 125, 255);
                 }
             } else {
-                // get island location from global array
-                MapLocation[] islandLocations = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
-                for (MapLocation m : islandLocations) {
-                    if (m == null) {
-                        continue;
-                    }
-                    if (prioritizedIslandLocation == null) {
-                        prioritizedIslandLocation = m;
-                    }
-                    else if (m.distanceSquaredTo(me) < prioritizedIslandLocation.distanceSquaredTo(me)) {
-                        prioritizedIslandLocation = m;
-                    }
-                }
-                if (prioritizedIslandLocation != null) {
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, false, indicatorString);
-                    lastDirection = bug2array[0];
-                    if (bug2array[1] == Direction.CENTER) {
-                        clockwiseRotation = !clockwiseRotation;
-                    }
-                    me = rc.getLocation();
-                    if (rc.canPlaceAnchor()) {
-                        if (rc.senseTeamOccupyingIsland(rc.senseIsland(me)) == Team.NEUTRAL) {
-                            indicatorString.append("P ANC; ");
-                            rc.placeAnchor();
-                            state = 0;
-                        }
-                    }
-                    if (GlobalArray.DEBUG_INFO >= 2) {
-                        rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 125, 255);
-                    } else if (GlobalArray.DEBUG_INFO > 0) {
-                        rc.setIndicatorDot(me, 75, 125, 255);
-                    }
-                }
-                else {
-                    state = 6;
-                    runState();
-                    if (state == 6) state = 4;
-                }
-                return;
+                state = 6;
+                runState();
             }
         } else if (state == 5) {
             updatePrioritizedHeadquarters();
@@ -348,6 +305,30 @@ public strictfp class Carrier {
                 rc.setIndicatorDot(me, 125, 255, 0);
             }
         } else if (state == 6) {
+            if (rc.getAnchor() != null) {
+                updatePrioritizedIsland();
+                if (prioritizedIslandLocation != null) {
+                    state = 4;
+                    Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, false, indicatorString);
+                    lastDirection = bug2array[0];
+                    if (bug2array[1] == Direction.CENTER) {
+                        clockwiseRotation = !clockwiseRotation;
+                    }
+                    me = rc.getLocation();
+                    if (rc.canPlaceAnchor()) {
+                        if (rc.senseTeamOccupyingIsland(rc.senseIsland(me)) == Team.NEUTRAL) {
+                            indicatorString.append("P ANC; ");
+                            rc.placeAnchor();
+                            state = 0;
+                        }
+                    }
+                    if (GlobalArray.DEBUG_INFO >= 2) {
+                        rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 125, 255);
+                    } else if (GlobalArray.DEBUG_INFO > 0) {
+                        rc.setIndicatorDot(me, 75, 125, 255);
+                    }
+                }
+            }
             updateRandomExploreLocation();
             if (randomExploreLocation != null) {
                 indicatorString.append("EXPL-" + randomExploreLocation.toString() + "; ");
@@ -458,6 +439,38 @@ public strictfp class Carrier {
                     .distanceSquaredTo(me)) {
                 if (testFullWell(m)) {
                     prioritizedWell = m;
+                }
+            }
+        }
+    }
+
+    private void updatePrioritizedIsland() throws GameActionException {
+        int[] islands = rc.senseNearbyIslands();
+        prioritizedIslandLocation = null;
+        for (int id : islands) {
+            if (rc.senseAnchor(id) == null) {
+                MapLocation[] islandLocations = rc.senseNearbyIslandLocations(id);
+                for (MapLocation m : islandLocations) {
+                    if (prioritizedIslandLocation == null) {
+                        prioritizedIslandLocation = m;
+                    } else if (m.distanceSquaredTo(me) < prioritizedIslandLocation.distanceSquaredTo(me)) {
+                        prioritizedIslandLocation = m;
+                    }
+                }
+            }
+        }
+        if (prioritizedIslandLocation == null) {
+            // get island location from global array
+            MapLocation[] islandLocations = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
+            for (MapLocation m : islandLocations) {
+                if (m == null) {
+                    continue;
+                }
+                if (prioritizedIslandLocation == null) {
+                    prioritizedIslandLocation = m;
+                }
+                else if (m.distanceSquaredTo(me) < prioritizedIslandLocation.distanceSquaredTo(me)) {
+                    prioritizedIslandLocation = m;
                 }
             }
         }

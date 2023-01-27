@@ -97,7 +97,6 @@ public strictfp class Launcher {
     }
 
     private void runState() throws GameActionException {
-
         prioritizedHeadquarters = headquarters[0];
         for (MapLocation hq : headquarters) {
             if (hq != null) {
@@ -475,13 +474,13 @@ public strictfp class Launcher {
     }
 
     private boolean detectAmplifier() throws GameActionException {
-        // RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
-        // for (RobotInfo r : robots) {
-        //     if (r.getType() == RobotType.AMPLIFIER && r.getLocation().distanceSquaredTo(me) < amplifierSensingRange) {
-        //         prioritizedAmplifierLocation = r.getLocation();
-        //         return true;
-        //     }
-        // }
+        RobotInfo[] robots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
+        for (RobotInfo r : robots) {
+            if (r.getType() == RobotType.AMPLIFIER && r.getLocation().distanceSquaredTo(me) < amplifierSensingRange) {
+                prioritizedAmplifierLocation = r.getLocation();
+                return true;
+            }
+        }
         // prioritizedAmplifierLocation = null;
         // for (int a = 0; a < GlobalArray.AMPLIFIERS_LENGTH; a++) {
         //     int amplifierArray = rc.readSharedArray(GlobalArray.AMPLIFIERS + a);
