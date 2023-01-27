@@ -9,9 +9,9 @@ public strictfp class GlobalArray {
     public static final int HEADQUARTERS = 1;
     public static final int HEADQUARTERS_LENGTH = 4;
     public static final int MANA_WELLS = 5;
-    public static final int MANA_WELLS_LENGTH = 6;
-    public static final int ADAMANTIUM_WELLS = 11;
-    public static final int ADAMANTIUM_WELLS_LENGTH = 6;
+    public static final int MANA_WELLS_LENGTH = 8;
+    public static final int ADAMANTIUM_WELLS = 13;
+    public static final int ADAMANTIUM_WELLS_LENGTH = 4;
     public static final int OPPONENTS = 17;
     public static final int OPPONENTS_LENGTH = 8;
     public static final int OPPONENT_HEADQUARTERS = 25;

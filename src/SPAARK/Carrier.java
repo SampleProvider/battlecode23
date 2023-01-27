@@ -110,6 +110,17 @@ public strictfp class Carrier {
                 storedLocations.detectIslandLocations();
                 if (storedLocations.writeToGlobalArray()) returningToStorePOI = false;
 
+                updatePrioritizedHeadquarters();
+                MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
+                if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD) && islands.length > 0) {
+                    rc.takeAnchor(prioritizedHeadquarters, Anchor.STANDARD);
+                }
+                if (rc.canReturnAnchor(prioritizedHeadquarters) && islands.length == 0) {
+                    rc.returnAnchor(prioritizedHeadquarters);
+                }
+                if (rc.getAnchor() != null) {
+                    state = 4;
+                }
                 if (rc.getHealth() != lastHealth && state != 4) {
                     state = 5;
                 }
@@ -159,21 +170,6 @@ public strictfp class Carrier {
 
     private void runState() throws GameActionException {
         if (state == 0) {
-            updatePrioritizedHeadquarters();
-            MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
-            if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD) && islands.length > 0) {
-                rc.takeAnchor(prioritizedHeadquarters, Anchor.STANDARD);
-            }
-            if (rc.canReturnAnchor(prioritizedHeadquarters) && islands.length == 0) {
-                rc.returnAnchor(prioritizedHeadquarters);
-            }
-
-            if (rc.getAnchor() != null) {
-                state = 4;
-                runState();
-                return;
-            }
-
             if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
                 state = 3;
                 runState();
@@ -310,30 +306,6 @@ public strictfp class Carrier {
                 rc.setIndicatorDot(me, 125, 255, 0);
             }
         } else if (state == 6) {
-            if (rc.getAnchor() != null) {
-                updatePrioritizedIsland();
-                if (prioritizedIslandLocation != null) {
-                    state = 4;
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, false, indicatorString);
-                    lastDirection = bug2array[0];
-                    if (bug2array[1] == Direction.CENTER) {
-                        clockwiseRotation = !clockwiseRotation;
-                    }
-                    me = rc.getLocation();
-                    if (rc.canPlaceAnchor()) {
-                        if (rc.senseTeamOccupyingIsland(rc.senseIsland(me)) == Team.NEUTRAL) {
-                            indicatorString.append("P ANC; ");
-                            rc.placeAnchor();
-                            state = 0;
-                        }
-                    }
-                    if (GlobalArray.DEBUG_INFO >= 2) {
-                        rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 125, 255);
-                    } else if (GlobalArray.DEBUG_INFO > 0) {
-                        rc.setIndicatorDot(me, 75, 125, 255);
-                    }
-                }
-            }
             updatePrioritizedWell();
             if (prioritizedWell != null) {
                 state = 1;
