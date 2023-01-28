@@ -15,7 +15,7 @@ public strictfp class Carrier {
     private int adamantiumAmount = 0;
     private int manaAmount = 0;
     private int elixirAmount = 0;
-    private int resourceCollectAmount = 40;
+    private int resourceCollectAmount = 39;
 
     private MapLocation prioritizedWell;
     private ResourceType prioritizedWellType;
@@ -32,8 +32,8 @@ public strictfp class Carrier {
 
     private MapLocation randomExploreLocation;
     private int randomExploreTime = 0;
-    private final int randomExploreMinKnownWellDistSquared = 81;
-    private final int randomExploreMinKnownHQDistSquared = 400;
+    private final int randomExploreMinKnownWellDistSquared = 36;
+    private final int randomExploreMinKnownHQDistSquared = 36;
     private boolean returningToStorePOI = false;
 
     private int lastHealth = 0;
@@ -163,7 +163,7 @@ public strictfp class Carrier {
                     RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                     RobotInfo robot = Attack.senseOpponent(rc, robotInfo);
                     if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
-                        // storedLocations.storeOpponentLocation(robot.getLocation());
+                        storedLocations.storeOpponentLocation(robot.getLocation());
                     }
                 }
 
@@ -178,7 +178,7 @@ public strictfp class Carrier {
                         robot = Attack.senseOpponent(rc, robotInfo);
                     }
                     if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
-                        // storedLocations.storeOpponentLocation(robot.getLocation());
+                        storedLocations.storeOpponentLocation(robot.getLocation());
                         if (state != 4) {
                             state = 5;
                         }
@@ -188,7 +188,7 @@ public strictfp class Carrier {
                     RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                     RobotInfo robot = Attack.senseOpponent(rc, robotInfo);
                     if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
-                        // storedLocations.storeOpponentLocation(robot.getLocation());
+                        storedLocations.storeOpponentLocation(robot.getLocation());
                     }
                 }
             } catch (GameActionException e) {
@@ -220,11 +220,11 @@ public strictfp class Carrier {
                     storedAdamantiumWells += 1;
                 }
             }
-            // if (storedManaWells < 1) {
-            //     state = 6;
-            //     runState();
-            //     return;
-            // }
+            if (storedManaWells < 1) {
+                state = 6;
+                runState();
+                return;
+            }
             if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
                 state = 3;
                 runState();
@@ -251,7 +251,13 @@ public strictfp class Carrier {
             if (bug2array[1] == Direction.CENTER) {
                 clockwiseRotation = !clockwiseRotation;
             }
-            attemptCollection();
+            if (rc.canCollectResource(prioritizedWell, -1) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
+                rc.collectResource(prioritizedWell, -1);
+                state = 2;
+            }
+            else if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
+                state = 3;
+            }
             me = rc.getLocation();
             if (GlobalArray.DEBUG_INFO >= 4) {
                 rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
@@ -274,6 +280,10 @@ public strictfp class Carrier {
                 } else if (GlobalArray.DEBUG_INFO > 0) {
                     rc.setIndicatorDot(me, 255, 75, 75);
                 }
+            }
+            else if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
+                state = 3;
+                runState();
             } else {
                 state = 0;
                 runState();
@@ -364,21 +374,9 @@ public strictfp class Carrier {
             }
             updatePrioritizedWell();
             if (prioritizedWell != null) {
-                if (storedManaWells >= 0 || prioritizedWellType == ResourceType.MANA) {
+                if (storedManaWells >= 1 || prioritizedWellType == ResourceType.MANA) {
                     state = 1;
-                    indicatorString.append("PATH->WELL; ");
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, false, false, indicatorString);
-                    lastDirection = bug2array[0];
-                    if (bug2array[1] == Direction.CENTER) {
-                        clockwiseRotation = !clockwiseRotation;
-                    }
-                    attemptCollection();
-                    me = rc.getLocation();
-                    if (GlobalArray.DEBUG_INFO >= 4) {
-                        rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
-                    } else if (GlobalArray.DEBUG_INFO > 0) {
-                        rc.setIndicatorDot(me, 255, 75, 75);
-                    }
+                    runState();
                     return;
                 }
             }
@@ -435,6 +433,7 @@ public strictfp class Carrier {
                     return;
                 }
             }
+            
             updateRandomExploreLocation();
             if (randomExploreLocation != null) {
                 indicatorString.append("EXPL-" + randomExploreLocation.toString() + "; ");
@@ -460,13 +459,6 @@ public strictfp class Carrier {
             } else {
                 Motion.spreadRandomly(rc, me);
             }
-        }
-    }
-
-    private void attemptCollection() throws GameActionException {
-        if (rc.canCollectResource(prioritizedWell, -1) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
-            rc.collectResource(prioritizedWell, -1);
-            state = 2;
         }
     }
 
@@ -530,6 +522,7 @@ public strictfp class Carrier {
                 return;
             }
         }
+        
         MapLocation[] wellLocations = GlobalArray.getKnownWellLocations(rc);
         for (int i = 0;i < wellLocations.length;i++) {
             MapLocation m = wellLocations[i];
@@ -550,15 +543,20 @@ public strictfp class Carrier {
                     }
                 }
             }
-            else if (prioritizedWell.distanceSquaredTo(me) > m
-                    .distanceSquaredTo(me)) {
-                if (testValidWell(m)) {
-                    prioritizedWell = m;
-                    if (i < GlobalArray.MANA_WELLS_LENGTH) {
-                        prioritizedWellType = ResourceType.MANA;
-                    }
-                    else {
-                        prioritizedWellType = ResourceType.ADAMANTIUM;
+            else {
+                for (MapLocation h : headquarters) {
+                    if (prioritizedWell.distanceSquaredTo(h) > m
+                    .distanceSquaredTo(h)) {
+                        if (testValidWell(m)) {
+                            prioritizedWell = m;
+                            if (i < GlobalArray.MANA_WELLS_LENGTH) {
+                                prioritizedWellType = ResourceType.MANA;
+                            }
+                            else {
+                                prioritizedWellType = ResourceType.ADAMANTIUM;
+                            }
+                            break;
+                        }
                     }
                 }
             }
@@ -614,7 +612,7 @@ public strictfp class Carrier {
             if (!rc.canSenseLocation(adjSpot)) {
                 continue;
             }
-            if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null) {
+            if (!rc.sensePassability(adjSpot) || rc.senseRobotAtLocation(adjSpot) != null || rc.senseMapInfo(adjSpot).getCurrentDirection() != Direction.CENTER) {
                 fullSpots += 1;
             } else {
                 emptySpots += 1;
@@ -642,20 +640,27 @@ public strictfp class Carrier {
         MapLocation[] knownWells = GlobalArray.getKnownWellLocations(rc);
         int iteration = 0;
         search: while (randomExploreLocation == null && iteration < 16) {
-            randomExploreLocation = new MapLocation(rng.nextInt(rc.getMapWidth()), rng.nextInt(rc.getMapHeight()));
+            randomExploreLocation = new MapLocation(me.x - 5 + rng.nextInt(11), me.y - 5 + rng.nextInt(11));
+            if (rc.onTheMap(randomExploreLocation) == false) {
+                randomExploreLocation = null;
+                iteration++;
+                continue search;
+            }
+            // randomExploreLocation = new MapLocation(rng.nextInt(rc.getMapWidth()), rng.nextInt(rc.getMapHeight()));
             for (MapLocation well : knownWells) {
                 if (well != null && well.distanceSquaredTo(randomExploreLocation) < randomExploreMinKnownWellDistSquared) {
                     randomExploreLocation = null;
+                    iteration++;
                     continue search;
                 }
             }
             for (MapLocation hq : headquarters) {
                 if (hq.distanceSquaredTo(randomExploreLocation) < randomExploreMinKnownHQDistSquared) {
                     randomExploreLocation = null;
+                    iteration++;
                     continue search;
                 }
             }
-            iteration++;
         }
     }
 }

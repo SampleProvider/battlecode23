@@ -1,4 +1,4 @@
-package SPAARK_alternate;
+package SPAARK_1;
 
 import battlecode.common.*;
 import java.util.Random;
@@ -71,8 +71,6 @@ public strictfp class Launcher {
                 round = rc.getRoundNum();
                 globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
 
-                indicatorString = new StringBuilder();
-
                 storedLocations.detectWells();
                 storedLocations.detectIslandLocations();
                 storedLocations.detectSymmetry();
@@ -114,13 +112,10 @@ public strictfp class Launcher {
         RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
         RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, true, indicatorString);
         if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
-            indicatorString.append("RET; ");
-            if (rc.isMovementReady()) {
-                Direction[] bug2array = Motion.bug2retreat(rc, robot.getLocation(), lastDirection, clockwiseRotation, false, true, friendlyRobotInfo, indicatorString);
-                lastDirection = bug2array[0];
-                if (bug2array[1] == Direction.CENTER) {
-                    clockwiseRotation = !clockwiseRotation;
-                }
+            Direction[] bug2array = Motion.bug2retreat(rc, robot.getLocation(), lastDirection, clockwiseRotation, false, true, friendlyRobotInfo, indicatorString);
+            lastDirection = bug2array[0];
+            if (bug2array[1] == Direction.CENTER) {
+                clockwiseRotation = !clockwiseRotation;
             }
             opponent = robot;
             return;
@@ -146,7 +141,6 @@ public strictfp class Launcher {
         if (rc.getHealth() != lastHealth) {
             // aa i got hit
             if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
-                indicatorString.append("RET; HIT; ");
                 Direction[] bug2array = Motion.bug2retreat(rc, robot.getLocation(), lastDirection, clockwiseRotation, true, true, friendlyRobotInfo, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
@@ -156,7 +150,6 @@ public strictfp class Launcher {
                 return;
             }
             else {
-                indicatorString.append("RET; HIT; ");
                 Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, true, true, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
@@ -170,7 +163,8 @@ public strictfp class Launcher {
             opponent = robot;
         }
         
-        if (rc.isMovementReady()) {
+        if (round % 2 == 0) {
+            indicatorString = new StringBuilder();
             // lets move!!
             
             if (rc.getHealth() <= RobotType.LAUNCHER.health * 3 / 4) {
@@ -234,11 +228,6 @@ public strictfp class Launcher {
                     }
                 }
             }
-            
-            if (bugToStoredOpponentLocation(defenseRange)) {
-                return;
-            }
-
             int surroundingLaunchers = 0;
             if (friendlyRobotInfo.length > 0) {
                 // get lowest id and highest id
@@ -266,9 +255,12 @@ public strictfp class Launcher {
                     if (lowestIdFriendlyRobotInfo.ID > rc.getID()) {
                         // i'm the leader!
                         indicatorString.append("LEAD SWARM 5; ");
-                        if (opponent != null) {
-                            // opponent, lets move away
-                            Direction[] bug2array = Motion.bug2retreat(rc, opponent.getLocation(), lastDirection, clockwiseRotation, true, true, friendlyRobotInfo, indicatorString);
+                        if (bugToStoredOpponentLocation(defenseRange)) {
+
+                        }
+                        else if (opponent != null) {
+                            // opponent, lets move there
+                            Direction[] bug2array = Motion.bug2(rc, opponent.getLocation(), lastDirection, clockwiseRotation, true, true, indicatorString);
                             lastDirection = bug2array[0];
                             if (bug2array[1] == Direction.CENTER) {
                                 clockwiseRotation = !clockwiseRotation;

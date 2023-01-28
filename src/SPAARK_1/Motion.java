@@ -1,4 +1,4 @@
-package SPAARK_alternate;
+package SPAARK_1;
 
 import battlecode.common.*;
 
@@ -399,13 +399,13 @@ public class Motion {
                 }
             }
             if (prioritizedFriendlyRobotInfoLocation != null) {
-                if (me.directionTo(prioritizedFriendlyRobotInfoLocation).equals(direction.rotateRight()) || me.directionTo(prioritizedFriendlyRobotInfoLocation).equals(direction.rotateRight().rotateRight()) || me.directionTo(prioritizedFriendlyRobotInfoLocation).equals(direction.rotateRight().rotateRight().rotateRight())) {
+                if (me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 1) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 2) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 3) % 8) {
                     direction = direction.rotateRight();
                     if (!canMove(rc, direction, avoidClouds, avoidWells)) {
                         direction = direction.rotateLeft();
                     }
                 }
-                if (me.directionTo(prioritizedFriendlyRobotInfoLocation).equals(direction.rotateLeft()) || me.directionTo(prioritizedFriendlyRobotInfoLocation).equals(direction.rotateLeft().rotateLeft()) || me.directionTo(prioritizedFriendlyRobotInfoLocation).equals(direction.rotateLeft().rotateLeft().rotateLeft())) {
+                if (me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 7) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 6) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 5) % 8) {
                     direction = direction.rotateLeft();
                     if (!canMove(rc, direction, avoidClouds, avoidWells)) {
                         direction = direction.rotateRight();

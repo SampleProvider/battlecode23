@@ -183,6 +183,7 @@ public strictfp class Amplifier {
                     if (randomExploreLocation == null) {
                         indicatorString.append("RAND; ");
                         Motion.moveRandomly(rc);
+                        return;
                     }
                 }
                 indicatorString.append("EXPL-" + randomExploreLocation.toString() + "; ");
