@@ -31,7 +31,7 @@ public strictfp class Amplifier {
     private int lastHealth = 0;
 
     // 0 - random explore
-    // 1 - island checks
+    // 1 - stand on island
     // 2 - retreat
     // 3 - follow launcher groups
     private int state = 0;
@@ -140,7 +140,7 @@ public strictfp class Amplifier {
                     }
                 }
                 indicatorString.append("EXPL-" + randomExploreLocation.toString() + "; ");
-                Direction[] bug2array = Motion.bug2(rc, randomExploreLocation, lastDirection, clockwiseRotation, false, indicatorString);
+                Direction[] bug2array = Motion.bug2(rc, randomExploreLocation, lastDirection, clockwiseRotation, false, true, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
                     clockwiseRotation = !clockwiseRotation;
@@ -173,7 +173,7 @@ public strictfp class Amplifier {
                 }
             }
             if (prioritizedIslandLocation != null) {
-                Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, true, indicatorString);
+                Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, true, true, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
                     clockwiseRotation = !clockwiseRotation;
@@ -199,7 +199,7 @@ public strictfp class Amplifier {
                     }
                 }
                 if (prioritizedIslandLocation != null) {
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, false, indicatorString);
+                    Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, false, true, indicatorString);
                     lastDirection = bug2array[0];
                     if (bug2array[1] == Direction.CENTER) {
                         clockwiseRotation = !clockwiseRotation;
@@ -219,9 +219,14 @@ public strictfp class Amplifier {
                 runState();
             }
         } else if (state == 2) {
+            if (Attack.senseOpponent(rc, rc.senseNearbyRobots(RobotType.AMPLIFIER.visionRadiusSquared, rc.getTeam().opponent())) == null) {
+                state = 0;
+                runState();
+                return;
+            }
             updatePrioritizedHeadquarters();
             indicatorString.append("RET; ");
-            Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, indicatorString);
+            Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, true, indicatorString);
             lastDirection = bug2array[0];
             if (bug2array[1] == Direction.CENTER) {
                 clockwiseRotation = !clockwiseRotation;
@@ -245,7 +250,7 @@ public strictfp class Amplifier {
                 }
             }
             if (prioritizedLauncherLocation != null) {
-                Direction[] bug2array = Motion.bug2(rc, prioritizedLauncherLocation, lastDirection, clockwiseRotation, false, indicatorString);
+                Direction[] bug2array = Motion.bug2(rc, prioritizedLauncherLocation, lastDirection, clockwiseRotation, false, true, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
                     clockwiseRotation = !clockwiseRotation;
