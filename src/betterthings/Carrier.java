@@ -11,17 +11,6 @@ public strictfp class Carrier {
 
     private Random rng = new Random(2023);
 
-    private static final Direction[] DIRECTIONS = {
-            Direction.SOUTHWEST,
-            Direction.SOUTH,
-            Direction.SOUTHEAST,
-            Direction.WEST,
-            Direction.EAST,
-            Direction.NORTHWEST,
-            Direction.NORTH,
-            Direction.NORTHEAST,
-    };
-
     private ResourceType prioritizedResourceType = ResourceType.MANA;
     private int adamantiumAmount = 0;
     private int manaAmount = 0;
@@ -113,13 +102,24 @@ public strictfp class Carrier {
                 storedLocations.detectIslandLocations();
                 if (storedLocations.writeToGlobalArray()) returningToStorePOI = false;
 
+                updatePrioritizedHeadquarters();
+                MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
+                if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD) && islands.length > 0) {
+                    rc.takeAnchor(prioritizedHeadquarters, Anchor.STANDARD);
+                }
+                if (rc.canReturnAnchor(prioritizedHeadquarters) && islands.length == 0) {
+                    rc.returnAnchor(prioritizedHeadquarters);
+                }
+                if (rc.getAnchor() != null) {
+                    state = 4;
+                }
                 if (rc.getHealth() != lastHealth && state != 4) {
                     state = 5;
                 }
                 lastHealth = rc.getHealth();
 
                 RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                RobotInfo robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
+                RobotInfo robot = Attack.attack(rc, robotInfo, false, indicatorString);
                 if (robot == null) {
                     robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                     robot = Attack.senseOpponent(rc, robotInfo);
@@ -135,7 +135,7 @@ public strictfp class Carrier {
                 
                 me = rc.getLocation();
                 robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
+                robot = Attack.attack(rc, robotInfo, false, indicatorString);
                 if (robot == null) {
                     robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                     robot = Attack.senseOpponent(rc, robotInfo);
@@ -161,42 +161,23 @@ public strictfp class Carrier {
 
     private void runState() throws GameActionException {
         if (state == 0) {
-            updatePrioritizedHeadquarters();
-            MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
-            if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD) && islands.length > 0) {
-                rc.takeAnchor(prioritizedHeadquarters, Anchor.STANDARD);
-            }
-            // put anchor back?
-
-            if (rc.getAnchor() != null) {
-                state = 4;
-                runState();
-                return;
-            }
-
-            if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
-                state = 3;
-                runState();
-                return;
-            } else {
-                updatePrioritizedWell();
-                if (prioritizedWell != null) {
-                    state = 1;
-                    indicatorString.append("PATH->WELL; ");
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, true, indicatorString);
-                    lastDirection = bug2array[0];
-                    if (bug2array[1] == Direction.CENTER) {
-                        clockwiseRotation = !clockwiseRotation;
-                    }
-                    attemptCollection();
-                    me = rc.getLocation();
-                    if (GlobalArray.DEBUG_INFO >= 4) {
-                        rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
-                    } else if (GlobalArray.DEBUG_INFO > 0) {
-                        rc.setIndicatorDot(me, 255, 75, 75);
-                    }
-                    return;
+            updatePrioritizedWell();
+            if (prioritizedWell != null) {
+                state = 1;
+                indicatorString.append("PATH->WELL; ");
+                Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, true, indicatorString);
+                lastDirection = bug2array[0];
+                if (bug2array[1] == Direction.CENTER) {
+                    clockwiseRotation = !clockwiseRotation;
                 }
+                attemptCollection();
+                me = rc.getLocation();
+                if (GlobalArray.DEBUG_INFO >= 4) {
+                    rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
+                } else if (GlobalArray.DEBUG_INFO > 0) {
+                    rc.setIndicatorDot(me, 255, 75, 75);
+                }
+                return;
             }
             state = 6;
             runState();
@@ -232,7 +213,7 @@ public strictfp class Carrier {
                     rc.setIndicatorDot(me, 255, 75, 75);
                 }
             } else {
-                state = 0;
+                state = 3;
                 runState();
             }
         } else if (state == 3) {
@@ -307,24 +288,6 @@ public strictfp class Carrier {
                 rc.setIndicatorDot(me, 175, 255, 0);
             }
         } else if (state == 6) {
-            updatePrioritizedWell();
-            if (prioritizedWell != null) {
-                state = 1;
-                indicatorString.append("PATH->WELL; ");
-                Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, true, indicatorString);
-                lastDirection = bug2array[0];
-                if (bug2array[1] == Direction.CENTER) {
-                    clockwiseRotation = !clockwiseRotation;
-                }
-                attemptCollection();
-                me = rc.getLocation();
-                if (GlobalArray.DEBUG_INFO >= 4) {
-                    rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
-                } else if (GlobalArray.DEBUG_INFO > 0) {
-                    rc.setIndicatorDot(me, 255, 75, 75);
-                }
-                return;
-            }
             if (rc.getAnchor() != null) {
                 updatePrioritizedIsland();
                 if (prioritizedIslandLocation != null) {
@@ -346,6 +309,25 @@ public strictfp class Carrier {
                         rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 125, 255);
                     } else if (GlobalArray.DEBUG_INFO > 0) {
                         rc.setIndicatorDot(me, 75, 125, 255);
+                    }
+                    return;
+                }
+            } else {
+                updatePrioritizedWell();
+                if (prioritizedWell != null) {
+                    state = 1;
+                    indicatorString.append("PATH->WELL; ");
+                    Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, true, indicatorString);
+                    lastDirection = bug2array[0];
+                    if (bug2array[1] == Direction.CENTER) {
+                        clockwiseRotation = !clockwiseRotation;
+                    }
+                    attemptCollection();
+                    me = rc.getLocation();
+                    if (GlobalArray.DEBUG_INFO >= 4) {
+                        rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
+                    } else if (GlobalArray.DEBUG_INFO > 0) {
+                        rc.setIndicatorDot(me, 255, 75, 75);
                     }
                     return;
                 }
@@ -418,7 +400,7 @@ public strictfp class Carrier {
         if (wellInfo.length > 0) {
             WellInfo prioritizedWellInfo = null;
             for (WellInfo w : wellInfo) {
-                if (testFullWell(w.getMapLocation())) {
+                if (testValidWell(w.getMapLocation())) {
                     storedLocations.storeWell(w);
                     if (prioritizedWell == null) {
                         prioritizedWellInfo = w;
@@ -452,13 +434,13 @@ public strictfp class Carrier {
                 continue;
             }
             if (prioritizedWell == null) {
-                if (testFullWell(m)) {
+                if (testValidWell(m)) {
                     prioritizedWell = m;
                 }
             }
             else if (prioritizedWell.distanceSquaredTo(me) > m
                     .distanceSquaredTo(me)) {
-                if (testFullWell(m)) {
+                if (testValidWell(m)) {
                     prioritizedWell = m;
                 }
             }
@@ -497,10 +479,20 @@ public strictfp class Carrier {
         }
     }
 
-    private boolean testFullWell(MapLocation well) throws GameActionException {
+
+    private boolean testValidWell(MapLocation well) throws GameActionException {
+        MapLocation[] opponentLocations = GlobalArray.getKnownOpponentLocations(rc);
+        for (MapLocation m : opponentLocations) {
+            if (m == null) {
+                continue;
+            }
+            if (m.distanceSquaredTo(well) <= StoredLocations.MIN_EXISTING_DISTANCE_SQUARED) {
+                return false;
+            }
+        }
         int emptySpots = 0;
         int fullSpots = 0;
-        for (Direction d : DIRECTIONS) {
+        for (Direction d : StoredLocations.DIRECTIONS) {
             MapLocation adjSpot = well.add(d);
             if (!rc.canSenseLocation(adjSpot)) {
                 continue;

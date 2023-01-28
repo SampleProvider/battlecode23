@@ -101,7 +101,7 @@ public strictfp class Amplifier {
                 lastHealth = rc.getHealth();
 
                 RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                RobotInfo robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
+                RobotInfo robot = Attack.attack(rc, robotInfo, false, indicatorString);
                 if (robot == null) {
                     robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                     robot = Attack.senseOpponent(rc, robotInfo);
@@ -115,7 +115,7 @@ public strictfp class Amplifier {
                 
                 me = rc.getLocation();
                 robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                robot = Attack.attack(rc, me, robotInfo, prioritizedRobotType, false, indicatorString);
+                robot = Attack.attack(rc, robotInfo, false, indicatorString);
                 if (robot == null) {
                     robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                     robot = Attack.senseOpponent(rc, robotInfo);
@@ -262,7 +262,7 @@ public strictfp class Amplifier {
                     clockwiseRotation = !clockwiseRotation;
                 }
                 me = rc.getLocation();
-                if (GlobalArray.DEBUG_INFO >= 4) {
+                if (GlobalArray.DEBUG_INFO >= 2) {
                     rc.setIndicatorLine(me, prioritizedLauncherLocation, 75, 255, 255);
                 } else if (GlobalArray.DEBUG_INFO > 0) {
                     rc.setIndicatorDot(me, 75, 255, 255);

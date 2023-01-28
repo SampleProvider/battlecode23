@@ -9,6 +9,17 @@ public strictfp class StoredLocations {
     
     public static final int MIN_EXISTING_DISTANCE_SQUARED = 16;
 
+    public static final Direction[] DIRECTIONS = {
+            Direction.SOUTHWEST,
+            Direction.SOUTH,
+            Direction.SOUTHEAST,
+            Direction.WEST,
+            Direction.EAST,
+            Direction.NORTHWEST,
+            Direction.NORTH,
+            Direction.NORTHEAST,
+    };
+
     protected MapLocation[] headquarters = new MapLocation[0];
 
     protected WellInfo[] wells = new WellInfo[8];
