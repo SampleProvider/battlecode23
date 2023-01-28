@@ -103,6 +103,7 @@ public strictfp class Carrier {
                 if (storedLocations.writeToGlobalArray()) returningToStorePOI = false;
 
                 updatePrioritizedHeadquarters();
+                updatePrioritizedWell();
                 MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
                 if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD) && islands.length > 0) {
                     rc.takeAnchor(prioritizedHeadquarters, Anchor.STANDARD);
@@ -161,28 +162,14 @@ public strictfp class Carrier {
 
     private void runState() throws GameActionException {
         if (state == 0) {
-            updatePrioritizedWell();
             if (prioritizedWell != null) {
                 state = 1;
-                indicatorString.append("PATH->WELL; ");
-                Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, true, indicatorString);
-                lastDirection = bug2array[0];
-                if (bug2array[1] == Direction.CENTER) {
-                    clockwiseRotation = !clockwiseRotation;
-                }
-                attemptCollection();
-                me = rc.getLocation();
-                if (GlobalArray.DEBUG_INFO >= 4) {
-                    rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
-                } else if (GlobalArray.DEBUG_INFO > 0) {
-                    rc.setIndicatorDot(me, 255, 75, 75);
-                }
+                runState();
                 return;
             }
             state = 6;
             runState();
         } else if (state == 1) {
-            updatePrioritizedWell();
             if (prioritizedWell == null) {
                 state = 0;
                 runState();
@@ -217,7 +204,6 @@ public strictfp class Carrier {
                 runState();
             }
         } else if (state == 3) {
-            updatePrioritizedHeadquarters();
             if (GlobalArray.hasTooManyBots(rc.readSharedArray(prioritizedHeadquarterIndex))) {
                 // if too many robots then linger aroudn edges to let bots out
                 if (manaAmount == 0) {
@@ -239,7 +225,7 @@ public strictfp class Carrier {
             } else if (GlobalArray.DEBUG_INFO > 0) {
                 rc.setIndicatorDot(me, 125, 25, 255);
             }
-            if (adamantiumAmount + manaAmount + elixirAmount == 0 && !returningToStorePOI) {
+            if (adamantiumAmount + manaAmount + elixirAmount == 0 && !returningToStorePOI && rc.getAnchor() == null) {
                 state = 0;
             }
         } else if (state == 4) {
@@ -264,11 +250,10 @@ public strictfp class Carrier {
                     rc.setIndicatorDot(me, 75, 125, 255);
                 }
             } else {
-                state = 6;
+                state = 3;
                 runState();
             }
         } else if (state == 5) {
-            updatePrioritizedHeadquarters();
             indicatorString.append("RET; ");
             Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, indicatorString);
             lastDirection = bug2array[0];
@@ -288,49 +273,10 @@ public strictfp class Carrier {
                 rc.setIndicatorDot(me, 175, 255, 0);
             }
         } else if (state == 6) {
-            if (rc.getAnchor() != null) {
-                updatePrioritizedIsland();
-                if (prioritizedIslandLocation != null) {
-                    state = 4;
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, false, indicatorString);
-                    lastDirection = bug2array[0];
-                    if (bug2array[1] == Direction.CENTER) {
-                        clockwiseRotation = !clockwiseRotation;
-                    }
-                    me = rc.getLocation();
-                    if (rc.canPlaceAnchor()) {
-                        if (rc.senseTeamOccupyingIsland(rc.senseIsland(me)) == Team.NEUTRAL) {
-                            indicatorString.append("P ANC; ");
-                            rc.placeAnchor();
-                            state = 0;
-                        }
-                    }
-                    if (GlobalArray.DEBUG_INFO >= 2) {
-                        rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 125, 255);
-                    } else if (GlobalArray.DEBUG_INFO > 0) {
-                        rc.setIndicatorDot(me, 75, 125, 255);
-                    }
-                    return;
-                }
-            } else {
-                updatePrioritizedWell();
-                if (prioritizedWell != null) {
-                    state = 1;
-                    indicatorString.append("PATH->WELL; ");
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, true, indicatorString);
-                    lastDirection = bug2array[0];
-                    if (bug2array[1] == Direction.CENTER) {
-                        clockwiseRotation = !clockwiseRotation;
-                    }
-                    attemptCollection();
-                    me = rc.getLocation();
-                    if (GlobalArray.DEBUG_INFO >= 4) {
-                        rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
-                    } else if (GlobalArray.DEBUG_INFO > 0) {
-                        rc.setIndicatorDot(me, 255, 75, 75);
-                    }
-                    return;
-                }
+            if (prioritizedWell != null) {
+                state = 1;
+                runState();
+                return;
             }
             updateRandomExploreLocation();
             if (randomExploreLocation != null) {
