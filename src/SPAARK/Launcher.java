@@ -51,6 +51,8 @@ public strictfp class Launcher {
             }
             lastHealth = rc.getHealth();
             storedLocations = new StoredLocations(rc, headquarters);
+
+            indicatorString = new StringBuilder();
         } catch (GameActionException e) {
             System.out.println("GameActionException at Launcher constructor");
             e.printStackTrace();
@@ -67,11 +69,11 @@ public strictfp class Launcher {
             try {
                 me = rc.getLocation();
                 round = rc.getRoundNum();
-
-                indicatorString = new StringBuilder();
+                globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
 
                 storedLocations.detectWells();
                 storedLocations.detectIslandLocations();
+                storedLocations.detectSymmetry();
                 storedLocations.writeToGlobalArray();
 
                 runState();
@@ -162,57 +164,69 @@ public strictfp class Launcher {
         }
         
         if (round % 2 == 0) {
+            indicatorString = new StringBuilder();
             // lets move!!
-            MapLocation[] opponentLocations = GlobalArray.getKnownOpponentLocations(rc);
-            MapLocation prioritizedOpponentLocation = null;
-            int prioritizedOpponentLocationIndex = -1;
-            int index = -1;
-            for (MapLocation m : opponentLocations) {
-                index++;
-                if (m == null) {
-                    continue;
-                }
-                if (prioritizedOpponentLocation == null) {
-                    prioritizedOpponentLocation = m;
-                    prioritizedOpponentLocationIndex = index;
-                    continue;
-                }
-                if (prioritizedOpponentLocation.distanceSquaredTo(me) > m.distanceSquaredTo(me)) {
-                    prioritizedOpponentLocation = m;
-                    prioritizedOpponentLocationIndex = index;
-                }
-            }
-            if (prioritizedOpponentLocation != null && prioritizedOpponentLocation.distanceSquaredTo(me) <= defenseRange) {
-                // if carrier/amplifier/hq writes opponent location, try to go there
-                if (GlobalArray.DEBUG_INFO >= 3) {
-                    rc.setIndicatorLine(me, prioritizedOpponentLocation, 75, 255, 75);
-                }
-                else if (GlobalArray.DEBUG_INFO >= 2) {
-                    rc.setIndicatorDot(me, 75, 255, 75);
-                }
-                if (storedLocations.removedOpponents[prioritizedOpponentLocationIndex] == true) {
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, true, true, indicatorString);
-                    lastDirection = bug2array[0];
-                    if (bug2array[1] == Direction.CENTER) {
-                        clockwiseRotation = !clockwiseRotation;
-                    }
-                } else {
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedOpponentLocation, lastDirection, clockwiseRotation, true, true, indicatorString);
-                    lastDirection = bug2array[0];
-                    if (bug2array[1] == Direction.CENTER) {
-                        clockwiseRotation = !clockwiseRotation;
-                    }
-                    boolean allDead = true;
-                    for (RobotInfo r : robotInfo) {
-                        if (r.getType() != RobotType.HEADQUARTERS) {
-                            allDead = false;
+            
+            if (rc.getHealth() <= RobotType.LAUNCHER.health * 3 / 4) {
+                indicatorString.append("LOW HP; ");
+                int[] islands = rc.senseNearbyIslands();
+                MapLocation prioritizedIslandLocation = null;
+                for (int id : islands) {
+                    if (rc.senseTeamOccupyingIsland(id) == rc.getTeam()) {
+                        MapLocation[] islandLocations = rc.senseNearbyIslandLocations(id);
+                        for (MapLocation m : islandLocations) {
+                            if (prioritizedIslandLocation == null) {
+                                prioritizedIslandLocation = m;
+                            } else if (m.distanceSquaredTo(me) < prioritizedIslandLocation.distanceSquaredTo(me)) {
+                                prioritizedIslandLocation = m;
+                            }
                         }
                     }
-                    if (prioritizedOpponentLocation.distanceSquaredTo(me) <= 2 && allDead) {
-                        storedLocations.removeOpponentLocation(prioritizedOpponentLocationIndex);
+                }
+                if (prioritizedIslandLocation != null) {
+                    Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, true, true, indicatorString);
+                    lastDirection = bug2array[0];
+                    if (bug2array[1] == Direction.CENTER) {
+                        clockwiseRotation = !clockwiseRotation;
+                    }
+                    me = rc.getLocation();
+                    if (GlobalArray.DEBUG_INFO >= 3) {
+                        rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 255, 255);
+                    }
+                    if (GlobalArray.DEBUG_INFO >= 2) {
+                        rc.setIndicatorDot(me, 75, 255, 255);
+                    }
+                    return;
+                } else {
+                    // get island location from global array
+                    MapLocation[] islandLocations = GlobalArray.getKnownIslandLocations(rc, rc.getTeam());
+                    for (MapLocation m : islandLocations) {
+                        if (m == null) {
+                            continue;
+                        }
+                        if (prioritizedIslandLocation == null) {
+                            prioritizedIslandLocation = m;
+                        }
+                        else if (m.distanceSquaredTo(me) < prioritizedIslandLocation.distanceSquaredTo(me)) {
+                            prioritizedIslandLocation = m;
+                        }
+                    }
+                    if (prioritizedIslandLocation != null) {
+                        Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, false, true, indicatorString);
+                        lastDirection = bug2array[0];
+                        if (bug2array[1] == Direction.CENTER) {
+                            clockwiseRotation = !clockwiseRotation;
+                        }
+                        me = rc.getLocation();
+                        if (GlobalArray.DEBUG_INFO >= 3) {
+                            rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 255, 255);
+                        }
+                        if (GlobalArray.DEBUG_INFO >= 2) {
+                            rc.setIndicatorDot(me, 75, 255, 255);
+                        }
+                        return;
                     }
                 }
-                return;
             }
             int surroundingLaunchers = 0;
             if (friendlyRobotInfo.length > 0) {
@@ -240,7 +254,11 @@ public strictfp class Launcher {
                     // try to swarm, lots of launchers, more aggressive
                     if (lowestIdFriendlyRobotInfo.ID > rc.getID()) {
                         // i'm the leader!
-                        if (opponent != null) {
+                        indicatorString.append("LEAD SWARM 5; ");
+                        if (bugToStoredOpponentLocation(defenseRange)) {
+
+                        }
+                        else if (opponent != null) {
                             // opponent, lets move there
                             Direction[] bug2array = Motion.bug2(rc, opponent.getLocation(), lastDirection, clockwiseRotation, true, true, indicatorString);
                             lastDirection = bug2array[0];
@@ -323,7 +341,56 @@ public strictfp class Launcher {
                                         }
                                     }
                                     else {
-                                        Motion.moveRandomly(rc);
+                                        int symmetry = (globalArray.mapSymmetry() & 0b1) + ((globalArray.mapSymmetry() >> 1) & 0b1) + ((globalArray.mapSymmetry() >> 2) & 0b1);
+                                        if (symmetry == 1) {
+                                            MapLocation targetHeadquarters = headquarters[0];
+                                            if ((globalArray.mapSymmetry() & 0b1) == 1) {
+                                                indicatorString.append("SYM VER; ");
+                                                Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() - targetHeadquarters.x, targetHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
+                                                lastDirection = bug2array[0];
+                                                if (bug2array[1] == Direction.CENTER) {
+                                                    clockwiseRotation = !clockwiseRotation;
+                                                }
+                                            }
+                                            else if (((globalArray.mapSymmetry() >> 1) & 0b1) == 1) {
+                                                indicatorString.append("SYM HOR; ");
+                                                Direction[] bug2array = Motion.bug2(rc, new MapLocation(targetHeadquarters.x, rc.getMapHeight() - targetHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
+                                                lastDirection = bug2array[0];
+                                                if (bug2array[1] == Direction.CENTER) {
+                                                    clockwiseRotation = !clockwiseRotation;
+                                                }
+                                            }
+                                            else {
+                                                indicatorString.append("SYM ROT; ");
+                                                Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() - targetHeadquarters.x, rc.getMapHeight() - targetHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
+                                                lastDirection = bug2array[0];
+                                                if (bug2array[1] == Direction.CENTER) {
+                                                    clockwiseRotation = !clockwiseRotation;
+                                                }
+                                            }
+                                        }
+                                        // else if (symmetry == 2) {
+                                        //     MapLocation targetHeadquarters = headquarters[0];
+                                        //     if ((globalArray.mapSymmetry() & 0b1) == 1) {
+                                        //         indicatorString.append("SYM VER; ");
+                                        //         Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() - targetHeadquarters.x, targetHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
+                                        //         lastDirection = bug2array[0];
+                                        //         if (bug2array[1] == Direction.CENTER) {
+                                        //             clockwiseRotation = !clockwiseRotation;
+                                        //         }
+                                        //     }
+                                        //     else if (((globalArray.mapSymmetry() >> 1) & 0b1) == 1) {
+                                        //         indicatorString.append("SYM HOR; ");
+                                        //         Direction[] bug2array = Motion.bug2(rc, new MapLocation(targetHeadquarters.x, rc.getMapHeight() - targetHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
+                                        //         lastDirection = bug2array[0];
+                                        //         if (bug2array[1] == Direction.CENTER) {
+                                        //             clockwiseRotation = !clockwiseRotation;
+                                        //         }
+                                        //     }
+                                        // }
+                                        else {
+                                            Motion.moveRandomly(rc);
+                                        }
                                     }
                                 }
                             }
@@ -331,6 +398,7 @@ public strictfp class Launcher {
                         lastLauncherLocation = null;
                     } else {
                         // i'm not the leader
+                        indicatorString.append("FOL SWARM 5; ");
                         if (opponent != null) {
                             // opponent detected, to reshape launcher swarm, head away from opponent
                             if (GlobalArray.DEBUG_INFO >= 3) {
@@ -360,16 +428,23 @@ public strictfp class Launcher {
                                 }
                                 lastLauncherLocation = null;
                             }
-                            else if (lastLauncherLocation != null && rc.canMove(lastLauncherLocation.directionTo(lowestIdFriendlyRobotInfo.getLocation()))) {
-                                // follow leader last move
-                                rc.move(lastLauncherLocation.directionTo(lowestIdFriendlyRobotInfo.getLocation()));
-                                lastLauncherLocation = lowestIdFriendlyRobotInfo.getLocation();
-                            }
+                            // else if (lastLauncherLocation != null && rc.canMove(lastLauncherLocation.directionTo(lowestIdFriendlyRobotInfo.getLocation()))) {
+                            //     // follow leader last move
+                            //     rc.move(lastLauncherLocation.directionTo(lowestIdFriendlyRobotInfo.getLocation()));
+                            //     lastLauncherLocation = lowestIdFriendlyRobotInfo.getLocation();
+                            // }
                             else {
                                 if (me.distanceSquaredTo(lowestIdFriendlyRobotInfo.getLocation()) <= launcherCircleRange * 1.5) {
-                                    // circle around leader
-                                    clockwiseRotation = Motion.circleAroundTarget(rc, lowestIdFriendlyRobotInfo.getLocation(), launcherCircleRange, clockwiseRotation, true, true);
-                                    lastLauncherLocation = lowestIdFriendlyRobotInfo.getLocation();
+                                    if (lastLauncherLocation != null && rc.canMove(lastLauncherLocation.directionTo(lowestIdFriendlyRobotInfo.getLocation()))) {
+                                        // follow leader last move
+                                        rc.move(lastLauncherLocation.directionTo(lowestIdFriendlyRobotInfo.getLocation()));
+                                        lastLauncherLocation = lowestIdFriendlyRobotInfo.getLocation();
+                                    }
+                                    else {
+                                        // circle around leader
+                                        clockwiseRotation = Motion.circleAroundTarget(rc, lowestIdFriendlyRobotInfo.getLocation(), launcherCircleRange, clockwiseRotation, true, true);
+                                        lastLauncherLocation = lowestIdFriendlyRobotInfo.getLocation();
+                                    }
                                 }
                                 else {
                                     // i can see leader but not close enough, try to bug to leader
@@ -395,9 +470,11 @@ public strictfp class Launcher {
                 else if (surroundingLaunchers >= 1) {
                     // try to swarm, not that many launchers, more defensive
                     if (lowestIdFriendlyRobotInfo.ID > rc.getID()) {
+                        indicatorString.append("LEAD SWARM 1; ");
                         headquarterCircleRange = 16 + surroundingLaunchers / 3;
                         if (prioritizedHeadquarters.distanceSquaredTo(me) <= 100) {
                             // head to center
+                            indicatorString.append("CENTER; ");
                             Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, true, true, indicatorString);
                             lastDirection = bug2array[0];
                             if (bug2array[1] == Direction.CENTER) {
@@ -417,6 +494,7 @@ public strictfp class Launcher {
                         }
                     }
                     else {
+                        indicatorString.append("FOL SWARM 1; ");
                         // if (lastLauncherLocation != null){
                         //     Direction direction = lastLauncherLocation.directionTo(lowestIdFriendlyRobotInfo.getLocation());
                         //     if (rc.canMove(direction) && rc.senseCloud(me.add(direction)) == false) {
@@ -426,7 +504,7 @@ public strictfp class Launcher {
                         //         return;
                         //     }
                         // }
-                        if (me.distanceSquaredTo(lowestIdFriendlyRobotInfo.getLocation()) <= launcherCircleRange * 1.5) {
+                        if (me.distanceSquaredTo(lowestIdFriendlyRobotInfo.getLocation()) <= launcherCircleRange * 1.25) {
                             // circle around leader
                             clockwiseRotation = Motion.circleAroundTarget(rc, lowestIdFriendlyRobotInfo.getLocation(), launcherCircleRange, clockwiseRotation, true, true);
                             lastLauncherLocation = lowestIdFriendlyRobotInfo.getLocation();
@@ -449,11 +527,11 @@ public strictfp class Launcher {
             headquarterCircleRange = 16 + surroundingLaunchers / 3;
             lastLauncherLocation = null;
             if (me.distanceSquaredTo(prioritizedHeadquarters) <= headquarterCircleRange * 1.25) {
-                if (me.x <= edgeRange || me.x >= rc.getMapWidth() - edgeRange || me.y <= edgeRange || me.y >= rc.getMapHeight() - edgeRange) {
-                    if (rc.isMovementReady()) {
-                        clockwiseRotation = !clockwiseRotation;
-                    }
-                }
+                // if (me.x <= edgeRange || me.x >= rc.getMapWidth() - edgeRange || me.y <= edgeRange || me.y >= rc.getMapHeight() - edgeRange) {
+                //     if (rc.isMovementReady()) {
+                //         clockwiseRotation = !clockwiseRotation;
+                //     }
+                // }
                 clockwiseRotation = Motion.circleAroundTarget(rc, prioritizedHeadquarters, headquarterCircleRange, clockwiseRotation, true, true);
             } else {
                 Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, true, indicatorString);
@@ -495,5 +573,62 @@ public strictfp class Launcher {
                 }
             }
         }
+    }
+    // private void 
+    private boolean bugToStoredOpponentLocation(int defenseRange) throws GameActionException {
+        MapLocation[] opponentLocations = GlobalArray.getKnownOpponentLocations(rc);
+        MapLocation prioritizedOpponentLocation = null;
+        int prioritizedOpponentLocationIndex = -1;
+        int index = -1;
+        for (MapLocation m : opponentLocations) {
+            index++;
+            if (m == null) {
+                continue;
+            }
+            if (prioritizedOpponentLocation == null) {
+                prioritizedOpponentLocation = m;
+                prioritizedOpponentLocationIndex = index;
+                continue;
+            }
+            if (prioritizedOpponentLocation.distanceSquaredTo(me) > m.distanceSquaredTo(me)) {
+                prioritizedOpponentLocation = m;
+                prioritizedOpponentLocationIndex = index;
+            }
+        }
+        if (prioritizedOpponentLocation != null && prioritizedOpponentLocation.distanceSquaredTo(me) <= defenseRange) {
+            // if carrier/amplifier/hq writes opponent location, try to go there
+            indicatorString.append("PROT; ");
+            if (GlobalArray.DEBUG_INFO >= 3) {
+                rc.setIndicatorLine(me, prioritizedOpponentLocation, 75, 255, 75);
+            }
+            else if (GlobalArray.DEBUG_INFO >= 2) {
+                rc.setIndicatorDot(me, 75, 255, 75);
+            }
+            if (storedLocations.removedOpponents[prioritizedOpponentLocationIndex] == true) {
+                Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, true, true, indicatorString);
+                lastDirection = bug2array[0];
+                if (bug2array[1] == Direction.CENTER) {
+                    clockwiseRotation = !clockwiseRotation;
+                }
+            } else {
+                Direction[] bug2array = Motion.bug2(rc, prioritizedOpponentLocation, lastDirection, clockwiseRotation, true, true, indicatorString);
+                lastDirection = bug2array[0];
+                if (bug2array[1] == Direction.CENTER) {
+                    clockwiseRotation = !clockwiseRotation;
+                }
+                RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+                boolean allDead = true;
+                for (RobotInfo r : robotInfo) {
+                    if (r.getType() != RobotType.HEADQUARTERS) {
+                        allDead = false;
+                    }
+                }
+                if (prioritizedOpponentLocation.distanceSquaredTo(me) <= 5 && allDead) {
+                    storedLocations.removeOpponentLocation(prioritizedOpponentLocationIndex);
+                }
+            }
+            return true;
+        }
+        return false;
     }
 }

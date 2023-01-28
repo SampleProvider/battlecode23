@@ -19,6 +19,9 @@ public strictfp class StoredLocations {
 
     protected boolean[] storedIslands = new boolean[35];
 
+    protected int symmetry = 0;
+    protected int notSymmetry = 0;
+
     protected MapLocation[] fullWells = new MapLocation[GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH];
     protected int[] fullWellTimer = new int[GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH];
 
@@ -72,10 +75,27 @@ public strictfp class StoredLocations {
                 }
             }
         }
+        if (symmetry != 0) {
+            GlobalArray globalArray = new GlobalArray();
+            globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
+            globalArray.setMapSymmetry(GlobalArray.setBit(0, symmetry - 1, 1));
+            rc.writeSharedArray(GlobalArray.GAMESTATE, globalArray.getGameStateNumber());
+            symmetry = 0;
+        }
+        else if (notSymmetry != 0) {
+            GlobalArray globalArray = new GlobalArray();
+            globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
+            globalArray.setMapSymmetry(GlobalArray.setBit(globalArray.mapSymmetry(), notSymmetry - 1, 0));
+            rc.writeSharedArray(GlobalArray.GAMESTATE, globalArray.getGameStateNumber());
+            notSymmetry = 0;
+        }
         return true;
     }
 
     public boolean foundNewLocations() throws GameActionException {
+        if (symmetry != 0 || notSymmetry != 0) {
+            return true;
+        }
         MapLocation[] wellLocations = GlobalArray.getKnownWellLocations(rc);
         for (MapLocation m : wellLocations) {
             if (m == null) continue;
@@ -205,6 +225,7 @@ public strictfp class StoredLocations {
                 islandIsOutOfRange[id2] = true;
             }
             storedIslands[id] = true;
+            rc.setIndicatorLine(rc.getLocation(), m, 0, 0, 0);
             return true;
         }
         int lowestDistanceID = Integer.MAX_VALUE;
@@ -220,6 +241,7 @@ public strictfp class StoredLocations {
             islandTeams[id2] = rc.senseTeamOccupyingIsland(id);
             islandIsOutOfRange[id2] = true;
             storedIslands[id] = true;
+            rc.setIndicatorLine(rc.getLocation(), m, 0, 0, 0);
             return true;
         }
         return false;
@@ -234,6 +256,44 @@ public strictfp class StoredLocations {
         for (int id : islands) {
             MapLocation[] islandLocations = rc.senseNearbyIslandLocations(id);
             storeIslandLocation(islandLocations[0], id);
+        }
+    }
+
+    public void detectSymmetry() throws GameActionException {
+        for (int i = 0; i < headquarters.length; i++) {
+            if (rc.canSenseLocation(new MapLocation(rc.getMapWidth() - headquarters[i].x, headquarters[i].y))) {
+                RobotInfo robot = rc.senseRobotAtLocation(new MapLocation(rc.getMapWidth() - headquarters[i].x, headquarters[i].y));
+                if (robot != null && robot.getType() == RobotType.HEADQUARTERS && robot.getTeam() == rc.getTeam().opponent()) {
+                    symmetry = 1;
+                    rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - headquarters[i].x, headquarters[i].y), 0, 0, 0);
+                }
+                else {
+                    notSymmetry = 1;
+                    rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - headquarters[i].x, headquarters[i].y), 0, 0, 0);
+                }
+            }
+            if (rc.canSenseLocation(new MapLocation(headquarters[i].x, rc.getMapHeight() - headquarters[i].y))) {
+                RobotInfo robot = rc.senseRobotAtLocation(new MapLocation(headquarters[i].x, rc.getMapHeight() - headquarters[i].y));
+                if (robot != null && robot.getType() == RobotType.HEADQUARTERS && robot.getTeam() == rc.getTeam().opponent()) {
+                    symmetry = 2;
+                    rc.setIndicatorLine(rc.getLocation(), new MapLocation(headquarters[i].x, rc.getMapHeight() - headquarters[i].y), 0, 0, 0);
+                }
+                else {
+                    notSymmetry = 2;
+                    rc.setIndicatorLine(rc.getLocation(), new MapLocation(headquarters[i].x, rc.getMapHeight() - headquarters[i].y), 0, 0, 0);
+                }
+            }
+            if (rc.canSenseLocation(new MapLocation(rc.getMapWidth() - headquarters[i].x, rc.getMapHeight() - headquarters[i].y))) {
+                RobotInfo robot = rc.senseRobotAtLocation(new MapLocation(rc.getMapWidth() - headquarters[i].x, rc.getMapHeight() - headquarters[i].y));
+                if (robot != null && robot.getType() == RobotType.HEADQUARTERS && robot.getTeam() == rc.getTeam().opponent()) {
+                    symmetry = 3;
+                    rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - headquarters[i].x, rc.getMapHeight() - headquarters[i].y), 0, 0, 0);
+                }
+                else {
+                    notSymmetry = 3;
+                    rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - headquarters[i].x, rc.getMapHeight() - headquarters[i].y), 0, 0, 0);
+                }
+            }
         }
     }
 }

@@ -394,7 +394,7 @@ public strictfp class HeadQuarters {
         int optimalSpawningLocationDistance = Integer.MAX_VALUE;
         for (Direction d : StoredLocations.DIRECTIONS) {
             MapLocation newLocation = currentLocation.add(d);
-            if (!rc.canActLocation(newLocation) || !rc.sensePassability(newLocation) || rc.isLocationOccupied(newLocation)) {
+            if (!rc.canSenseLocation(newLocation) || !rc.canActLocation(newLocation) || !rc.sensePassability(newLocation) || rc.isLocationOccupied(newLocation)) {
                 continue;
             }
             if (prioritizedWellInfo != null) {

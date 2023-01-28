@@ -28,21 +28,41 @@ public class Attack {
             return prioritizedRobotInfo;
         } else {
             if (attackAll) {
-                MapLocation[] mapInfo = rc.senseNearbyCloudLocations(rc.getType().actionRadiusSquared);
-                if (mapInfo.length == 0) {
-                    return null;
-                }
-                MapLocation prioritizedMapLocation = null;
-                for (MapLocation m : mapInfo) {
-                    if (prioritizedMapLocation == null) {
-                        prioritizedMapLocation = m;
+                if (rc.senseCloud(rc.getLocation())) {
+                    MapLocation[] mapInfo = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), rc.getType().actionRadiusSquared);
+                    if (mapInfo.length == 0) {
+                        return null;
                     }
-                    else if (prioritizedHeadquarters.distanceSquaredTo(m) > prioritizedHeadquarters.distanceSquaredTo(prioritizedMapLocation)) {
-                        prioritizedMapLocation = m;
+                    MapLocation prioritizedMapLocation = null;
+                    for (MapLocation m : mapInfo) {
+                        if (prioritizedMapLocation == null) {
+                            prioritizedMapLocation = m;
+                        }
+                        else if (prioritizedHeadquarters.distanceSquaredTo(m) > prioritizedHeadquarters.distanceSquaredTo(prioritizedMapLocation)) {
+                            prioritizedMapLocation = m;
+                        }
+                    }
+                    if (rc.canAttack(prioritizedMapLocation)) {
+                        rc.attack(prioritizedMapLocation);
                     }
                 }
-                if (rc.canAttack(prioritizedMapLocation)) {
-                    rc.attack(prioritizedMapLocation);
+                else {
+                    MapLocation[] mapInfo = rc.senseNearbyCloudLocations(rc.getType().actionRadiusSquared);
+                    if (mapInfo.length == 0) {
+                        return null;
+                    }
+                    MapLocation prioritizedMapLocation = null;
+                    for (MapLocation m : mapInfo) {
+                        if (prioritizedMapLocation == null) {
+                            prioritizedMapLocation = m;
+                        }
+                        else if (prioritizedHeadquarters.distanceSquaredTo(m) > prioritizedHeadquarters.distanceSquaredTo(prioritizedMapLocation)) {
+                            prioritizedMapLocation = m;
+                        }
+                    }
+                    if (rc.canAttack(prioritizedMapLocation)) {
+                        rc.attack(prioritizedMapLocation);
+                    }
                 }
             }
             return null;

@@ -11,17 +11,6 @@ public strictfp class Carrier {
 
     private Random rng = new Random(2023);
 
-    private static final Direction[] DIRECTIONS = {
-            Direction.SOUTHWEST,
-            Direction.SOUTH,
-            Direction.SOUTHEAST,
-            Direction.WEST,
-            Direction.EAST,
-            Direction.NORTHWEST,
-            Direction.NORTH,
-            Direction.NORTHEAST,
-    };
-
     private ResourceType prioritizedResourceType = ResourceType.MANA;
     private int adamantiumAmount = 0;
     private int manaAmount = 0;
@@ -109,9 +98,11 @@ public strictfp class Carrier {
 
                 storedLocations.updateFullWells();
                 storedLocations.detectIslandLocations();
+                storedLocations.detectSymmetry();
                 if (storedLocations.writeToGlobalArray()) returningToStorePOI = false;
 
                 updatePrioritizedHeadquarters();
+                updatePrioritizedWell();
                 MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
                 boolean existsNeutralIsland = false;
                 for (MapLocation m : islands) {
@@ -130,7 +121,6 @@ public strictfp class Carrier {
                         }
                         else {
                             state = 3;
-                            returningToStorePOI = true;
                         }
                     }
                     else {
@@ -138,8 +128,9 @@ public strictfp class Carrier {
                     }
                 }
                 else {
-                    if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD) && islands.length > 0) {
+                    if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD) && existsNeutralIsland) {
                         rc.takeAnchor(prioritizedHeadquarters, Anchor.STANDARD);
+                        state = 4;
                     }
                     else {
                         if (state == 4) {
@@ -147,37 +138,57 @@ public strictfp class Carrier {
                         }
                     }
                 }
+
                 if (rc.getHealth() != lastHealth && state != 4) {
                     state = 5;
+                    storedLocations.storeOpponentLocation(me);
                 }
                 lastHealth = rc.getHealth();
 
-                RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, false, indicatorString);
-                if (robot == null) {
-                    robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
-                    robot = Attack.senseOpponent(rc, robotInfo);
+                if (rc.getAnchor() == null) {
+                    RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+                    RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, false, indicatorString);
+                    if (robot == null) {
+                        robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+                        robot = Attack.senseOpponent(rc, robotInfo);
+                    }
+                    if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
+                        // storedLocations.storeOpponentLocation(robot.getLocation());
+                        if (state != 4) {
+                            state = 5;
+                        }
+                    }
                 }
-                if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
-                    storedLocations.storeOpponentLocation(robot.getLocation());
-                    if (state != 4) {
-                        state = 5;
+                else {
+                    RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+                    RobotInfo robot = Attack.senseOpponent(rc, robotInfo);
+                    if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
+                        // storedLocations.storeOpponentLocation(robot.getLocation());
                     }
                 }
 
                 runState();
                 
                 updatePrioritizedHeadquarters();
-                robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, false, indicatorString);
-                if (robot == null) {
-                    robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
-                    robot = Attack.senseOpponent(rc, robotInfo);
+                if (rc.getAnchor() == null) {
+                    RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+                    RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, false, indicatorString);
+                    if (robot == null) {
+                        robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+                        robot = Attack.senseOpponent(rc, robotInfo);
+                    }
+                    if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
+                        // storedLocations.storeOpponentLocation(robot.getLocation());
+                        if (state != 4) {
+                            state = 5;
+                        }
+                    }
                 }
-                if (robot != null) {
-                    storedLocations.storeOpponentLocation(robot.getLocation());
-                    if (state != 4) {
-                        state = 5;
+                else {
+                    RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+                    RobotInfo robot = Attack.senseOpponent(rc, robotInfo);
+                    if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
+                        // storedLocations.storeOpponentLocation(robot.getLocation());
                     }
                 }
             } catch (GameActionException e) {
@@ -219,22 +230,9 @@ public strictfp class Carrier {
                 runState();
                 return;
             } else {
-                updatePrioritizedWell();
                 if (prioritizedWell != null) {
                     state = 1;
-                    indicatorString.append("PATH->WELL; ");
-                    Direction[] bug2array = Motion.bug2(rc, prioritizedWell, lastDirection, clockwiseRotation, false, false, indicatorString);
-                    lastDirection = bug2array[0];
-                    if (bug2array[1] == Direction.CENTER) {
-                        clockwiseRotation = !clockwiseRotation;
-                    }
-                    attemptCollection();
-                    me = rc.getLocation();
-                    if (GlobalArray.DEBUG_INFO >= 4) {
-                        rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
-                    } else if (GlobalArray.DEBUG_INFO > 0) {
-                        rc.setIndicatorDot(me, 255, 75, 75);
-                    }
+                    runState();
                     return;
                 }
             }
@@ -242,7 +240,6 @@ public strictfp class Carrier {
             runState();
             return;
         } else if (state == 1) {
-            updatePrioritizedWell();
             if (prioritizedWell == null) {
                 state = 0;
                 runState();
@@ -262,10 +259,15 @@ public strictfp class Carrier {
                 rc.setIndicatorDot(me, 255, 75, 75);
             }
         } else if (state == 2) {
+            if (prioritizedWell == null) {
+                state = 0;
+                runState();
+                return;
+            }
             indicatorString.append("COLLECT; ");
             if (rc.canCollectResource(prioritizedWell, -1) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
                 rc.collectResource(prioritizedWell, -1);
-                Motion.circleAroundTarget(rc, me, prioritizedWell);
+                // Motion.circleAroundTarget(rc, me, prioritizedWell);
                 me = rc.getLocation();
                 if (GlobalArray.DEBUG_INFO >= 3) {
                     rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
@@ -277,7 +279,6 @@ public strictfp class Carrier {
                 runState();
             }
         } else if (state == 3) {
-            updatePrioritizedHeadquarters();
             if (GlobalArray.hasTooManyBots(rc.readSharedArray(prioritizedHeadquarterIndex))) {
                 // if too many robots then linger aroudn edges to let bots out
                 if (manaAmount == 0) {
@@ -299,18 +300,10 @@ public strictfp class Carrier {
             } else if (GlobalArray.DEBUG_INFO > 0) {
                 rc.setIndicatorDot(me, 125, 25, 255);
             }
-            if (adamantiumAmount + manaAmount + elixirAmount == 0 && !returningToStorePOI) {
+            if (adamantiumAmount + manaAmount + elixirAmount == 0 && !returningToStorePOI && rc.getAnchor() == null) {
                 state = 0;
             }
         } else if (state == 4) {
-            // indicatorString.append("MOVE " + rc.getMovementCooldownTurns() + ";");
-            MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
-            if (islands.length == 0) {
-                state = 3;
-                returningToStorePOI = true;
-                runState();
-                return;
-            }
             updatePrioritizedIsland();
             if (prioritizedIslandLocation != null) {
                 Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, false, true, indicatorString);
@@ -333,7 +326,6 @@ public strictfp class Carrier {
                 }
             } else {
                 state = 3;
-                returningToStorePOI = true;
                 runState();
                 return;
             }
@@ -386,6 +378,59 @@ public strictfp class Carrier {
                         rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
                     } else if (GlobalArray.DEBUG_INFO > 0) {
                         rc.setIndicatorDot(me, 255, 75, 75);
+                    }
+                    return;
+                }
+            }
+            if (round > 100) {
+                MapLocation centerHeadquarters = headquarters[0];
+                for (int i = 0; i < headquarters.length; i++) {
+                    if (headquarters[i] != null) {
+                        if (centerHeadquarters.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) > headquarters[i].distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))) {
+                            centerHeadquarters = headquarters[i];
+                        }
+                    }
+                }
+                int symmetry = (globalArray.mapSymmetry() & 0b1) + ((globalArray.mapSymmetry() >> 1) & 0b1) + ((globalArray.mapSymmetry() >> 2) & 0b1);
+                if (symmetry == 2) {
+                    if ((globalArray.mapSymmetry() & 0b1) == 1) {
+                        Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() - centerHeadquarters.x, centerHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
+                        lastDirection = bug2array[0];
+                        if (bug2array[1] == Direction.CENTER) {
+                            clockwiseRotation = !clockwiseRotation;
+                        }
+                    }
+                    else if (((globalArray.mapSymmetry() >> 1) & 0b1) == 1) {
+                        Direction[] bug2array = Motion.bug2(rc, new MapLocation(centerHeadquarters.x, rc.getMapHeight() - centerHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
+                        lastDirection = bug2array[0];
+                        if (bug2array[1] == Direction.CENTER) {
+                            clockwiseRotation = !clockwiseRotation;
+                        }
+                    }
+                    if (storedLocations.foundNewLocations()) {
+                        state = 3;
+                        returningToStorePOI = true;
+                    }
+                    return;
+                }
+                else if (symmetry == 3) {
+                    if (rc.getID() % 2 == 0) {
+                        Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() - centerHeadquarters.x, centerHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
+                        lastDirection = bug2array[0];
+                        if (bug2array[1] == Direction.CENTER) {
+                            clockwiseRotation = !clockwiseRotation;
+                        }
+                    }
+                    else {
+                        Direction[] bug2array = Motion.bug2(rc, new MapLocation(centerHeadquarters.x, rc.getMapHeight() - centerHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
+                        lastDirection = bug2array[0];
+                        if (bug2array[1] == Direction.CENTER) {
+                            clockwiseRotation = !clockwiseRotation;
+                        }
+                    }
+                    if (storedLocations.foundNewLocations()) {
+                        state = 3;
+                        returningToStorePOI = true;
                     }
                     return;
                 }
@@ -564,7 +609,7 @@ public strictfp class Carrier {
         // }
         int emptySpots = 0;
         int fullSpots = 0;
-        for (Direction d : DIRECTIONS) {
+        for (Direction d : Motion.DIRECTIONS) {
             MapLocation adjSpot = well.add(d);
             if (!rc.canSenseLocation(adjSpot)) {
                 continue;

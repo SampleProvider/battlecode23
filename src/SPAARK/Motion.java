@@ -6,7 +6,7 @@ import java.util.Random;
 
 public class Motion {
     private static final Random rng = new Random(2023);
-    private static final Direction[] DIRECTIONS = {
+    protected static final Direction[] DIRECTIONS = {
             Direction.SOUTHWEST,
             Direction.SOUTH,
             Direction.SOUTHEAST,
