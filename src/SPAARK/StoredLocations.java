@@ -5,7 +5,7 @@ import battlecode.common.*;
 public strictfp class StoredLocations {
     protected RobotController rc;
     
-    public static final int FULL_WELL_TIME = 100;
+    public static final int FULL_WELL_TIME = 150;
     
     public static final int MIN_EXISTING_DISTANCE_SQUARED = 16;
 
@@ -16,6 +16,8 @@ public strictfp class StoredLocations {
     protected MapLocation[] islands = new MapLocation[16];
     protected Team[] islandTeams = new Team[16];
     protected boolean[] islandIsOutOfRange = new boolean[16];
+
+    protected boolean[] storedIslands = new boolean[35];
 
     protected MapLocation[] fullWells = new MapLocation[GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH];
     protected int[] fullWellTimer = new int[GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH];
@@ -182,6 +184,15 @@ public strictfp class StoredLocations {
     }
 
     public boolean storeIslandLocation(MapLocation m, int id) throws GameActionException {
+        if (storedIslands[id]) {
+            return false;
+        }
+        MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc);
+        if (islands[id % 2] != null) {
+            storedIslands[id] = true;
+            return false;
+        }
+        storedIslands[id] = true;
         // lol cheating a bit here
         if (!rc.canSenseLocation(m) || id >= 32) return false;
         int id2 = id % 16;

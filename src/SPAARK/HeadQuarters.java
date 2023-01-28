@@ -229,9 +229,15 @@ public strictfp class HeadQuarters {
         int carriersProduced = 0;
         int launchersProduced = 0;
         MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
-        boolean canProduceAnchor = islands.length > 0;
+        boolean canProduceAnchor = false;
+        for (MapLocation m : islands) {
+            if (m != null) {
+                canProduceAnchor = true;
+                break;
+            }
+        }
         if (anchorCooldown <= 0 && rc.getNumAnchors(Anchor.STANDARD) == 0 && canProduceAnchor) {
-            if (adamantium > 100 && mana > 100) {
+            if (adamantium > 80 && mana > 80) {
                 rc.buildAnchor(Anchor.STANDARD);
                 indicatorString.append("P ANC; ");
                 anchorCooldown = 50;
