@@ -187,12 +187,11 @@ public strictfp class StoredLocations {
         if (storedIslands[id]) {
             return false;
         }
-        MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc);
-        if (islands[id % 2] != null) {
-            storedIslands[id] = true;
-            return false;
-        }
-        storedIslands[id] = true;
+        // MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc);
+        // if (islands[id % 2] != null) {
+        //     storedIslands[id] = true;
+        //     return false;
+        // }
         // lol cheating a bit here
         if (!rc.canSenseLocation(m) || id >= 32) return false;
         int id2 = id % 16;
@@ -205,6 +204,7 @@ public strictfp class StoredLocations {
             else {
                 islandIsOutOfRange[id2] = true;
             }
+            storedIslands[id] = true;
             return true;
         }
         int lowestDistanceID = Integer.MAX_VALUE;
@@ -219,6 +219,7 @@ public strictfp class StoredLocations {
             islands[id2] = m;
             islandTeams[id2] = rc.senseTeamOccupyingIsland(id);
             islandIsOutOfRange[id2] = true;
+            storedIslands[id] = true;
             return true;
         }
         return false;

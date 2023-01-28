@@ -122,9 +122,11 @@ public strictfp class Carrier {
                 if (rc.getAnchor() != null) {
                     if (!existsNeutralIsland) {
                         indicatorString.append("TRY RET ANCHOR; ");
-                        if (rc.canReturnAnchor(prioritizedHeadquarters)) {
-                            rc.returnAnchor(prioritizedHeadquarters);
-                            state = 0;
+                        if (me.distanceSquaredTo(prioritizedHeadquarters) <= 2) {
+                            if (rc.canReturnAnchor(prioritizedHeadquarters)) {
+                                rc.returnAnchor(prioritizedHeadquarters);
+                                state = 0;
+                            }
                         }
                         else {
                             state = 3;
@@ -138,6 +140,11 @@ public strictfp class Carrier {
                 else {
                     if (rc.canTakeAnchor(prioritizedHeadquarters, Anchor.STANDARD) && islands.length > 0) {
                         rc.takeAnchor(prioritizedHeadquarters, Anchor.STANDARD);
+                    }
+                    else {
+                        if (state == 4) {
+                            state = 0;
+                        }
                     }
                 }
                 if (rc.getHealth() != lastHealth && state != 4) {
@@ -296,6 +303,7 @@ public strictfp class Carrier {
                 state = 0;
             }
         } else if (state == 4) {
+            // indicatorString.append("MOVE " + rc.getMovementCooldownTurns() + ";");
             MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
             if (islands.length == 0) {
                 state = 3;
