@@ -239,6 +239,9 @@ public strictfp class HeadQuarters {
         int launchersProduced = 0;
         MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
         boolean canProduceAnchor = islands.length > 0;
+        updatePrioritizedWell();
+        MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
+        MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
         if (anchorCooldown <= 0 && rc.getNumAnchors(Anchor.STANDARD) == 0 && canProduceAnchor) {
             if (adamantium > 100 && mana > 100) {
                 rc.buildAnchor(Anchor.STANDARD);
@@ -247,11 +250,9 @@ public strictfp class HeadQuarters {
             } else {
                 indicatorString.append("TP ANC; ");
             }
-            MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
-            MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
             while (rc.isActionReady()) {
-                optimalSpawningLocationWell = updateOptimalSpawnLocation(optimalSpawningLocationWell);
-                optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation);
+                optimalSpawningLocationWell = updateOptimalSpawnLocation(optimalSpawningLocationWell, true);
+                optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
                 if (mana > 160 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
                     rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                     launchersProduced++;
@@ -265,11 +266,9 @@ public strictfp class HeadQuarters {
                 } else break;
             }
         } else {
-            MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
-            MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
             while (rc.isActionReady()) {
-                optimalSpawningLocationWell = updateOptimalSpawnLocation(optimalSpawningLocationWell);
-                optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation);
+                optimalSpawningLocationWell = updateOptimalSpawnLocation(optimalSpawningLocationWell, true);
+                optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
                 if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
                         && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0)
                         && (round > 1 || carriersProduced < 2) && possibleSpawningLocations >= 3) {
@@ -352,7 +351,6 @@ public strictfp class HeadQuarters {
     private MapLocation optimalSpawnLocation(boolean well) throws GameActionException {
         MapLocation optimalSpawningLocation = null;
         possibleSpawningLocations = 0;
-        if (well) updatePrioritizedWell();
         if (prioritizedWellInfo != null && well) {
             int optimalSpawningLocationDistance = Integer.MAX_VALUE;
             for (MapLocation m : spawningLocations) {
@@ -371,6 +369,7 @@ public strictfp class HeadQuarters {
                 }
             }
         } else {
+            MapLocation center = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
             for (MapLocation m : spawningLocations) {
                 if (rc.sensePassability(m) == false || rc.isLocationOccupied(m)) {
                     continue;
@@ -378,8 +377,7 @@ public strictfp class HeadQuarters {
                 possibleSpawningLocations += 1;
                 if (optimalSpawningLocation == null) {
                     optimalSpawningLocation = m;
-                } else if (optimalSpawningLocation.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))
-                        > m.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))) {
+                } else if (optimalSpawningLocation.distanceSquaredTo(center) > m.distanceSquaredTo(center)) {
                     optimalSpawningLocation = m;
                 }
             }
@@ -387,7 +385,7 @@ public strictfp class HeadQuarters {
         return optimalSpawningLocation;
     }
 
-    private MapLocation updateOptimalSpawnLocation(MapLocation currentLocation) throws GameActionException {
+    private MapLocation updateOptimalSpawnLocation(MapLocation currentLocation, boolean well) throws GameActionException {
         if (currentLocation == null) return null;
         if (prioritizedWellInfo == null) updatePrioritizedWell();
         MapLocation optimalSpawningLocation = null;
@@ -407,6 +405,9 @@ public strictfp class HeadQuarters {
                 optimalSpawningLocation = newLocation;
                 break;
             }
+        }
+        if (optimalSpawningLocation == null) {
+            optimalSpawningLocation = optimalSpawnLocation(well);
         }
         return optimalSpawningLocation;
     }
