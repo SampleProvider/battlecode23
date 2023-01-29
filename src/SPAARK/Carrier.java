@@ -98,6 +98,7 @@ public strictfp class Carrier {
                 indicatorString.append(state + "; ");
                 indicatorString.append("PR=" + (prioritizedResourceType == ResourceType.MANA ? "MN" : prioritizedResourceType.toString().substring(0, 2)) + "; ");
 
+                globalArray.incrementCount(rc);
                 storedLocations.updateFullWells();
                 storedLocations.detectIslandLocations();
                 storedLocations.detectSymmetry();

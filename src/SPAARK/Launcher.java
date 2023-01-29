@@ -73,6 +73,7 @@ public strictfp class Launcher {
 
                 indicatorString = new StringBuilder();
 
+                globalArray.incrementCount(rc);
                 storedLocations.detectWells();
                 storedLocations.detectIslandLocations();
                 storedLocations.detectSymmetry();
@@ -525,6 +526,7 @@ public strictfp class Launcher {
             }
         }
     }
+
     private void updatePrioritizedOpponentHeadquarters(RobotInfo[] robotInfo) throws GameActionException {
         prioritizedOpponentHeadquarters = null;
         for (RobotInfo r : robotInfo) {
@@ -539,7 +541,7 @@ public strictfp class Launcher {
             }
         }
     }
-    // private void 
+
     private boolean bugToStoredOpponentLocation(int defenseRange) throws GameActionException {
         MapLocation[] opponentLocations = GlobalArray.getKnownOpponentLocations(rc);
         MapLocation prioritizedOpponentLocation = null;

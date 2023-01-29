@@ -243,6 +243,17 @@ public strictfp class GlobalArray {
         return Team.NEUTRAL;
     }
 
+    // counting
+    public void incrementCount(RobotController rc) throws GameActionException {
+        if (rc.getType() == RobotType.CARRIER) {
+            rc.writeSharedArray(GlobalArray.CARRIERCOUNT, rc.readSharedArray(GlobalArray.CARRIERCOUNT) + 1);
+        } else if (rc.getType() == RobotType.LAUNCHER) {
+            rc.writeSharedArray(GlobalArray.LAUNCHERCOUNT, rc.readSharedArray(GlobalArray.LAUNCHERCOUNT) + 1);
+        } else if (rc.getType() == RobotType.AMPLIFIER) {
+            rc.writeSharedArray(GlobalArray.AMPLIFIERCOUNT, rc.readSharedArray(GlobalArray.AMPLIFIERCOUNT) + 1);
+        }
+    }
+
     /*
      * Bits 0-1     prioritized resource hq 1
      * Bits 2-3     prioritized resource hq 2

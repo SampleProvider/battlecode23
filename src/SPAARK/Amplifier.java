@@ -87,6 +87,7 @@ public strictfp class Amplifier {
                 round = rc.getRoundNum();
                 globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
 
+                globalArray.incrementCount(rc);
                 storedLocations.detectWells();
                 storedLocations.detectOpponentLocations();
                 storedLocations.detectIslandLocations();
