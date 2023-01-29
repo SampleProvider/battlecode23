@@ -28,6 +28,8 @@ public strictfp class StoredLocations {
     protected int symmetry = 0;
     protected int notSymmetry = 0;
 
+    protected int noRobotTime = 0;
+
     protected MapLocation[] fullWells = new MapLocation[GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH];
     protected int[] fullWellTimer = new int[GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH];
 
@@ -63,25 +65,6 @@ public strictfp class StoredLocations {
 
     public void setHeadquarters(MapLocation[] headquarters) {
         this.headquarters = headquarters;
-        headquartersIndex = new int[headquarters.length];
-        center = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
-        centerHeadquarters.add(headquarters[0]);
-        headquartersIndex[0] = 0;
-        for (int i = 1; i < headquarters.length; i++) {
-            for (int j = 0;j < centerHeadquarters.size();j++) {
-                if (centerHeadquarters.get(j).distanceSquaredTo(center) > headquarters[i].distanceSquaredTo(center)) {
-                    centerHeadquarters.add(j, headquarters[i]);
-                    break;
-                }
-            }
-        }
-        for (int i = 1; i < headquarters.length; i++) {
-            for (int j = 0;j < centerHeadquarters.size();j++) {
-                if (headquarters[i].equals(centerHeadquarters.get(j))) {
-                    headquartersIndex[i] = j;
-                }
-            }
-        }
     }
 
     public boolean writeToGlobalArray() throws GameActionException {
@@ -125,7 +108,7 @@ public strictfp class StoredLocations {
             rc.writeSharedArray(GlobalArray.GAMESTATE, globalArray.getGameStateNumber());
             symmetry = 0;
         }
-        else if (notSymmetry != 0) {
+        if (notSymmetry != 0) {
             GlobalArray globalArray = new GlobalArray();
             globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
             globalArray.setMapSymmetry(GlobalArray.setBit(globalArray.mapSymmetry(), notSymmetry - 1, 0));
@@ -303,6 +286,17 @@ public strictfp class StoredLocations {
     }
 
     public void detectSymmetry(int storedSymmetry) throws GameActionException {
+        boolean allHQ = true;
+        if (rc.getType() == RobotType.AMPLIFIER) {
+            RobotInfo[] robotInfo = rc.senseNearbyRobots(RobotType.AMPLIFIER.visionRadiusSquared, rc.getTeam().opponent());
+            for (RobotInfo r : robotInfo) {
+                if (r.getType() != RobotType.HEADQUARTERS) {
+                    allHQ = false;
+                    noRobotTime = 0;
+                }
+            }
+        }
+        boolean noRobots = false;
         for (int i = 0; i < headquarters.length; i++) {
             if (rc.canSenseLocation(new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, headquarters[i].y))) {
                 RobotInfo robot = rc.senseRobotAtLocation(new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, headquarters[i].y));
@@ -312,8 +306,8 @@ public strictfp class StoredLocations {
                         rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, headquarters[i].y), 0, 0, 0);
                     }
 
-                    if (rc.getType() == RobotType.AMPLIFIER && rc.senseNearbyRobots(RobotType.AMPLIFIER.visionRadiusSquared, rc.getTeam().opponent()).length == 1 && GlobalArray.hasLocation(rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS))) {
-                        rc.writeSharedArray(headquartersIndex[i] + GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.setBit(rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS), 13, 1));
+                    if (rc.getType() == RobotType.AMPLIFIER && allHQ && GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS))) {
+                        noRobots = true;
                     }
                 }
                 else {
@@ -326,17 +320,17 @@ public strictfp class StoredLocations {
             if (rc.canSenseLocation(new MapLocation(headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y))) {
                 RobotInfo robot = rc.senseRobotAtLocation(new MapLocation(headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y));
                 if (robot != null && robot.getType() == RobotType.HEADQUARTERS && robot.getTeam() == rc.getTeam().opponent()) {
-                    if ((storedSymmetry & 0b10) == 1) {
+                    if ((storedSymmetry & 0b10) == 2) {
                         symmetry = 2;
                         rc.setIndicatorLine(rc.getLocation(), new MapLocation(headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y), 0, 0, 0);
                     }
 
-                    if (rc.getType() == RobotType.AMPLIFIER && rc.senseNearbyRobots(RobotType.AMPLIFIER.visionRadiusSquared, rc.getTeam().opponent()).length == 1 && GlobalArray.hasLocation(rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS))) {
-                        rc.writeSharedArray(headquartersIndex[i] + GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.setBit(rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS), 13, 1));
+                    if (rc.getType() == RobotType.AMPLIFIER && allHQ && GlobalArray.hasLocation(rc.readSharedArray(headquartersIndex[i] + GlobalArray.OPPONENT_HEADQUARTERS))) {
+                        noRobots = true;
                     }
                 }
                 else {
-                    if ((storedSymmetry & 0b10) == 1) {
+                    if ((storedSymmetry & 0b10) == 2) {
                         notSymmetry = 2;
                         rc.setIndicatorLine(rc.getLocation(), new MapLocation(headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y), 0, 0, 0);
                     }
@@ -345,22 +339,31 @@ public strictfp class StoredLocations {
             if (rc.canSenseLocation(new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y))) {
                 RobotInfo robot = rc.senseRobotAtLocation(new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y));
                 if (robot != null && robot.getType() == RobotType.HEADQUARTERS && robot.getTeam() == rc.getTeam().opponent()) {
-                    if ((storedSymmetry & 0b100) == 1) {
+                    if ((storedSymmetry & 0b100) == 4) {
                         symmetry = 3;
                         rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y), 0, 0, 0);
                     }
                     
-                    if (rc.getType() == RobotType.AMPLIFIER && rc.senseNearbyRobots(RobotType.AMPLIFIER.visionRadiusSquared, rc.getTeam().opponent()).length == 1 && GlobalArray.hasLocation(rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS))) {
-                        rc.writeSharedArray(headquartersIndex[i] + GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.setBit(rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS), 13, 1));
+                    if (rc.getType() == RobotType.AMPLIFIER && allHQ && GlobalArray.hasLocation(rc.readSharedArray(headquartersIndex[i] + GlobalArray.OPPONENT_HEADQUARTERS))) {
+                        noRobots = true;
                     }
                 }
                 else {
-                    if ((storedSymmetry & 0b100) == 1) {
+                    if ((storedSymmetry & 0b100) == 4) {
                         notSymmetry = 3;
                         rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y), 0, 0, 0);
                     }
                 }
             }
+        }
+        if (noRobots) {
+            noRobotTime++;
+        }
+        if (noRobotTime >= 60) {
+            int opponentHeadquarters = rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS);
+            int headquarterID = opponentHeadquarters >> 13;
+            rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (opponentHeadquarters & 0b1111111111111) | ((headquarterID + 1) % headquarters.length) << 13);
+            noRobotTime = 0;
         }
     }
 }

@@ -138,16 +138,17 @@ public strictfp class Amplifier {
 
     private void runState() throws GameActionException {
         if (state == 0) {
-            for (int i = 0; i < 4; i++) {
-                if (GlobalArray.hasLocation(rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS)) && (rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS) >> 13) == 0) {
-                    Direction[] bug2array = Motion.bug2(rc, GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS)), lastDirection, clockwiseRotation, false, false, indicatorString);
-                    lastDirection = bug2array[0];
-                    if (bug2array[1] == Direction.CENTER) {
-                        clockwiseRotation = !clockwiseRotation;
-                    }
-                    break;
+
+            if (GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS))) {
+                indicatorString.append("ATK OPP HQ; ");
+                Direction[] bug2array = Motion.bug2(rc, GlobalArray.parseLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS)), lastDirection, clockwiseRotation, false, false, indicatorString);
+                lastDirection = bug2array[0];
+                if (bug2array[1] == Direction.CENTER) {
+                    clockwiseRotation = !clockwiseRotation;
                 }
+                return;
             }
+            
             MapLocation centerHeadquarters = headquarters[0];
             for (int i = 0; i < headquarters.length; i++) {
                 if (headquarters[i] != null) {

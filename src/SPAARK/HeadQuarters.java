@@ -151,10 +151,6 @@ public strictfp class HeadQuarters {
                     }
                 }
 
-                if (round > 500){
-                    rc.resign();
-                }
-
                 // track bots
                 if (round % 2 == 1) {
                     carriers = rc.readSharedArray(GlobalArray.CARRIERCOUNT);
@@ -238,41 +234,42 @@ public strictfp class HeadQuarters {
                     if (round > 200 && !setTargetElixirWell) {
                         setTargetElixirWell();
                     }
-                    int index = 0;
-                    for (int i = 0; i < hqCount; i++) {
-                        if ((rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS) >> 13) == 0) {
-                            index = i;
-                            break;
-                        }
-                    }
+                    MapLocation targetHeadquarters = centerHeadquarters.get(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS) >> 13);
                     int symmetry = (globalArray.mapSymmetry() & 0b1) + ((globalArray.mapSymmetry() >> 1) & 0b1) + ((globalArray.mapSymmetry() >> 2) & 0b1);
                     if (symmetry == 1) {
                         if ((globalArray.mapSymmetry() & 0b1) == 1) {
                             indicatorString.append("SYM VER; ");
-                            rc.writeSharedArray(index + GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - centerHeadquarters.get(index).x, centerHeadquarters.get(index).y)));
+                            rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, targetHeadquarters.y)));
                         }
                         else if (((globalArray.mapSymmetry() >> 1) & 0b1) == 1) {
                             indicatorString.append("SYM HOR; ");
-                            rc.writeSharedArray(index + GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(centerHeadquarters.get(index).x, rc.getMapHeight() - 1 - centerHeadquarters.get(index).y)));
+                            rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
                         }
                         else {
                             indicatorString.append("SYM ROT; ");
-                            rc.writeSharedArray(index + GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - centerHeadquarters.get(index).x, rc.getMapHeight() - 1 - centerHeadquarters.get(index).y)));
+                            rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
                         }
                     }
                     else if (symmetry == 2) {
                         if ((globalArray.mapSymmetry() & 0b1) != 1) {
-                            indicatorString.append("SYM !VER; " + index);
-                            rc.writeSharedArray(index + GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(centerHeadquarters.get(index).x, rc.getMapHeight() - 1 - centerHeadquarters.get(index).y)));
+                            indicatorString.append("SYM !VER; ");
+                            rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
+                            rc.setIndicatorLine(me, new MapLocation(targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y), 255, 0, 0);
                         }
                         else if (((globalArray.mapSymmetry() >> 1) & 0b1) != 1) {
                             indicatorString.append("SYM !HOR; ");
-                            rc.writeSharedArray(index + GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - centerHeadquarters.get(index).x, centerHeadquarters.get(index).y)));
+                            rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, targetHeadquarters.y)));
                         }
                         // else {
                         //     indicatorString.append("SYM !ROT; ");
-                        //     rc.writeSharedArray(index + GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - centerHeadquarters.get(index).x, rc.getMapHeight() - 1 - centerHeadquarters.get(index).y)));
+                        //     rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
                         // }
+                    }
+                    else if (round >= 2) {
+                        if (mapSizeFactor >= 4) {
+                            indicatorString.append("SYM M ROT; ");
+                            rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
+                        }
                     }
                     indicatorString.append("SYM " + globalArray.mapSymmetry() + "; ");
                 }
@@ -294,7 +291,7 @@ public strictfp class HeadQuarters {
     }
 
     private void spawnBots() throws GameActionException {
-        // alsso makees anchors
+        // also makees anchors
         int carriersProduced = 0;
         int launchersProduced = 0;
         MapLocation[] islands = GlobalArray.getKnownIslandLocations(rc, Team.NEUTRAL);
@@ -303,21 +300,24 @@ public strictfp class HeadQuarters {
         MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
         MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
         if (anchorCooldown <= 0 && rc.getNumAnchors(Anchor.STANDARD) == 0 && canProduceAnchor) {
-            if (adamantium > 100 && mana > 100) {
+            if (adamantium >= Anchor.STANDARD.adamantiumCost && mana >= Anchor.STANDARD.manaCost) {
                 rc.buildAnchor(Anchor.STANDARD);
                 indicatorString.append("P ANC; ");
                 anchorCooldown = 50;
+                if (rc.getIslandCount() >= 6 && round <= 1000) {
+                    anchorCooldown = 150;
+                }
             } else {
                 indicatorString.append("TP ANC; ");
             }
             while (rc.isActionReady()) {
                 optimalSpawningLocationWell = updateOptimalSpawnLocation(optimalSpawningLocationWell, true);
                 optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
-                if (mana > 160 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
+                if (mana > Anchor.STANDARD.manaCost + RobotType.LAUNCHER.buildCostMana && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
                     rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                     launchersProduced++;
                     if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                } else if (adamantium > 150 && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
+                } else if (adamantium > Anchor.STANDARD.adamantiumCost + RobotType.CARRIER.buildCostAdamantium && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
                         && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 4) {
                     rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                     carriersProduced++;

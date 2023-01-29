@@ -400,12 +400,14 @@ public class Motion {
                             robotAmount -= 1;
                         }
                     }
-                    for (RobotInfo robot : friendlyRobotInfo) {
-                        if (rc.canSenseLocation(robot.getLocation().add(d.opposite()))) {
-                            robotAmount += 1;
-                        }
-                        if (me.distanceSquaredTo(robot.getLocation().add(d.opposite())) < me.distanceSquaredTo(robot.getLocation())) {
-                            robotAmount += 1;
+                    if (friendlyRobotInfo.length <= 15) {
+                        for (RobotInfo robot : friendlyRobotInfo) {
+                            if (rc.canSenseLocation(robot.getLocation().add(d.opposite()))) {
+                                robotAmount += 1;
+                            }
+                            if (me.distanceSquaredTo(robot.getLocation().add(d.opposite())) < me.distanceSquaredTo(robot.getLocation())) {
+                                robotAmount += 1;
+                            }
                         }
                     }
                     if (me.distanceSquaredTo(prioritizedHeadquarters.add(d.opposite())) < me.distanceSquaredTo(prioritizedHeadquarters)) {
@@ -425,12 +427,14 @@ public class Motion {
                                     robotAmount -= 1;
                                 }
                             }
-                            for (RobotInfo robot : friendlyRobotInfo) {
-                                if (rc.canSenseLocation(robot.getLocation().add(d.opposite()))) {
-                                    robotAmount += 1;
-                                }
-                                if (me.distanceSquaredTo(robot.getLocation().add(d.opposite())) < me.distanceSquaredTo(robot.getLocation())) {
-                                    robotAmount += 1;
+                            if (friendlyRobotInfo.length <= 15) {
+                                for (RobotInfo robot : friendlyRobotInfo) {
+                                    if (rc.canSenseLocation(robot.getLocation().add(d.opposite()))) {
+                                        robotAmount += 1;
+                                    }
+                                    if (me.distanceSquaredTo(robot.getLocation().add(d.opposite())) < me.distanceSquaredTo(robot.getLocation())) {
+                                        robotAmount += 1;
+                                    }
                                 }
                             }
                             if (me.distanceSquaredTo(prioritizedHeadquarters.add(d.opposite())) < me.distanceSquaredTo(prioritizedHeadquarters)) {
@@ -453,12 +457,14 @@ public class Motion {
                                 robotAmount -= 1;
                             }
                         }
-                        for (RobotInfo robot : friendlyRobotInfo) {
-                            if (rc.canSenseLocation(robot.getLocation().add(d.opposite()))) {
-                                robotAmount += 1;
-                            }
-                            if (me.distanceSquaredTo(robot.getLocation().add(d.opposite())) < me.distanceSquaredTo(robot.getLocation())) {
-                                robotAmount += 1;
+                        if (friendlyRobotInfo.length <= 15) {
+                            for (RobotInfo robot : friendlyRobotInfo) {
+                                if (rc.canSenseLocation(robot.getLocation().add(d.opposite()))) {
+                                    robotAmount += 1;
+                                }
+                                if (me.distanceSquaredTo(robot.getLocation().add(d.opposite())) < me.distanceSquaredTo(robot.getLocation())) {
+                                    robotAmount += 1;
+                                }
                             }
                         }
                         if (me.distanceSquaredTo(prioritizedHeadquarters.add(d.opposite())) < me.distanceSquaredTo(prioritizedHeadquarters)) {
@@ -557,7 +563,8 @@ public class Motion {
         MapLocation m = rc.getLocation().add(direction);
         for (RobotInfo r : robotInfo) {
             if (r.getType() == RobotType.HEADQUARTERS) {
-                if (r.getLocation().distanceSquaredTo(m) < RobotType.HEADQUARTERS.actionRadiusSquared) {
+                rc.setIndicatorLine(m, r.getLocation(), 255, 0, 0);
+                if (r.getLocation().distanceSquaredTo(m) <= RobotType.HEADQUARTERS.actionRadiusSquared) {
                     return false;
                 }
             }

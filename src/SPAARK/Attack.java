@@ -3,6 +3,30 @@ package SPAARK;
 import battlecode.common.*;
 
 public class Attack {
+
+    protected static MapLocation[] launcherAttackLocations = new MapLocation[]{
+        new MapLocation(4, 0),
+        new MapLocation(3, 1),
+        new MapLocation(3, 2),
+        new MapLocation(2, 3),
+        new MapLocation(1, 3),
+        new MapLocation(0, 4),
+        new MapLocation(-1, 3),
+        new MapLocation(-2, 3),
+        new MapLocation(-3, 2),
+        new MapLocation(-3, 1),
+        new MapLocation(-4, 0),
+        new MapLocation(-3, -1),
+        new MapLocation(-3, -2),
+        new MapLocation(-2, -3),
+        new MapLocation(-1, -3),
+        new MapLocation(0, -4),
+        new MapLocation(1, -3),
+        new MapLocation(2, -3),
+        new MapLocation(3, -2),
+        new MapLocation(3, -1),
+    };
+
     protected static RobotInfo attack(RobotController rc, MapLocation prioritizedHeadquarters, RobotInfo[] robotInfo, boolean attackAll, StringBuilder indicatorString) throws GameActionException {
         if (robotInfo.length > 0) {
             RobotInfo prioritizedRobotInfo = null;
@@ -29,17 +53,13 @@ public class Attack {
         } else {
             if (attackAll) {
                 if (rc.senseCloud(rc.getLocation())) {
-                    MapLocation[] mapInfo = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), rc.getType().actionRadiusSquared);
-                    if (mapInfo.length == 0) {
-                        return null;
-                    }
                     MapLocation prioritizedMapLocation = null;
-                    for (MapLocation m : mapInfo) {
+                    for (MapLocation m : launcherAttackLocations) {
                         if (prioritizedMapLocation == null) {
-                            prioritizedMapLocation = m;
+                            prioritizedMapLocation = rc.getLocation().translate(m.x, m.y);
                         }
-                        else if (prioritizedHeadquarters.distanceSquaredTo(m) > prioritizedHeadquarters.distanceSquaredTo(prioritizedMapLocation)) {
-                            prioritizedMapLocation = m;
+                        else if (prioritizedHeadquarters.distanceSquaredTo(rc.getLocation().translate(m.x, m.y)) > prioritizedHeadquarters.distanceSquaredTo(prioritizedMapLocation)) {
+                            prioritizedMapLocation = rc.getLocation().translate(m.x, m.y);
                         }
                     }
                     if (rc.canAttack(prioritizedMapLocation)) {
