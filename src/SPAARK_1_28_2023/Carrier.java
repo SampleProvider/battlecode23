@@ -1,4 +1,4 @@
-package SPAARK_1;
+package SPAARK_1_28_2023;
 
 import battlecode.common.*;
 import java.util.Random;
@@ -22,6 +22,8 @@ public strictfp class Carrier {
     private MapLocation[] headquarters;
     private MapLocation prioritizedHeadquarters;
     private int prioritizedHeadquarterIndex;
+
+    private MapLocation opponent;
 
     private MapLocation prioritizedIslandLocation;
 
@@ -153,9 +155,10 @@ public strictfp class Carrier {
                         robot = Attack.senseOpponent(rc, robotInfo);
                     }
                     if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
-                        // storedLocations.storeOpponentLocation(robot.getLocation());
+                        storedLocations.storeOpponentLocation(robot.getLocation());
                         if (state != 4) {
                             state = 5;
+                            opponent = robot.getLocation();
                         }
                     }
                 }
@@ -164,6 +167,7 @@ public strictfp class Carrier {
                     RobotInfo robot = Attack.senseOpponent(rc, robotInfo);
                     if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
                         storedLocations.storeOpponentLocation(robot.getLocation());
+                        opponent = robot.getLocation();
                     }
                 }
 
@@ -181,6 +185,7 @@ public strictfp class Carrier {
                         storedLocations.storeOpponentLocation(robot.getLocation());
                         if (state != 4) {
                             state = 5;
+                            opponent = robot.getLocation();
                         }
                     }
                 }
@@ -189,6 +194,7 @@ public strictfp class Carrier {
                     RobotInfo robot = Attack.senseOpponent(rc, robotInfo);
                     if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
                         storedLocations.storeOpponentLocation(robot.getLocation());
+                        opponent = robot.getLocation();
                     }
                 }
             } catch (GameActionException e) {
@@ -340,23 +346,44 @@ public strictfp class Carrier {
                 return;
             }
         } else if (state == 5) {
+            if (opponent == null) {
+                state = 0;
+                runState();
+                return;
+            }
             updatePrioritizedHeadquarters();
             indicatorString.append("RET; ");
-            Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, true, indicatorString);
+            Direction[] bug2array = Motion.bug2retreat(rc, rc.senseNearbyRobots(RobotType.CARRIER.visionRadiusSquared, rc.getTeam().opponent()), rc.senseNearbyRobots(RobotType.CARRIER.visionRadiusSquared, rc.getTeam().opponent()), prioritizedHeadquarters, lastDirection, clockwiseRotation, false, true, indicatorString);
             lastDirection = bug2array[0];
             if (bug2array[1] == Direction.CENTER) {
                 clockwiseRotation = !clockwiseRotation;
             }
-            if (prioritizedHeadquarters.distanceSquaredTo(me) <= RobotType.HEADQUARTERS.visionRadiusSquared) {
-                attemptTransfer();
+            if (rc.getLocation() == me) {
+                opponent = null;
                 state = 0;
+                return;
             }
-            me = rc.getLocation();
-            if (GlobalArray.DEBUG_INFO >= 4) {
-                rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 255, 0);
-            } else if (GlobalArray.DEBUG_INFO > 0) {
-                rc.setIndicatorDot(me, 125, 255, 0);
+            if (rc.getLocation().distanceSquaredTo(opponent) > RobotType.CARRIER.visionRadiusSquared * 2) {
+                // i'm far enough, lets stop
+                opponent = null;
+                state = 0;
+                return;
             }
+            // Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, true, indicatorString);
+            // lastDirection = bug2array[0];
+            // if (bug2array[1] == Direction.CENTER) {
+            //     clockwiseRotation = !clockwiseRotation;
+            // }
+            // if (prioritizedHeadquarters.distanceSquaredTo(me) <= RobotType.HEADQUARTERS.visionRadiusSquared) {
+            //     attemptTransfer();
+            //     state = 0;
+            // }
+            // me = rc.getLocation();
+            // if (GlobalArray.DEBUG_INFO >= 4) {
+            //     rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 255, 0);
+            // } else if (GlobalArray.DEBUG_INFO > 0) {
+            //     rc.setIndicatorDot(me, 125, 255, 0);
+            // }
         } else if (state == 6) {
             MapLocation[] wellLocations = GlobalArray.getKnownWellLocations(rc);
             int storedAdamantiumWells = 0;

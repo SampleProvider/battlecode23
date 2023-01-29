@@ -1,4 +1,4 @@
-package SPAARK_1;
+package SPAARK_1_28_2023;
 
 import battlecode.common.*;
 
@@ -301,16 +301,11 @@ public class Motion {
             boolean moved = false;
             if (canMove(rc, direction, avoidClouds, avoidWells) && lastDirection != direction.opposite()) {
                 boolean touchingTheWallBefore = false;
-                for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        if (i == 0 && j == 0) {
-                            continue;
-                        }
-                        MapLocation translatedMapLocation = me.translate(i, j);
-                        if (rc.onTheMap(translatedMapLocation)) {
-                            if (rc.sensePassability(translatedMapLocation) == false || rc.senseRobotAtLocation(translatedMapLocation) != null) {
-                                touchingTheWallBefore = true;
-                            }
+                for (Direction d : DIRECTIONS) {
+                    MapLocation translatedMapLocation = me.add(d);
+                    if (rc.onTheMap(translatedMapLocation)) {
+                        if (rc.sensePassability(translatedMapLocation) == false || rc.senseRobotAtLocation(translatedMapLocation) != null) {
+                            touchingTheWallBefore = true;
                         }
                     }
                 }
@@ -376,55 +371,114 @@ public class Motion {
         return new Direction[] { lastDirection, null };
     }
 
-    protected static Direction[] bug2retreat(RobotController rc, MapLocation dest, Direction lastDirection, boolean clockwiseRotation, boolean avoidClouds, boolean avoidWells, RobotInfo[] friendlyRobotInfo, StringBuilder indicatorString) throws GameActionException {
+    protected static Direction[] bug2retreat(RobotController rc, RobotInfo[] opponentRobotInfo, RobotInfo[] friendlyRobotInfo, MapLocation prioritizedHeadquarters, Direction lastDirection, boolean clockwiseRotation, boolean avoidClouds, boolean avoidWells, StringBuilder indicatorString) throws GameActionException {
         boolean oldClockwiseRotation = clockwiseRotation;
         int stuck = 0;
         while (rc.isMovementReady()) {
             MapLocation me = rc.getLocation();
-            if (me.equals(dest)) {
+            Direction direction = null;
+            boolean inCloud = false;
+            int bestRobotAmount = 0;
+            for (Direction d : DIRECTIONS) {
+                if (!canMove(rc, d, false, false)) {
+                    continue;
+                }
+                if (direction == null) {
+                    direction = d;
+                    inCloud = rc.senseCloud(me.add(d));
+                    int robotAmount = 0;
+                    for (RobotInfo robot : opponentRobotInfo) {
+                        if (rc.canSenseLocation(robot.getLocation().add(d.opposite()))) {
+                            robotAmount -= 1;
+                        }
+                        if (rc.canActLocation(robot.getLocation().add(d.opposite()))) {
+                            robotAmount -= 1;
+                        }
+                    }
+                    for (RobotInfo robot : friendlyRobotInfo) {
+                        if (rc.canSenseLocation(robot.getLocation().add(d.opposite()))) {
+                            robotAmount += 1;
+                        }
+                        if (me.distanceSquaredTo(robot.getLocation().add(d.opposite())) < me.distanceSquaredTo(robot.getLocation())) {
+                            robotAmount += 1;
+                        }
+                    }
+                    if (me.distanceSquaredTo(prioritizedHeadquarters.add(d.opposite())) < me.distanceSquaredTo(prioritizedHeadquarters)) {
+                        robotAmount += 1;
+                    }
+                    bestRobotAmount = robotAmount;
+                }
+                else {
+                    if (inCloud) {
+                        if (rc.senseCloud(me.add(d))) {
+                            int robotAmount = 0;
+                            for (RobotInfo robot : opponentRobotInfo) {
+                                if (rc.canSenseLocation(robot.getLocation().add(d.opposite()))) {
+                                    robotAmount -= 1;
+                                }
+                                if (rc.canActLocation(robot.getLocation().add(d.opposite()))) {
+                                    robotAmount -= 1;
+                                }
+                            }
+                            for (RobotInfo robot : friendlyRobotInfo) {
+                                if (rc.canSenseLocation(robot.getLocation().add(d.opposite()))) {
+                                    robotAmount += 1;
+                                }
+                                if (me.distanceSquaredTo(robot.getLocation().add(d.opposite())) < me.distanceSquaredTo(robot.getLocation())) {
+                                    robotAmount += 1;
+                                }
+                            }
+                            if (me.distanceSquaredTo(prioritizedHeadquarters.add(d.opposite())) < me.distanceSquaredTo(prioritizedHeadquarters)) {
+                                robotAmount += 1;
+                            }
+                            if (robotAmount > bestRobotAmount) {
+                                direction = d;
+                                inCloud = true;
+                                bestRobotAmount = robotAmount;
+                            }
+                        }
+                    }
+                    else {
+                        int robotAmount = 0;
+                        for (RobotInfo robot : opponentRobotInfo) {
+                            if (rc.canSenseLocation(robot.getLocation().add(d.opposite()))) {
+                                robotAmount -= 1;
+                            }
+                            if (rc.canActLocation(robot.getLocation().add(d.opposite()))) {
+                                robotAmount -= 1;
+                            }
+                        }
+                        for (RobotInfo robot : friendlyRobotInfo) {
+                            if (rc.canSenseLocation(robot.getLocation().add(d.opposite()))) {
+                                robotAmount += 1;
+                            }
+                            if (me.distanceSquaredTo(robot.getLocation().add(d.opposite())) < me.distanceSquaredTo(robot.getLocation())) {
+                                robotAmount += 1;
+                            }
+                        }
+                        if (me.distanceSquaredTo(prioritizedHeadquarters.add(d.opposite())) < me.distanceSquaredTo(prioritizedHeadquarters)) {
+                            robotAmount += 1;
+                        }
+                        if (robotAmount > bestRobotAmount || rc.senseCloud(me.add(d))) {
+                            direction = d;
+                            inCloud = rc.senseCloud(me.add(d));
+                            bestRobotAmount = robotAmount;
+                        }
+                    }
+                }
+            }
+            if (direction == null) {
+                moveRandomly(rc);
                 return new Direction[] { Direction.CENTER, null };
             }
-            Direction direction = me.directionTo(dest).opposite();
-            MapLocation prioritizedFriendlyRobotInfoLocation = null;
-            for (RobotInfo w : friendlyRobotInfo) {
-                if (w.getType() != RobotType.LAUNCHER) {
-                    continue;
-                }
-                if (prioritizedFriendlyRobotInfoLocation == null) {
-                    prioritizedFriendlyRobotInfoLocation = w.getLocation();
-                    continue;
-                }
-                if (me.distanceSquaredTo(prioritizedFriendlyRobotInfoLocation) > me.distanceSquaredTo(w.getLocation())) {
-                    prioritizedFriendlyRobotInfoLocation = w.getLocation();
-                }
-            }
-            if (prioritizedFriendlyRobotInfoLocation != null) {
-                if (me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 1) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 2) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 3) % 8) {
-                    direction = direction.rotateRight();
-                    if (!canMove(rc, direction, avoidClouds, avoidWells)) {
-                        direction = direction.rotateLeft();
-                    }
-                }
-                if (me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 7) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 6) % 8 || me.directionTo(prioritizedFriendlyRobotInfoLocation).ordinal() == (direction.ordinal() + 5) % 8) {
-                    direction = direction.rotateLeft();
-                    if (!canMove(rc, direction, avoidClouds, avoidWells)) {
-                        direction = direction.rotateRight();
-                    }
-                }
-            }
             boolean moved = false;
-            if (canMove(rc, direction, avoidClouds, avoidWells) && lastDirection != direction.opposite()) {
+            if (canMove(rc, direction, avoidClouds, avoidWells)) {
                 boolean touchingTheWallBefore = false;
-                for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        if (i == 0 && j == 0) {
-                            continue;
-                        }
-                        MapLocation translatedMapLocation = me.translate(i, j);
-                        if (rc.onTheMap(translatedMapLocation)) {
-                            if (rc.sensePassability(translatedMapLocation) == false || rc.senseRobotAtLocation(translatedMapLocation) != null) {
-                                touchingTheWallBefore = true;
-                            }
+                for (Direction d : DIRECTIONS) {
+                    MapLocation translatedMapLocation = me.add(d);
+                    if (rc.onTheMap(translatedMapLocation)) {
+                        if (rc.sensePassability(translatedMapLocation) == false || rc.senseRobotAtLocation(translatedMapLocation) != null) {
+                            touchingTheWallBefore = true;
                         }
                     }
                 }
@@ -451,7 +505,12 @@ public class Motion {
             }
             
             if (moved == false) {
-                direction = me.directionTo(dest);
+                if (clockwiseRotation) {
+                    direction = direction.rotateLeft();
+                }
+                else {
+                    direction = direction.rotateRight();
+                }
                 for (int i = 0; i < 7; i++) {
                     if (clockwiseRotation) {
                         direction = direction.rotateLeft();
@@ -497,16 +556,11 @@ public class Motion {
                 if (!avoidWells) {
                     return true;
                 }
-                for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        if (i == 0 && j == 0) {
-                            continue;
-                        }
-                        MapLocation translatedMapLocation = m.translate(i, j);
-                        if (rc.onTheMap(translatedMapLocation) && rc.canSenseLocation(translatedMapLocation)) {
-                            if (rc.senseWell(translatedMapLocation) != null) {
-                                return false;
-                            }
+                for (Direction d : DIRECTIONS) {
+                    MapLocation translatedMapLocation = m.add(d);
+                    if (rc.onTheMap(translatedMapLocation) && rc.canSenseLocation(translatedMapLocation)) {
+                        if (rc.senseWell(translatedMapLocation) != null) {
+                            return false;
                         }
                     }
                 }

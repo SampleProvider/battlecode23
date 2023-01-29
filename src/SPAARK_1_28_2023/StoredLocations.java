@@ -1,4 +1,4 @@
-package SPAARK_1;
+package SPAARK_1_28_2023;
 
 import battlecode.common.*;
 

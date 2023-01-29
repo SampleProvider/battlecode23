@@ -88,13 +88,6 @@ public strictfp class StoredLocations {
         if (!rc.canWriteSharedArray(0, 0)) {
             return false;
         }
-        if (rc.getType() == RobotType.CARRIER) {
-            rc.writeSharedArray(GlobalArray.CARRIERCOUNT, rc.readSharedArray(GlobalArray.CARRIERCOUNT) + 1);
-        } else if (rc.getType() == RobotType.LAUNCHER) {
-            rc.writeSharedArray(GlobalArray.LAUNCHERCOUNT, rc.readSharedArray(GlobalArray.LAUNCHERCOUNT) + 1);
-        } else if (rc.getType() == RobotType.AMPLIFIER) {
-            rc.writeSharedArray(GlobalArray.AMPLIFIERCOUNT, rc.readSharedArray(GlobalArray.AMPLIFIERCOUNT) + 1);
-        }
         for (int i = 0; i < 8; i++) {
             if (wells[i] != null) {
                 if (GlobalArray.storeWell(rc, wells[i])) {

@@ -1,4 +1,4 @@
-package betterthings;
+package SPAARK_1_28_2023;
 
 import java.util.Arrays;
 
@@ -32,7 +32,7 @@ public strictfp class GlobalArray {
     public static final int MAP_SYMMETRY = 7;
 
     // 0 - nothing
-    // 1 - dots
+    // 1 - stored location dots
     // 2 - dots + carrier random explore + carrier island target + amplifier random explore + amplifier targets
     // 3 - dots + carrier random explore + carrier island target + carrier collect + amplifier random explore + amplifier targets + launcher swarms
     // 4 - everything
@@ -250,8 +250,8 @@ public strictfp class GlobalArray {
      * Bits 6-7     prioritized resource hq 4
      * Bit 8        convert well
      * Bit 9        upgrade wells
-     * Bits 10-13   id of well to convert to elixir
-     * Bits 14-15   map symmetry
+     * Bits 10-12   id of well to convert to elixir
+     * Bits 13-15   map symmetry
      */
 
     // read game state
@@ -262,8 +262,8 @@ public strictfp class GlobalArray {
         currentState[PRIORITIZED_RESOURCE_HQ4] = (n >> 6) & 0b11; // bits 6-7
         currentState[CONVERT_WELL] = (n >> 8) & 0b1; // bit 8
         currentState[UPGRADE_WELLS] = (n >> 9) & 0b1; // bit 9
-        currentState[CONVERSION_WELL_ID] = (n >> 10) & 0b1111; // bits 10-13
-        currentState[MAP_SYMMETRY] = (n >> 14) & 0b11; // bits 14-15
+        currentState[CONVERSION_WELL_ID] = (n >> 10) & 0b111; // bits 10-13
+        currentState[MAP_SYMMETRY] = (n >> 13) & 0b111; // bits 14-15
         return currentState;
     }
 
@@ -296,7 +296,7 @@ public strictfp class GlobalArray {
                 | (currentState[CONVERT_WELL] << 8)
                 | (currentState[UPGRADE_WELLS] << 9)
                 | (currentState[CONVERSION_WELL_ID] << 10)
-                | (currentState[MAP_SYMMETRY] << 14);
+                | (currentState[MAP_SYMMETRY] << 13);
     }
 
     public void setPrioritizedResource(ResourceType resource, int hqIndex) {

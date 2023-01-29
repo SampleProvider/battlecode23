@@ -243,6 +243,17 @@ public strictfp class GlobalArray {
         return Team.NEUTRAL;
     }
 
+    // counting
+    public void incrementCount(RobotController rc) throws GameActionException {
+        if (rc.getType() == RobotType.CARRIER) {
+            rc.writeSharedArray(GlobalArray.CARRIERCOUNT, rc.readSharedArray(GlobalArray.CARRIERCOUNT) + 1);
+        } else if (rc.getType() == RobotType.LAUNCHER) {
+            rc.writeSharedArray(GlobalArray.LAUNCHERCOUNT, rc.readSharedArray(GlobalArray.LAUNCHERCOUNT) + 1);
+        } else if (rc.getType() == RobotType.AMPLIFIER) {
+            rc.writeSharedArray(GlobalArray.AMPLIFIERCOUNT, rc.readSharedArray(GlobalArray.AMPLIFIERCOUNT) + 1);
+        }
+    }
+
     /*
      * Bits 0-1     prioritized resource hq 1
      * Bits 2-3     prioritized resource hq 2
@@ -250,8 +261,6 @@ public strictfp class GlobalArray {
      * Bits 6-7     prioritized resource hq 4
      * Bit 8        convert well
      * Bit 9        upgrade wells
-     * Bits 10-13   id of well to convert to elixir
-     * Bits 14-15   map symmetry
      * Bits 10-12   id of well to convert to elixir
      * Bits 13-15   map symmetry
      */
@@ -264,8 +273,6 @@ public strictfp class GlobalArray {
         currentState[PRIORITIZED_RESOURCE_HQ4] = (n >> 6) & 0b11; // bits 6-7
         currentState[CONVERT_WELL] = (n >> 8) & 0b1; // bit 8
         currentState[UPGRADE_WELLS] = (n >> 9) & 0b1; // bit 9
-        // currentState[CONVERSION_WELL_ID] = (n >> 10) & 0b1111; // bits 10-13
-        // currentState[MAP_SYMMETRY] = (n >> 14) & 0b11; // bits 14-15
         currentState[CONVERSION_WELL_ID] = (n >> 10) & 0b111; // bits 10-13
         currentState[MAP_SYMMETRY] = (n >> 13) & 0b111; // bits 14-15
         return currentState;

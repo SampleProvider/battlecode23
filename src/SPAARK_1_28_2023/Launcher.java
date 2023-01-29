@@ -1,4 +1,4 @@
-package SPAARK_1;
+package SPAARK_1_28_2023;
 
 import battlecode.common.*;
 import java.util.Random;
@@ -71,6 +71,8 @@ public strictfp class Launcher {
                 round = rc.getRoundNum();
                 globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
 
+                indicatorString = new StringBuilder();
+
                 storedLocations.detectWells();
                 storedLocations.detectIslandLocations();
                 storedLocations.detectSymmetry();
@@ -112,10 +114,13 @@ public strictfp class Launcher {
         RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
         RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, true, indicatorString);
         if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
-            Direction[] bug2array = Motion.bug2retreat(rc, robot.getLocation(), lastDirection, clockwiseRotation, false, true, friendlyRobotInfo, indicatorString);
-            lastDirection = bug2array[0];
-            if (bug2array[1] == Direction.CENTER) {
-                clockwiseRotation = !clockwiseRotation;
+            indicatorString.append("RET; ");
+            if (rc.isMovementReady()) {
+                Direction[] bug2array = Motion.bug2retreat(rc, robotInfo, friendlyRobotInfo, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, true, indicatorString);
+                lastDirection = bug2array[0];
+                if (bug2array[1] == Direction.CENTER) {
+                    clockwiseRotation = !clockwiseRotation;
+                }
             }
             opponent = robot;
             return;
@@ -126,7 +131,7 @@ public strictfp class Launcher {
 
         if (prioritizedOpponentHeadquarters != null && me.distanceSquaredTo(prioritizedOpponentHeadquarters) <= RobotType.HEADQUARTERS.actionRadiusSquared) {
             // uh oh, too close to opponent hq, aaa take damage
-            Direction[] bug2array = Motion.bug2retreat(rc, prioritizedOpponentHeadquarters, lastDirection, clockwiseRotation, false, true, friendlyRobotInfo, indicatorString);
+            Direction[] bug2array = Motion.bug2retreat(rc, robotInfo, friendlyRobotInfo, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, true, indicatorString);
             lastDirection = bug2array[0];
             if (bug2array[1] == Direction.CENTER) {
                 clockwiseRotation = !clockwiseRotation;
@@ -141,7 +146,8 @@ public strictfp class Launcher {
         if (rc.getHealth() != lastHealth) {
             // aa i got hit
             if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
-                Direction[] bug2array = Motion.bug2retreat(rc, robot.getLocation(), lastDirection, clockwiseRotation, true, true, friendlyRobotInfo, indicatorString);
+                indicatorString.append("RET; HIT; ");
+                Direction[] bug2array = Motion.bug2retreat(rc, robotInfo, friendlyRobotInfo, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, true, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
                     clockwiseRotation = !clockwiseRotation;
@@ -150,6 +156,7 @@ public strictfp class Launcher {
                 return;
             }
             else {
+                indicatorString.append("RET; HIT; ");
                 Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, true, true, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
@@ -163,8 +170,7 @@ public strictfp class Launcher {
             opponent = robot;
         }
         
-        if (round % 2 == 0) {
-            indicatorString = new StringBuilder();
+        if (rc.isMovementReady()) {
             // lets move!!
             
             if (rc.getHealth() <= RobotType.LAUNCHER.health * 3 / 4) {
@@ -228,6 +234,11 @@ public strictfp class Launcher {
                     }
                 }
             }
+            
+            if (bugToStoredOpponentLocation(defenseRange)) {
+                return;
+            }
+
             int surroundingLaunchers = 0;
             if (friendlyRobotInfo.length > 0) {
                 // get lowest id and highest id
@@ -250,17 +261,14 @@ public strictfp class Launcher {
                         highestIdFriendlyRobotInfo = w;
                     }
                 }
-                if (surroundingLaunchers >= 5) {
-                    // try to swarm, lots of launchers, more aggressive
+                if (surroundingLaunchers >= 2) {
+                    // try to swarm
                     if (lowestIdFriendlyRobotInfo.ID > rc.getID()) {
                         // i'm the leader!
-                        indicatorString.append("LEAD SWARM 5; ");
-                        if (bugToStoredOpponentLocation(defenseRange)) {
-
-                        }
-                        else if (opponent != null) {
-                            // opponent, lets move there
-                            Direction[] bug2array = Motion.bug2(rc, opponent.getLocation(), lastDirection, clockwiseRotation, true, true, indicatorString);
+                        indicatorString.append("LEAD SWARM; ");
+                        if (opponent != null) {
+                            // opponent, lets move away
+                            Direction[] bug2array = Motion.bug2retreat(rc, robotInfo, friendlyRobotInfo, prioritizedHeadquarters, lastDirection, clockwiseRotation, true, true, indicatorString);
                             lastDirection = bug2array[0];
                             if (bug2array[1] == Direction.CENTER) {
                                 clockwiseRotation = !clockwiseRotation;
@@ -272,7 +280,8 @@ public strictfp class Launcher {
                             else if (GlobalArray.DEBUG_INFO >= 2) {
                                 rc.setIndicatorDot(me, 255, 125, 25);
                             }
-                            if (me.distanceSquaredTo(opponent.getLocation()) <= 5) {
+                            if (me.distanceSquaredTo(opponent.getLocation()) > RobotType.LAUNCHER.visionRadiusSquared) {
+                                // i'm far enough, lets stop
                                 opponent = null;
                             }
                         } else {
@@ -389,7 +398,16 @@ public strictfp class Launcher {
                                         //     }
                                         // }
                                         else {
-                                            Motion.moveRandomly(rc);
+                                            if (rng.nextBoolean()) {
+                                                Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, true, true, indicatorString);
+                                                lastDirection = bug2array[0];
+                                                if (bug2array[1] == Direction.CENTER) {
+                                                    clockwiseRotation = !clockwiseRotation;
+                                                }
+                                            }
+                                            else {
+                                                Motion.moveRandomly(rc);
+                                            }
                                         }
                                     }
                                 }
@@ -398,7 +416,7 @@ public strictfp class Launcher {
                         lastLauncherLocation = null;
                     } else {
                         // i'm not the leader
-                        indicatorString.append("FOL SWARM 5; ");
+                        indicatorString.append("FOL SWARM; ");
                         if (opponent != null) {
                             // opponent detected, to reshape launcher swarm, head away from opponent
                             if (GlobalArray.DEBUG_INFO >= 3) {
@@ -407,7 +425,7 @@ public strictfp class Launcher {
                             else if (GlobalArray.DEBUG_INFO >= 2) {
                                 rc.setIndicatorDot(me, 255, 125, 25);
                             }
-                            Direction[] bug2array = Motion.bug2retreat(rc, opponent.getLocation(), lastDirection, clockwiseRotation, true, true, friendlyRobotInfo, indicatorString);
+                            Direction[] bug2array = Motion.bug2retreat(rc, robotInfo, friendlyRobotInfo, prioritizedHeadquarters, lastDirection, clockwiseRotation, true, true, indicatorString);
                             lastDirection = bug2array[0];
                             if (bug2array[1] == Direction.CENTER) {
                                 clockwiseRotation = !clockwiseRotation;
@@ -467,60 +485,7 @@ public strictfp class Launcher {
                     }
                     return;
                 }
-                else if (surroundingLaunchers >= 1) {
-                    // try to swarm, not that many launchers, more defensive
-                    if (lowestIdFriendlyRobotInfo.ID > rc.getID()) {
-                        indicatorString.append("LEAD SWARM 1; ");
-                        headquarterCircleRange = 16 + surroundingLaunchers / 3;
-                        if (prioritizedHeadquarters.distanceSquaredTo(me) <= 100) {
-                            // head to center
-                            indicatorString.append("CENTER; ");
-                            Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2), lastDirection, clockwiseRotation, true, true, indicatorString);
-                            lastDirection = bug2array[0];
-                            if (bug2array[1] == Direction.CENTER) {
-                                clockwiseRotation = !clockwiseRotation;
-                            }
-                            lastLauncherLocation = null;
-                        }
-                        else {
-                            // circle hq
-                            if (me.x <= edgeRange || me.x >= rc.getMapWidth() - edgeRange || me.y <= edgeRange || me.y >= rc.getMapHeight() - edgeRange) {
-                                if (rc.isMovementReady()) {
-                                    clockwiseRotation = !clockwiseRotation;
-                                }
-                            }
-                            clockwiseRotation = Motion.circleAroundTarget(rc, prioritizedHeadquarters, 100, clockwiseRotation, true, true);
-                            lastLauncherLocation = null;
-                        }
-                    }
-                    else {
-                        indicatorString.append("FOL SWARM 1; ");
-                        // if (lastLauncherLocation != null){
-                        //     Direction direction = lastLauncherLocation.directionTo(lowestIdFriendlyRobotInfo.getLocation());
-                        //     if (rc.canMove(direction) && rc.senseCloud(me.add(direction)) == false) {
-                        //         // follow leader last move
-                        //         rc.move(lastLauncherLocation.directionTo(lowestIdFriendlyRobotInfo.getLocation()));
-                        //         lastLauncherLocation = lowestIdFriendlyRobotInfo.getLocation();
-                        //         return;
-                        //     }
-                        // }
-                        if (me.distanceSquaredTo(lowestIdFriendlyRobotInfo.getLocation()) <= launcherCircleRange * 1.25) {
-                            // circle around leader
-                            clockwiseRotation = Motion.circleAroundTarget(rc, lowestIdFriendlyRobotInfo.getLocation(), launcherCircleRange, clockwiseRotation, true, true);
-                            lastLauncherLocation = lowestIdFriendlyRobotInfo.getLocation();
-                        }
-                        else {
-                            // i can see leader but not close enough, try to bug to leader
-                            Direction[] bug2array = Motion.bug2(rc, lowestIdFriendlyRobotInfo.getLocation(), lastDirection, clockwiseRotation, true, true, indicatorString);
-                            lastDirection = bug2array[0];
-                            if (bug2array[1] == Direction.CENTER) {
-                                clockwiseRotation = !clockwiseRotation;
-                            }
-                            lastLauncherLocation = null;
-                        }
-                    }
-                    return;
-                }
+                
             }
             // defend hq
             indicatorString.append("DEF; ");
