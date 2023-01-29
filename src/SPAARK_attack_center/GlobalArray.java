@@ -9,17 +9,18 @@ public strictfp class GlobalArray {
     public static final int HEADQUARTERS = 1;
     public static final int HEADQUARTERS_LENGTH = 4;
     public static final int MANA_WELLS = 5;
-    public static final int MANA_WELLS_LENGTH = 6;
-    public static final int ADAMANTIUM_WELLS = 11;
-    public static final int ADAMANTIUM_WELLS_LENGTH = 6;
-    public static final int AMPLIFIERS = 17;
-    public static final int AMPLIFIERS_LENGTH = 6;
-    public static final int OPPONENTS = 23;
+    public static final int MANA_WELLS_LENGTH = 8;
+    public static final int ADAMANTIUM_WELLS = 13;
+    public static final int ADAMANTIUM_WELLS_LENGTH = 4;
+    public static final int OPPONENTS = 17;
     public static final int OPPONENTS_LENGTH = 8;
-    public static final int OPPONENT_HEADQUARTERS = 31;
+    public static final int OPPONENT_HEADQUARTERS = 25;
     public static final int OPPONENT_HEADQUARTERS_LENGTH = 4;
-    public static final int ISLANDS = 35;
+    public static final int ISLANDS = 29;
     public static final int ISLANDS_LENGTH = 16;
+    public static final int CARRIERCOUNT = 45;
+    public static final int LAUNCHERCOUNT = 46;
+    public static final int AMPLIFIERCOUNT = 47;
 
     public static final int PRIORITIZED_RESOURCE_HQ1 = 0;
     public static final int PRIORITIZED_RESOURCE_HQ2 = 1;
@@ -27,10 +28,15 @@ public strictfp class GlobalArray {
     public static final int PRIORITIZED_RESOURCE_HQ4 = 3;
     public static final int CONVERT_WELL = 4;
     public static final int UPGRADE_WELLS = 5;
-    public static final int ELIXIR_HQ_ID = 6;
-    public static final int CONVERSION_WELL_ID = 7;
+    public static final int CONVERSION_WELL_ID = 6;
+    public static final int MAP_SYMMETRY = 7;
 
-    public static int DEBUG_INFO = 1;
+    // 0 - nothing
+    // 1 - stored location dots
+    // 2 - dots + carrier random explore + carrier island target + amplifier random explore + amplifier targets
+    // 3 - dots + carrier random explore + carrier island target + carrier collect + amplifier random explore + amplifier targets + launcher swarms
+    // 4 - everything
+    public static final int DEBUG_INFO = 0;
 
     private static final ResourceType[] resourceTypes = new ResourceType[] {
             ResourceType.NO_RESOURCE,
@@ -42,18 +48,19 @@ public strictfp class GlobalArray {
     private final int[] currentState = new int[8];
 
     /*
-     * Bits 0-5 x coordinate
-     * Bits 6-11 y coordinate
-     * Bit 12 presence marker
+     * Bits 0-5     x coordinate
+     * Bits 6-11    y coordinate
+     * Bit 12       presence marker
      * Headquarters:
-     *  Bit 13 adequate materials
+     *  Bit 13      adequate materials
      * Wells:
-     *  Bits 13-14 resource type
-     *  Bit 15 upgraded marker
+     *  Bits 13-14  resource type
+     *  Bit 15      upgraded marker
      * Opponents:
      *  No extra bits
      * Islands:
-     * 
+     *  Bits 13-14  team controlling island
+     *  Bit 15      is out of range
      */
 
     // general location/data parsing/writing
@@ -75,8 +82,11 @@ public strictfp class GlobalArray {
     }
 
     public static void storeHeadquarters(HeadQuarters hq) throws GameActionException {
-        int adequateResources = (((hq.adamantium - hq.lastAdamantium) >= 0 && (hq.mana - hq.lastMana) >= 0) ? 1 : 0);
-        hq.rc.writeSharedArray(hq.hqIndex, (adequateResources << 13) | intifyLocation(hq.me));
+        hq.rc.writeSharedArray(hq.hqIndex, (hq.tooManyBots ? 0b1000000000000 : 0) | intifyLocation(hq.me));
+    }
+
+    public static boolean hasTooManyBots(int n) {
+        return n >> 13 == 1;
     }
 
     public static MapLocation[] getKnownHeadQuarterLocations(RobotController rc) throws GameActionException {
@@ -145,7 +155,11 @@ public strictfp class GlobalArray {
         if (rc.canWriteSharedArray(0, 0)) {
             for (int i = OPPONENTS; i < OPPONENTS + OPPONENTS_LENGTH; i++) {
                 int arrayOpponentLocation = rc.readSharedArray(i);
-                if (!hasLocation(arrayOpponentLocation) || parseLocation(arrayOpponentLocation).equals(opponentLocation)) {
+                if (hasLocation(arrayOpponentLocation)) {
+                    if (parseLocation(arrayOpponentLocation).distanceSquaredTo(opponentLocation) < StoredLocations.MIN_EXISTING_DISTANCE_SQUARED) {
+                        return true;
+                    }
+                } else {
                     rc.writeSharedArray(i, intifyLocation(opponentLocation));
                     return true;
                 }
@@ -167,38 +181,50 @@ public strictfp class GlobalArray {
     }
     
     // islands
-    public static boolean storeIslandLocation(RobotController rc, MapLocation islandLocation, Team islandTeam, int islandId) throws GameActionException {
+    public static boolean storeIslandLocation(RobotController rc, MapLocation islandLocation, Team islandTeam, int islandId, boolean outOfRange) throws GameActionException {
         if (rc.canWriteSharedArray(0, 0)) {
             int arrayIslandLocation = rc.readSharedArray(ISLANDS + islandId - 1);
-            if (arrayIslandLocation == 0 || intToTeam(arrayIslandLocation >> 13) != islandTeam) {
+            if (arrayIslandLocation == 0 || intToTeam((arrayIslandLocation >> 13) & 0b11) != islandTeam) {
                 if (islandTeam == Team.A) {
-                    rc.writeSharedArray(ISLANDS + islandId - 1, 0b10000000000000 + intifyLocation(islandLocation));
+                    rc.writeSharedArray(ISLANDS + islandId - 1, (outOfRange ? 0b1000000000000000 : 0) | 0b10000000000000 | intifyLocation(islandLocation));
                     return true;
                 }
                 if (islandTeam == Team.B) {
-                    rc.writeSharedArray(ISLANDS + islandId - 1, 0b100000000000000 + intifyLocation(islandLocation));
+                    rc.writeSharedArray(ISLANDS + islandId - 1, (outOfRange ? 0b1000000000000000 : 0) | 0b100000000000000 | intifyLocation(islandLocation));
                     return true;
                 }
                 if (islandTeam == Team.NEUTRAL) {
-                    rc.writeSharedArray(ISLANDS + islandId - 1, 0b110000000000000 + intifyLocation(islandLocation));
+                    rc.writeSharedArray(ISLANDS + islandId - 1, (outOfRange ? 0b1000000000000000 : 0) | 0b110000000000000 | intifyLocation(islandLocation));
                     return true;
                 }
             }
         }
         return false;
     }
+
+    public static MapLocation[] getKnownIslandLocations(RobotController rc) throws GameActionException {
+        MapLocation[] islandLocations = new MapLocation[ISLANDS_LENGTH];
+        for (int i = ISLANDS; i < ISLANDS + ISLANDS_LENGTH; i++) {
+            int arrayIslandLocation = rc.readSharedArray(i);
+            if (hasLocation(arrayIslandLocation)) {
+                islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
+            }
+        }
+        return islandLocations;
+    }
+
     public static MapLocation[] getKnownIslandLocations(RobotController rc, Team team) throws GameActionException {
         MapLocation[] islandLocations = new MapLocation[ISLANDS_LENGTH];
         for (int i = ISLANDS; i < ISLANDS + ISLANDS_LENGTH; i++) {
             int arrayIslandLocation = rc.readSharedArray(i);
             if (hasLocation(arrayIslandLocation)) {
                 if (rc.canSenseLocation(parseLocation(arrayIslandLocation))) {
-                    if (rc.senseTeamOccupyingIsland(i - ISLANDS + 1) == team) {
+                    if (rc.senseTeamOccupyingIsland(i - ISLANDS + 1 + ((arrayIslandLocation >> 15 == 1) ? 16 : 0)) == team) {
                         islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
                     }
                 }
                 else {
-                    if (intToTeam(arrayIslandLocation >> 13) == team) {
+                    if (intToTeam((arrayIslandLocation >> 13) & 0b11) == team) {
                         islandLocations[i - ISLANDS] = parseLocation(arrayIslandLocation);
                     }
                 }
@@ -216,16 +242,18 @@ public strictfp class GlobalArray {
         }
         return Team.NEUTRAL;
     }
-    
+
     /*
-     * Bits 0-1 prioritized resource hq 1
-     * Bits 2-3 prioritized resource hq 2
-     * Bits 4-5 prioritized resource hq 3
-     * Bits 6-7 prioritized resource hq 4
-     * Bit 8 convert well
-     * Bit 9 upgrade wells
-     * Bits 10-11 id of elixir hq (where to drop elixir)
-     * bits 12-13 id of well to convert to elixir
+     * Bits 0-1     prioritized resource hq 1
+     * Bits 2-3     prioritized resource hq 2
+     * Bits 4-5     prioritized resource hq 3
+     * Bits 6-7     prioritized resource hq 4
+     * Bit 8        convert well
+     * Bit 9        upgrade wells
+     * Bits 10-13   id of well to convert to elixir
+     * Bits 14-15   map symmetry
+     * Bits 10-12   id of well to convert to elixir
+     * Bits 13-15   map symmetry
      */
 
     // read game state
@@ -236,8 +264,10 @@ public strictfp class GlobalArray {
         currentState[PRIORITIZED_RESOURCE_HQ4] = (n >> 6) & 0b11; // bits 6-7
         currentState[CONVERT_WELL] = (n >> 8) & 0b1; // bit 8
         currentState[UPGRADE_WELLS] = (n >> 9) & 0b1; // bit 9
-        currentState[ELIXIR_HQ_ID] = (n >> 10) & 0b11; // bits 10-11
-        currentState[CONVERSION_WELL_ID] = (n >> 12) & 0b11; // bits 12-13
+        // currentState[CONVERSION_WELL_ID] = (n >> 10) & 0b1111; // bits 10-13
+        // currentState[MAP_SYMMETRY] = (n >> 14) & 0b11; // bits 14-15
+        currentState[CONVERSION_WELL_ID] = (n >> 10) & 0b111; // bits 10-13
+        currentState[MAP_SYMMETRY] = (n >> 13) & 0b111; // bits 14-15
         return currentState;
     }
 
@@ -257,6 +287,10 @@ public strictfp class GlobalArray {
         return currentState[UPGRADE_WELLS] == 1;
     }
 
+    public int mapSymmetry() {
+        return currentState[MAP_SYMMETRY];
+    }
+
     // write game state
     public int getGameStateNumber() {
         return (currentState[PRIORITIZED_RESOURCE_HQ1])
@@ -265,22 +299,25 @@ public strictfp class GlobalArray {
                 | (currentState[PRIORITIZED_RESOURCE_HQ4] << 6)
                 | (currentState[CONVERT_WELL] << 8)
                 | (currentState[UPGRADE_WELLS] << 9)
-                | (currentState[ELIXIR_HQ_ID] << 10)
-                | (currentState[CONVERSION_WELL_ID] << 12);
+                | (currentState[CONVERSION_WELL_ID] << 10)
+                | (currentState[MAP_SYMMETRY] << 13);
     }
 
     public void setPrioritizedResource(ResourceType resource, int hqIndex) {
         currentState[hqIndex - PRIORITIZED_RESOURCE_HQ1 - HEADQUARTERS] = resource.resourceID;
     }
 
-    public void setTargetElixirWellHQPair(int wellIndex, int hqIndex) {
-        currentState[CONVERT_WELL] = 1;
-        currentState[CONVERSION_WELL_ID] = wellIndex;
-        currentState[ELIXIR_HQ_ID] = hqIndex;
-    }
-
     public void setUpgradeWells(boolean set) {
         currentState[UPGRADE_WELLS] = set ? 1 : 0;
+    }
+
+    public void setTargetElixirWell(int wellIndex) {
+        currentState[CONVERT_WELL] = 1;
+        currentState[CONVERSION_WELL_ID] = wellIndex;
+    }
+
+    public void setMapSymmetry(int symmetry) {
+        currentState[MAP_SYMMETRY] = symmetry;
     }
 
     // bit operations
