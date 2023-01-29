@@ -151,6 +151,10 @@ public strictfp class HeadQuarters {
                     }
                 }
 
+                if (round > 500){
+                    rc.resign();
+                }
+
                 // track bots
                 if (round % 2 == 1) {
                     carriers = rc.readSharedArray(GlobalArray.CARRIERCOUNT);
@@ -208,7 +212,7 @@ public strictfp class HeadQuarters {
                         storedLocations.setHeadquarters(headquarters);
                         mapSizeFactor = (rc.getMapWidth() * rc.getMapHeight()) / 400;
                         centerHeadquarters.add(headquarters[0]);
-                        for (int i = 0; i < hqCount; i++) {
+                        for (int i = 1; i < hqCount; i++) {
                             for (int j = 0;j < centerHeadquarters.size();j++) {
                                 if (centerHeadquarters.get(j).distanceSquaredTo(center) > headquarters[i].distanceSquaredTo(center)) {
                                     centerHeadquarters.add(j, headquarters[i]);
@@ -216,6 +220,8 @@ public strictfp class HeadQuarters {
                                 }
                             }
                         }
+                        System.out.println(centerHeadquarters.toString());
+                        // rc.resign();
                         globalArray.setMapSymmetry(7);
                     }
                     // set upgrade wells if resources adequate
@@ -256,7 +262,7 @@ public strictfp class HeadQuarters {
                     }
                     else if (symmetry == 2) {
                         if ((globalArray.mapSymmetry() & 0b1) != 1) {
-                            indicatorString.append("SYM !VER; ");
+                            indicatorString.append("SYM !VER; " + index);
                             rc.writeSharedArray(index + GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(centerHeadquarters.get(index).x, rc.getMapHeight() - 1 - centerHeadquarters.get(index).y)));
                         }
                         else if (((globalArray.mapSymmetry() >> 1) & 0b1) != 1) {

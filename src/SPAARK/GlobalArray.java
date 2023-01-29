@@ -245,6 +245,9 @@ public strictfp class GlobalArray {
 
     // counting
     public void incrementCount(RobotController rc) throws GameActionException {
+        if (!rc.canWriteSharedArray(0, 0)) {
+            return;
+        }
         if (rc.getType() == RobotType.CARRIER) {
             rc.writeSharedArray(GlobalArray.CARRIERCOUNT, rc.readSharedArray(GlobalArray.CARRIERCOUNT) + 1);
         } else if (rc.getType() == RobotType.LAUNCHER) {

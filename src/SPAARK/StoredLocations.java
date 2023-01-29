@@ -43,7 +43,7 @@ public strictfp class StoredLocations {
             center = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
             centerHeadquarters.add(headquarters[0]);
             headquartersIndex[0] = 0;
-            for (int i = 0; i < headquarters.length; i++) {
+            for (int i = 1; i < headquarters.length; i++) {
                 for (int j = 0;j < centerHeadquarters.size();j++) {
                     if (centerHeadquarters.get(j).distanceSquaredTo(center) > headquarters[i].distanceSquaredTo(center)) {
                         centerHeadquarters.add(j, headquarters[i]);
@@ -51,7 +51,7 @@ public strictfp class StoredLocations {
                     }
                 }
             }
-            for (int i = 0; i < headquarters.length; i++) {
+            for (int i = 1; i < headquarters.length; i++) {
                 for (int j = 0;j < centerHeadquarters.size();j++) {
                     if (headquarters[i].equals(centerHeadquarters.get(j))) {
                         headquartersIndex[i] = j;
@@ -67,7 +67,7 @@ public strictfp class StoredLocations {
         center = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
         centerHeadquarters.add(headquarters[0]);
         headquartersIndex[0] = 0;
-        for (int i = 0; i < headquarters.length; i++) {
+        for (int i = 1; i < headquarters.length; i++) {
             for (int j = 0;j < centerHeadquarters.size();j++) {
                 if (centerHeadquarters.get(j).distanceSquaredTo(center) > headquarters[i].distanceSquaredTo(center)) {
                     centerHeadquarters.add(j, headquarters[i]);
@@ -75,7 +75,7 @@ public strictfp class StoredLocations {
                 }
             }
         }
-        for (int i = 0; i < headquarters.length; i++) {
+        for (int i = 1; i < headquarters.length; i++) {
             for (int j = 0;j < centerHeadquarters.size();j++) {
                 if (headquarters[i].equals(centerHeadquarters.get(j))) {
                     headquartersIndex[i] = j;
@@ -312,13 +312,15 @@ public strictfp class StoredLocations {
                         rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, headquarters[i].y), 0, 0, 0);
                     }
 
-                    if (rc.getType() == RobotType.AMPLIFIER && rc.senseNearbyRobots(RobotType.AMPLIFIER.visionRadiusSquared, rc.getTeam().opponent()).length == 1) {
+                    if (rc.getType() == RobotType.AMPLIFIER && rc.senseNearbyRobots(RobotType.AMPLIFIER.visionRadiusSquared, rc.getTeam().opponent()).length == 1 && GlobalArray.hasLocation(rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS))) {
                         rc.writeSharedArray(headquartersIndex[i] + GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.setBit(rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS), 13, 1));
                     }
                 }
                 else {
-                    notSymmetry = 1;
-                    rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, headquarters[i].y), 0, 0, 0);
+                    if ((storedSymmetry & 0b1) == 1) {
+                        notSymmetry = 1;
+                        rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, headquarters[i].y), 0, 0, 0);
+                    }
                 }
             }
             if (rc.canSenseLocation(new MapLocation(headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y))) {
@@ -329,13 +331,15 @@ public strictfp class StoredLocations {
                         rc.setIndicatorLine(rc.getLocation(), new MapLocation(headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y), 0, 0, 0);
                     }
 
-                    if (rc.getType() == RobotType.AMPLIFIER && rc.senseNearbyRobots(RobotType.AMPLIFIER.visionRadiusSquared, rc.getTeam().opponent()).length == 1) {
+                    if (rc.getType() == RobotType.AMPLIFIER && rc.senseNearbyRobots(RobotType.AMPLIFIER.visionRadiusSquared, rc.getTeam().opponent()).length == 1 && GlobalArray.hasLocation(rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS))) {
                         rc.writeSharedArray(headquartersIndex[i] + GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.setBit(rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS), 13, 1));
                     }
                 }
                 else {
-                    notSymmetry = 2;
-                    rc.setIndicatorLine(rc.getLocation(), new MapLocation(headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y), 0, 0, 0);
+                    if ((storedSymmetry & 0b10) == 1) {
+                        notSymmetry = 2;
+                        rc.setIndicatorLine(rc.getLocation(), new MapLocation(headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y), 0, 0, 0);
+                    }
                 }
             }
             if (rc.canSenseLocation(new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y))) {
@@ -346,13 +350,15 @@ public strictfp class StoredLocations {
                         rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y), 0, 0, 0);
                     }
                     
-                    if (rc.getType() == RobotType.AMPLIFIER && rc.senseNearbyRobots(RobotType.AMPLIFIER.visionRadiusSquared, rc.getTeam().opponent()).length == 1) {
+                    if (rc.getType() == RobotType.AMPLIFIER && rc.senseNearbyRobots(RobotType.AMPLIFIER.visionRadiusSquared, rc.getTeam().opponent()).length == 1 && GlobalArray.hasLocation(rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS))) {
                         rc.writeSharedArray(headquartersIndex[i] + GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.setBit(rc.readSharedArray(i + GlobalArray.OPPONENT_HEADQUARTERS), 13, 1));
                     }
                 }
                 else {
-                    notSymmetry = 3;
-                    rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y), 0, 0, 0);
+                    if ((storedSymmetry & 0b100) == 1) {
+                        notSymmetry = 3;
+                        rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y), 0, 0, 0);
+                    }
                 }
             }
         }
