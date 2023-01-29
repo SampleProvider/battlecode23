@@ -6,6 +6,7 @@ import java.util.Random;
 public strictfp class Carrier {
     protected RobotController rc;
     protected MapLocation me;
+    private MapLocation center;
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
@@ -58,6 +59,7 @@ public strictfp class Carrier {
     public Carrier(RobotController rc) {
         try {
             this.rc = rc;
+            center = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
             int hqCount = 0;
             for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
                 if (GlobalArray.hasLocation(rc.readSharedArray(i)))
@@ -100,7 +102,7 @@ public strictfp class Carrier {
 
                 storedLocations.updateFullWells();
                 storedLocations.detectIslandLocations();
-                storedLocations.detectSymmetry();
+                storedLocations.detectSymmetry(globalArray.mapSymmetry());
                 if (storedLocations.writeToGlobalArray()) returningToStorePOI = false;
 
                 updatePrioritizedHeadquarters();
@@ -353,7 +355,7 @@ public strictfp class Carrier {
             }
             updatePrioritizedHeadquarters();
             indicatorString.append("RET; ");
-            Direction[] bug2array = Motion.bug2retreat(rc, rc.senseNearbyRobots(RobotType.CARRIER.visionRadiusSquared, rc.getTeam().opponent()), rc.senseNearbyRobots(RobotType.CARRIER.visionRadiusSquared, rc.getTeam().opponent()), prioritizedHeadquarters, lastDirection, clockwiseRotation, false, true, indicatorString);
+            Direction[] bug2array = Motion.bug2retreat(rc, rc.senseNearbyRobots(RobotType.CARRIER.visionRadiusSquared, rc.getTeam().opponent()), rc.senseNearbyRobots(RobotType.CARRIER.visionRadiusSquared, rc.getTeam()), prioritizedHeadquarters, lastDirection, clockwiseRotation, false, true, indicatorString);
             lastDirection = bug2array[0];
             if (bug2array[1] == Direction.CENTER) {
                 clockwiseRotation = !clockwiseRotation;
@@ -411,7 +413,7 @@ public strictfp class Carrier {
                 MapLocation centerHeadquarters = headquarters[0];
                 for (int i = 0; i < headquarters.length; i++) {
                     if (headquarters[i] != null) {
-                        if (centerHeadquarters.distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2)) > headquarters[i].distanceSquaredTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2))) {
+                        if (centerHeadquarters.distanceSquaredTo(center) > headquarters[i].distanceSquaredTo(center)) {
                             centerHeadquarters = headquarters[i];
                         }
                     }
@@ -419,14 +421,14 @@ public strictfp class Carrier {
                 int symmetry = (globalArray.mapSymmetry() & 0b1) + ((globalArray.mapSymmetry() >> 1) & 0b1) + ((globalArray.mapSymmetry() >> 2) & 0b1);
                 if (symmetry == 2) {
                     if ((globalArray.mapSymmetry() & 0b1) == 1) {
-                        Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() - centerHeadquarters.x, centerHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
+                        Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() - 1 - centerHeadquarters.x, centerHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
                         lastDirection = bug2array[0];
                         if (bug2array[1] == Direction.CENTER) {
                             clockwiseRotation = !clockwiseRotation;
                         }
                     }
                     else if (((globalArray.mapSymmetry() >> 1) & 0b1) == 1) {
-                        Direction[] bug2array = Motion.bug2(rc, new MapLocation(centerHeadquarters.x, rc.getMapHeight() - centerHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
+                        Direction[] bug2array = Motion.bug2(rc, new MapLocation(centerHeadquarters.x, rc.getMapHeight() - 1 - centerHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
                         lastDirection = bug2array[0];
                         if (bug2array[1] == Direction.CENTER) {
                             clockwiseRotation = !clockwiseRotation;
@@ -440,14 +442,14 @@ public strictfp class Carrier {
                 }
                 else if (symmetry == 3) {
                     if (rc.getID() % 2 == 0) {
-                        Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() - centerHeadquarters.x, centerHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
+                        Direction[] bug2array = Motion.bug2(rc, new MapLocation(rc.getMapWidth() - 1 - centerHeadquarters.x, centerHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
                         lastDirection = bug2array[0];
                         if (bug2array[1] == Direction.CENTER) {
                             clockwiseRotation = !clockwiseRotation;
                         }
                     }
                     else {
-                        Direction[] bug2array = Motion.bug2(rc, new MapLocation(centerHeadquarters.x, rc.getMapHeight() - centerHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
+                        Direction[] bug2array = Motion.bug2(rc, new MapLocation(centerHeadquarters.x, rc.getMapHeight() - 1 - centerHeadquarters.y), lastDirection, clockwiseRotation, false, false, indicatorString);
                         lastDirection = bug2array[0];
                         if (bug2array[1] == Direction.CENTER) {
                             clockwiseRotation = !clockwiseRotation;

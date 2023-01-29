@@ -28,6 +28,8 @@ public class Motion {
             "SW",
     };
 
+    private static RobotInfo[] robotInfo;
+
     protected static void moveRandomly(RobotController rc) throws GameActionException {
         while (rc.isMovementReady()) {
             Direction direction = DIRECTIONS[rng.nextInt(DIRECTIONS.length)];
@@ -151,6 +153,7 @@ public class Motion {
         while (rc.isMovementReady()) {
             MapLocation me = rc.getLocation();
             Direction direction = me.directionTo(target);
+            robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
             if (me.distanceSquaredTo(target) > (int) distance * 1.25) {
                 if (clockwiseRotation) {
                     for (int i = 0; i < 2; i++) {
@@ -299,17 +302,18 @@ public class Motion {
             }
             Direction direction = me.directionTo(dest);
             boolean moved = false;
+            robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
             if (canMove(rc, direction, avoidClouds, avoidWells) && lastDirection != direction.opposite()) {
+                rc.move(direction);
                 boolean touchingTheWallBefore = false;
                 for (Direction d : DIRECTIONS) {
                     MapLocation translatedMapLocation = me.add(d);
                     if (rc.onTheMap(translatedMapLocation)) {
-                        if (rc.sensePassability(translatedMapLocation) == false || rc.senseRobotAtLocation(translatedMapLocation) != null) {
+                        if (!rc.canMove(d)) {
                             touchingTheWallBefore = true;
                         }
                     }
                 }
-                rc.move(direction);
                 lastDirection = direction;
                 if (touchingTheWallBefore) {
                     clockwiseRotation = !clockwiseRotation;
@@ -379,6 +383,7 @@ public class Motion {
             Direction direction = null;
             boolean inCloud = false;
             int bestRobotAmount = 0;
+            robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
             for (Direction d : DIRECTIONS) {
                 if (!canMove(rc, d, false, false)) {
                     continue;
@@ -473,16 +478,16 @@ public class Motion {
             }
             boolean moved = false;
             if (canMove(rc, direction, avoidClouds, avoidWells)) {
+                rc.move(direction);
                 boolean touchingTheWallBefore = false;
                 for (Direction d : DIRECTIONS) {
                     MapLocation translatedMapLocation = me.add(d);
                     if (rc.onTheMap(translatedMapLocation)) {
-                        if (rc.sensePassability(translatedMapLocation) == false || rc.senseRobotAtLocation(translatedMapLocation) != null) {
+                        if (!rc.canMove(d)) {
                             touchingTheWallBefore = true;
                         }
                     }
                 }
-                rc.move(direction);
                 lastDirection = direction;
                 if (touchingTheWallBefore) {
                     clockwiseRotation = !clockwiseRotation;
@@ -550,6 +555,13 @@ public class Motion {
 
     private static boolean canMove(RobotController rc, Direction direction, boolean avoidClouds, boolean avoidWells) throws GameActionException {
         MapLocation m = rc.getLocation().add(direction);
+        for (RobotInfo r : robotInfo) {
+            if (r.getType() == RobotType.HEADQUARTERS) {
+                if (r.getLocation().distanceSquaredTo(m) < RobotType.HEADQUARTERS.actionRadiusSquared) {
+                    return false;
+                }
+            }
+        }
         if (rc.onTheMap(m)) {
             Direction currentDirection = rc.senseMapInfo(m).getCurrentDirection();
             if (rc.canMove(direction) && currentDirection != direction.opposite() && currentDirection != direction.opposite().rotateLeft() && currentDirection != direction.opposite().rotateRight() && !(rc.senseCloud(m) && avoidClouds)) {
