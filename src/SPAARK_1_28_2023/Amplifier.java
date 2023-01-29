@@ -1,4 +1,4 @@
-package SPAARK;
+package SPAARK_1_28_2023;
 
 import battlecode.common.*;
 import java.util.Random;
