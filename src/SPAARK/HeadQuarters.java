@@ -266,9 +266,11 @@ public strictfp class HeadQuarters {
                             //     rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
                             // }
                         }
-                        else {
-                            indicatorString.append("SYM M ROT; ");
-                            rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
+                        else if (round >= 2) {
+                            if (mapSizeFactor >= 4) {
+                                indicatorString.append("SYM M ROT; ");
+                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
+                            }
                         }
                     }
                     indicatorString.append("SYM " + globalArray.mapSymmetry() + "; ");
@@ -311,12 +313,21 @@ public strictfp class HeadQuarters {
                 indicatorString.append("TP ANC; ");
             }
             while (rc.isActionReady()) {
-                optimalSpawningLocationWell = updateOptimalSpawnLocation(optimalSpawningLocationWell, true);
-                optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
-                if (mana > Anchor.STANDARD.manaCost + RobotType.LAUNCHER.buildCostMana && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
-                    rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
-                    launchersProduced++;
-                    if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
+                    if (round < 1000) {
+                        while (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
+                            rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
+                            launchersProduced++;
+                            optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
+                            if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                        }
+                    } else if (mana > Anchor.STANDARD.manaCost + RobotType.LAUNCHER.buildCostMana) {
+                        //round >= 1000
+                        rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
+                        launchersProduced++;
+                        if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                    }
+                    else break;
                 } else if (adamantium > Anchor.STANDARD.adamantiumCost + RobotType.CARRIER.buildCostAdamantium && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
                         && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 4) {
                     rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
@@ -336,18 +347,21 @@ public strictfp class HeadQuarters {
                     carriersProduced++;
                     if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                     carrierCooldown = 50;
-                } else if (optimalSpawningLocation != null && possibleSpawningLocations >= 2) {
-                    if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
-                            && ((launchers > 10 && carriers > 0 && amplifiers < 3 * mapSizeFactor)) && amplifierCooldown <= 0) {
-                        rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
-                        indicatorString.append("P AMP; ");
-                        if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                        amplifierCooldown = 30;
-                        amplifiers = Integer.MAX_VALUE;
-                    } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
+                } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
+                    if (round < 50 + rc.getMapWidth() + rc.getMapHeight()) {
                         rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                         launchersProduced++;
                         if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                    } else if (mana > 120) {
+                        // round >= 200
+                        while (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
+                            rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
+                            launchersProduced++;
+                            optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
+                            if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                        }
+                    } else if (round >= 200 && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && amplifiers < 4) {
+                        rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                     } else break;
                 } else break;
             }
