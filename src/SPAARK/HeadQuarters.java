@@ -335,11 +335,11 @@ public strictfp class HeadQuarters {
                     if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                     carrierCooldown = 50;
                 } else break;
+                optimalSpawningLocationWell = updateOptimalSpawnLocation(optimalSpawningLocationWell, true);
+                optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
             }
         } else {
             while (rc.isActionReady()) {
-                optimalSpawningLocationWell = updateOptimalSpawnLocation(optimalSpawningLocationWell, true);
-                optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
                 if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
                         && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0)
                         && (round > 1 || carriersProduced < 2) && possibleSpawningLocations >= 3) {
@@ -347,23 +347,21 @@ public strictfp class HeadQuarters {
                     carriersProduced++;
                     if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                     carrierCooldown = 50;
-                } else if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
-                    if (round < 50 + rc.getMapWidth() + rc.getMapHeight()) {
-                        rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
-                        launchersProduced++;
-                        if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                    } else if (mana > 120) {
-                        // round >= 200
+                } else {
+                    if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && (nearbyCarriers < 5
+                            || (mana > RobotType.LAUNCHER.buildCostMana*2 && possibleSpawningLocations >= 2))) {
                         while (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                             launchersProduced++;
                             optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
                             if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                         }
-                    } else if (round >= 200 && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && amplifiers < 4) {
+                    } else if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && amplifiers < 4) {
                         rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                     } else break;
-                } else break;
+                }
+                optimalSpawningLocationWell = updateOptimalSpawnLocation(optimalSpawningLocationWell, true);
+                optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
             }
         }
         if (carriersProduced > 0)
