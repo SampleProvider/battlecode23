@@ -580,6 +580,12 @@ public class Motion {
                 }
             }
         }
+        MapLocation hqLocation = GlobalArray.parseLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS));
+        if (hqLocation.distanceSquaredTo(m) <= RobotType.HEADQUARTERS.actionRadiusSquared) {
+            if (hqLocation.distanceSquaredTo(rc.getLocation()) >= hqLocation.distanceSquaredTo(m)) {
+                return false;
+            }
+        }
         if (rc.onTheMap(m)) {
             Direction currentDirection = rc.senseMapInfo(m).getCurrentDirection();
             if (rc.canMove(direction) && currentDirection != direction.opposite() && currentDirection != direction.opposite().rotateLeft() && currentDirection != direction.opposite().rotateRight() && !(rc.senseCloud(m) && avoidClouds)) {

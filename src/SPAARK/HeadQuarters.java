@@ -178,6 +178,10 @@ public strictfp class HeadQuarters {
 
                 spawnBots();
 
+                if (round >= 600) {
+                    rc.resign();
+                }
+
                 // store
                 GlobalArray.storeHeadquarters(this);
 
@@ -267,11 +271,9 @@ public strictfp class HeadQuarters {
                             //     rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
                             // }
                         }
-                        else if (round >= 2) {
-                            if (mapSizeFactor >= 4) {
-                                indicatorString.append("SYM M ROT; ");
-                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
-                            }
+                        else {
+                            indicatorString.append("SYM M ROT; ");
+                            rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
                         }
                     }
                     indicatorString.append("SYM " + globalArray.mapSymmetry() + "; ");
@@ -343,7 +345,7 @@ public strictfp class HeadQuarters {
                     carrierCooldown = 50;
                 } else if (optimalSpawningLocation != null && possibleSpawningLocations >= 2) {
                     if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)
-                            && ((launchers > 10 && carriers > 0 && amplifiers < 3 * mapSizeFactor) || amplifiers < 2) && amplifierCooldown <= 0) {
+                            && ((launchers > 10 && carriers > 0 && amplifiers < 3 * mapSizeFactor)) && amplifierCooldown <= 0) {
                         rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                         indicatorString.append("P AMP; ");
                         if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
