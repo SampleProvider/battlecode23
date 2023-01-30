@@ -435,6 +435,7 @@ public strictfp class Carrier {
                     return;
                 }
             }
+            
             updateRandomExploreLocation();
             if (randomExploreLocation != null) {
                 indicatorString.append("EXPL-" + randomExploreLocation.toString() + "; ");
@@ -583,6 +584,11 @@ public strictfp class Carrier {
             for (MapLocation m : islandLocations) {
                 if (m == null) {
                     continue;
+                }
+                if (rc.canSenseLocation(m)) {
+                    if (rc.senseTeamOccupyingIsland(rc.senseIsland(m)) == rc.getTeam()) {
+                        continue;
+                    }
                 }
                 if (prioritizedIslandLocation == null) {
                     prioritizedIslandLocation = m;

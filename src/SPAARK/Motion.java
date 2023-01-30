@@ -97,7 +97,7 @@ public class Motion {
                 moveRandomly(rc);
             }
         } else {
-            Motion.moveRandomly(rc);
+            moveRandomly(rc);
         }
     }
 
@@ -565,7 +565,9 @@ public class Motion {
             if (r.getType() == RobotType.HEADQUARTERS) {
                 rc.setIndicatorLine(m, r.getLocation(), 255, 0, 0);
                 if (r.getLocation().distanceSquaredTo(m) <= RobotType.HEADQUARTERS.actionRadiusSquared) {
-                    return false;
+                    if (rc.getLocation().distanceSquaredTo(m) >= r.getLocation().distanceSquaredTo(m)) {
+                        return false;
+                    }
                 }
             }
         }

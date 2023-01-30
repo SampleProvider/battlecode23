@@ -20,7 +20,7 @@ public strictfp class StoredLocations {
     protected Team[] islandTeams = new Team[16];
     protected boolean[] islandIsOutOfRange = new boolean[16];
 
-    protected boolean[] storedIslands = new boolean[35];
+    protected boolean[] storedIslands = new boolean[36];
 
     private ArrayList<MapLocation> centerHeadquarters = new ArrayList<MapLocation>();
     private int[] headquartersIndex;

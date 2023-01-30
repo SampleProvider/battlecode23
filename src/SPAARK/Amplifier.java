@@ -139,7 +139,34 @@ public strictfp class Amplifier {
     private void runState() throws GameActionException {
         if (state == 0) {
 
-            if (GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS))) {
+            int[] islands = rc.senseNearbyIslands();
+            MapLocation prioritizedIslandLocation = null;
+            for (int id : islands) {
+                if (rc.senseTeamOccupyingIsland(id) == rc.getTeam().opponent()) {
+                    MapLocation[] islandLocations = rc.senseNearbyIslandLocations(id);
+                    for (MapLocation m : islandLocations) {
+                        if (prioritizedIslandLocation == null) {
+                            prioritizedIslandLocation = m;
+                        } else if (m.distanceSquaredTo(me) < prioritizedIslandLocation.distanceSquaredTo(me)) {
+                            prioritizedIslandLocation = m;
+                        }
+                    }
+                }
+            }
+            if (prioritizedIslandLocation != null) {
+                Direction[] bug2array = Motion.bug2(rc, prioritizedIslandLocation, lastDirection, clockwiseRotation, true, true, indicatorString);
+                lastDirection = bug2array[0];
+                if (bug2array[1] == Direction.CENTER) {
+                    clockwiseRotation = !clockwiseRotation;
+                }
+                me = rc.getLocation();
+                if (GlobalArray.DEBUG_INFO >= 2) {
+                    rc.setIndicatorLine(me, prioritizedIslandLocation, 75, 255, 255);
+                } else if (GlobalArray.DEBUG_INFO > 0) {
+                    rc.setIndicatorDot(me, 75, 255, 255);
+                }
+            }
+            if (GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS)) && !isRandomExplorer) {
                 indicatorString.append("ATK OPP HQ; ");
                 Direction[] bug2array = Motion.bug2(rc, GlobalArray.parseLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS)), lastDirection, clockwiseRotation, false, false, indicatorString);
                 lastDirection = bug2array[0];

@@ -33,6 +33,9 @@ public strictfp class Launcher {
     private boolean clockwiseRotation = true;
     private Direction lastDirection = Direction.CENTER;
 
+    private boolean arrivedAtCenter = false;
+    private int turnsMovingToCenter = 0;
+
     private int lastHealth = 0;
 
     private StringBuilder indicatorString = new StringBuilder();
@@ -246,6 +249,22 @@ public strictfp class Launcher {
                     }
                 }
             }
+            if (arrivedAtCenter == false) {
+                Direction[] bug2array = Motion.bug2(rc, center, lastDirection, clockwiseRotation, false, true, indicatorString);
+                lastDirection = bug2array[0];
+                if (bug2array[1] == Direction.CENTER) {
+                    clockwiseRotation = !clockwiseRotation;
+                }
+                turnsMovingToCenter++;
+                me = rc.getLocation();
+                if (me.distanceSquaredTo(center) <= 5) {
+                    arrivedAtCenter = true;
+                }
+                if (turnsMovingToCenter >= 200) {
+                    arrivedAtCenter = true;
+                }
+                return;
+            }
 
             int surroundingLaunchers = 0;
             if (friendlyRobotInfo.length > 0) {
@@ -274,7 +293,22 @@ public strictfp class Launcher {
                     if (lowestIdFriendlyRobotInfo.ID > rc.getID()) {
                         // i'm the leader!
 
-                        if (GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS))) {
+                        if (arrivedAtCenter == false) {
+                            Direction[] bug2array = Motion.bug2(rc, center, lastDirection, clockwiseRotation, false, true, indicatorString);
+                            lastDirection = bug2array[0];
+                            if (bug2array[1] == Direction.CENTER) {
+                                clockwiseRotation = !clockwiseRotation;
+                            }
+                            turnsMovingToCenter++;
+                            me = rc.getLocation();
+                            if (me.distanceSquaredTo(center) <= 5) {
+                                arrivedAtCenter = true;
+                            }
+                            if (turnsMovingToCenter >= 200) {
+                                arrivedAtCenter = true;
+                            }
+                        }
+                        else if (GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS))) {
                             indicatorString.append("ATK OPP HQ; ");
                             Direction[] bug2array = Motion.bug2(rc, GlobalArray.parseLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS)), lastDirection, clockwiseRotation, false, false, indicatorString);
                             lastDirection = bug2array[0];
@@ -394,7 +428,18 @@ public strictfp class Launcher {
                             }
                             lastLauncherLocation = null;
                         } else {
-                            if (GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS))) {
+                            if (arrivedAtCenter == false) {
+                                Direction[] bug2array = Motion.bug2(rc, center, lastDirection, clockwiseRotation, false, true, indicatorString);
+                                lastDirection = bug2array[0];
+                                if (bug2array[1] == Direction.CENTER) {
+                                    clockwiseRotation = !clockwiseRotation;
+                                }
+                                me = rc.getLocation();
+                                if (me.distanceSquaredTo(center) <= 5) {
+                                    arrivedAtCenter = true;
+                                }
+                            }
+                            else if (GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS))) {
                                 indicatorString.append("ATK OPP HQ; ");
                                 Direction[] bug2array = Motion.bug2(rc, GlobalArray.parseLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS)), lastDirection, clockwiseRotation, false, false, indicatorString);
                                 lastDirection = bug2array[0];
@@ -437,11 +482,22 @@ public strictfp class Launcher {
                 }
                 
             }
+            if (arrivedAtCenter == false) {
+                Direction[] bug2array = Motion.bug2(rc, center, lastDirection, clockwiseRotation, false, true, indicatorString);
+                lastDirection = bug2array[0];
+                if (bug2array[1] == Direction.CENTER) {
+                    clockwiseRotation = !clockwiseRotation;
+                }
+                me = rc.getLocation();
+                if (me.distanceSquaredTo(center) <= 5) {
+                    arrivedAtCenter = true;
+                }
+            }
             // defend hq
             indicatorString.append("DEF; ");
-            headquarterCircleRange = 9 + surroundingLaunchers / 3;
+            headquarterCircleRange = 4 + surroundingLaunchers / 3;
             lastLauncherLocation = null;
-            if (me.distanceSquaredTo(prioritizedHeadquarters) <= headquarterCircleRange * 1.25) {
+            if (me.distanceSquaredTo(prioritizedHeadquarters) <= headquarterCircleRange * 1.5) {
                 // if (me.x <= edgeRange || me.x >= rc.getMapWidth() - edgeRange || me.y <= edgeRange || me.y >= rc.getMapHeight() - edgeRange) {
                 //     if (rc.isMovementReady()) {
                 //         clockwiseRotation = !clockwiseRotation;
