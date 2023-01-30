@@ -235,31 +235,32 @@ public strictfp class HeadQuarters {
                         setTargetElixirWell();
                     }
                     if (round >= 2) {
-                        MapLocation targetHeadquarters = centerHeadquarters.get(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS) >> 13);
-                        indicatorString.append(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS) >> 13);
+                        int headquarterID = rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS) >> 13;
+                        MapLocation targetHeadquarters = centerHeadquarters.get(headquarterID);
+                        indicatorString.append(headquarterID);
                         int symmetry = (globalArray.mapSymmetry() & 0b1) + ((globalArray.mapSymmetry() >> 1) & 0b1) + ((globalArray.mapSymmetry() >> 2) & 0b1);
                         if (symmetry == 1) {
                             if ((globalArray.mapSymmetry() & 0b1) == 1) {
                                 indicatorString.append("SYM VER; ");
-                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, targetHeadquarters.y)));
+                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, targetHeadquarters.y)));
                             }
                             else if (((globalArray.mapSymmetry() >> 1) & 0b1) == 1) {
                                 indicatorString.append("SYM HOR; ");
-                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
+                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
                             }
                             else {
                                 indicatorString.append("SYM ROT; ");
-                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
+                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
                             }
                         }
                         else if (symmetry == 2) {
                             if ((globalArray.mapSymmetry() & 0b1) != 1) {
                                 indicatorString.append("SYM !VER; ");
-                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
+                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
                             }
                             else if (((globalArray.mapSymmetry() >> 1) & 0b1) != 1) {
                                 indicatorString.append("SYM !HOR; ");
-                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, targetHeadquarters.y)));
+                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, targetHeadquarters.y)));
                             }
                             // else {
                             //     indicatorString.append("SYM !ROT; ");
@@ -269,7 +270,7 @@ public strictfp class HeadQuarters {
                         else if (round >= 2) {
                             if (mapSizeFactor >= 4) {
                                 indicatorString.append("SYM M ROT; ");
-                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
+                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
                             }
                         }
                     }

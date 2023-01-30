@@ -393,6 +393,9 @@ public class Motion {
                     inCloud = rc.senseCloud(me.add(d));
                     int robotAmount = 0;
                     for (RobotInfo robot : opponentRobotInfo) {
+                        if (Attack.prioritizedRobot(robot.getType()) <= 2) {
+                            continue;
+                        }
                         if (rc.canSenseLocation(robot.getLocation().add(d.opposite()))) {
                             robotAmount -= 1;
                         }
@@ -420,6 +423,9 @@ public class Motion {
                         if (rc.senseCloud(me.add(d))) {
                             int robotAmount = 0;
                             for (RobotInfo robot : opponentRobotInfo) {
+                                if (Attack.prioritizedRobot(robot.getType()) <= 2) {
+                                    continue;
+                                }
                                 if (rc.canSenseLocation(robot.getLocation().add(d.opposite()))) {
                                     robotAmount -= 1;
                                 }
@@ -450,6 +456,9 @@ public class Motion {
                     else {
                         int robotAmount = 0;
                         for (RobotInfo robot : opponentRobotInfo) {
+                            if (Attack.prioritizedRobot(robot.getType()) <= 2) {
+                                continue;
+                            }
                             if (rc.canSenseLocation(robot.getLocation().add(d.opposite()))) {
                                 robotAmount -= 1;
                             }
@@ -565,7 +574,7 @@ public class Motion {
             if (r.getType() == RobotType.HEADQUARTERS) {
                 rc.setIndicatorLine(m, r.getLocation(), 255, 0, 0);
                 if (r.getLocation().distanceSquaredTo(m) <= RobotType.HEADQUARTERS.actionRadiusSquared) {
-                    if (rc.getLocation().distanceSquaredTo(m) >= r.getLocation().distanceSquaredTo(m)) {
+                    if (r.getLocation().distanceSquaredTo(rc.getLocation()) >= r.getLocation().distanceSquaredTo(m)) {
                         return false;
                     }
                 }
