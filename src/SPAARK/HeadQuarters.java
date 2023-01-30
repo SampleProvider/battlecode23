@@ -176,10 +176,6 @@ public strictfp class HeadQuarters {
 
                 spawnBots();
 
-                if (round >= 600) {
-                    rc.resign();
-                }
-
                 // store
                 GlobalArray.storeHeadquarters(this);
 
@@ -219,7 +215,6 @@ public strictfp class HeadQuarters {
                             }
                         }
                         System.out.println(centerHeadquarters.toString());
-                        // rc.resign();
                         globalArray.setMapSymmetry(7);
                     }
                     // set upgrade wells if resources adequate
