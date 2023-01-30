@@ -195,6 +195,7 @@ public strictfp class HeadQuarters {
                 // primary headquarters stuff
                 if (isPrimaryHQ) {
                     if (round == 2) {
+                        hqCount = 0;
                         for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
                             if (GlobalArray.hasLocation(rc.readSharedArray(i)))
                             hqCount++;
