@@ -216,7 +216,6 @@ public strictfp class HeadQuarters {
                         MapLocationDistanceToCenterComparator distCompare = new MapLocationDistanceToCenterComparator();
                         distCompare.setCenter(center);
                         Arrays.sort(centerHeadquarters, distCompare);
-                        System.out.println(Arrays.toString(centerHeadquarters));
                         globalArray.setMapSymmetry(7);
                     }
                     // set upgrade wells if resources adequate
