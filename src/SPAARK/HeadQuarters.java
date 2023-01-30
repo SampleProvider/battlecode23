@@ -351,7 +351,7 @@ public strictfp class HeadQuarters {
                         rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                         launchersProduced++;
                         if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
-                    } else if (mana > 120) {
+                    } else if (mana > RobotType.LAUNCHER.buildCostMana * 3) {
                         // round >= 200
                         while (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
