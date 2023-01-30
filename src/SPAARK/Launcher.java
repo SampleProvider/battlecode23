@@ -10,7 +10,7 @@ public strictfp class Launcher {
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
-    private final Random rng = new Random(2023);
+    private Random rng = new Random(2023);
 
     private MapLocation[] headquarters;
     private MapLocation prioritizedHeadquarters;
@@ -60,8 +60,7 @@ public strictfp class Launcher {
             }
             lastHealth = rc.getHealth();
             storedLocations = new StoredLocations(rc, headquarters);
-
-            indicatorString = new StringBuilder();
+            rng = new Random(rc.getID());
         } catch (GameActionException e) {
             System.out.println("GameActionException at Launcher constructor");
             e.printStackTrace();
@@ -76,6 +75,8 @@ public strictfp class Launcher {
     private void run() {
         while (true) {
             try {
+                if (FooBar.foobar && rng.nextInt(1000) == 0) FooBar.foo(rc);
+                if (FooBar.foobar && rng.nextInt(1000) == 0) FooBar.bar(rc);
                 me = rc.getLocation();
                 round = rc.getRoundNum();
                 globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));

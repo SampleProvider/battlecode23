@@ -2,7 +2,8 @@ package SPAARK;
 
 import battlecode.common.*;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
 
 public strictfp class HeadQuarters {
     protected RobotController rc;
@@ -10,6 +11,8 @@ public strictfp class HeadQuarters {
     private MapLocation center;
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
+
+    private Random rng = new Random(2023);
 
     protected int hqIndex;
     private int locInt;
@@ -31,7 +34,8 @@ public strictfp class HeadQuarters {
     private StoredLocations storedLocations;
 
     private boolean isPrimaryHQ = false;
-    private ArrayList<MapLocation> centerHeadquarters = new ArrayList<MapLocation>();
+    // private ArrayList<MapLocation> centerHeadquarters = new ArrayList<MapLocation>();
+    private MapLocation[] centerHeadquarters;
     private boolean setTargetElixirWell = false;
     protected int adamantium = 0;
     protected int mana = 0;
@@ -78,6 +82,7 @@ public strictfp class HeadQuarters {
             storedLocations = new StoredLocations(rc, new MapLocation[] {});
             nearbyWells = rc.senseNearbyWells();
             spawningLocations = rc.getAllLocationsWithinRadiusSquared(me, RobotType.HEADQUARTERS.actionRadiusSquared);
+            rng = new Random(rc.getID());
         } catch (GameActionException e) {
             System.out.println("GameActionException at HeadQuarters constructor");
             e.printStackTrace();
@@ -92,6 +97,8 @@ public strictfp class HeadQuarters {
     private void run() {
         while (true) {
             try {
+                if (FooBar.foobar && rng.nextInt(1000) == 0) FooBar.foo(rc);
+                if (FooBar.foobar && rng.nextInt(1000) == 0) FooBar.bar(rc);
                 me = rc.getLocation();
                 round = rc.getRoundNum();
                 globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
@@ -197,8 +204,7 @@ public strictfp class HeadQuarters {
                     if (round == 2) {
                         hqCount = 0;
                         for (int i = GlobalArray.HEADQUARTERS; i < GlobalArray.HEADQUARTERS + GlobalArray.HEADQUARTERS_LENGTH; i++) {
-                            if (GlobalArray.hasLocation(rc.readSharedArray(i)))
-                            hqCount++;
+                            if (GlobalArray.hasLocation(rc.readSharedArray(i))) hqCount++;
                         }
                         MapLocation headquarters[] = new MapLocation[hqCount];
                         for (int i = 0; i < hqCount; i++) {
@@ -206,16 +212,11 @@ public strictfp class HeadQuarters {
                         }
                         storedLocations.setHeadquarters(headquarters);
                         mapSizeFactor = (rc.getMapWidth() * rc.getMapHeight()) / 400;
-                        centerHeadquarters.add(headquarters[0]);
-                        for (int i = 1; i < hqCount; i++) {
-                            for (int j = 0;j < centerHeadquarters.size();j++) {
-                                if (centerHeadquarters.get(j).distanceSquaredTo(center) > headquarters[i].distanceSquaredTo(center)) {
-                                    centerHeadquarters.add(j, headquarters[i]);
-                                    break;
-                                }
-                            }
-                        }
-                        System.out.println(centerHeadquarters.toString());
+                        centerHeadquarters = Arrays.copyOf(headquarters, hqCount);
+                        MapLocationDistanceToCenterComparator distCompare = new MapLocationDistanceToCenterComparator();
+                        distCompare.setCenter(center);
+                        Arrays.sort(centerHeadquarters, distCompare);
+                        System.out.println(Arrays.toString(centerHeadquarters));
                         globalArray.setMapSymmetry(7);
                     }
                     // set upgrade wells if resources adequate
@@ -234,7 +235,7 @@ public strictfp class HeadQuarters {
                     }
                     if (round >= 2) {
                         int headquarterID = rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS) >> 13;
-                        MapLocation targetHeadquarters = centerHeadquarters.get(headquarterID);
+                        MapLocation targetHeadquarters = centerHeadquarters[headquarterID];
                         indicatorString.append(headquarterID);
                         int symmetry = (globalArray.mapSymmetry() & 0b1) + ((globalArray.mapSymmetry() >> 1) & 0b1) + ((globalArray.mapSymmetry() >> 2) & 0b1);
                         if (symmetry == 1) {
