@@ -25,8 +25,6 @@ public strictfp class HeadQuarters {
     private int nearbyLaunchers = 0;
     protected boolean tooManyBots = false;
 
-    private int thisCarriers = 0;
-
     private int possibleSpawningLocations = 0;
 
     private int mapSizeFactor = 100;
@@ -304,7 +302,7 @@ public strictfp class HeadQuarters {
         updatePrioritizedWell();
         MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
         MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
-        if (anchorCooldown <= 0 && rc.getNumAnchors(Anchor.STANDARD) == 0 && canProduceAnchor && thisCarriers > 8) {
+        if (anchorCooldown <= 0 && rc.getNumAnchors(Anchor.STANDARD) == 0 && canProduceAnchor && nearbyCarriers > 3) {
             if (adamantium >= Anchor.STANDARD.adamantiumCost && mana >= Anchor.STANDARD.manaCost) {
                 rc.buildAnchor(Anchor.STANDARD);
                 indicatorString.append("P ANC; ");
@@ -326,9 +324,8 @@ public strictfp class HeadQuarters {
                         && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 4) {
                     rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                     carriersProduced++;
-                    thisCarriers++;
                     if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
-                    carrierCooldown = 30;
+                    carrierCooldown = 50;
                 } else break;
             }
         } else {
@@ -340,7 +337,6 @@ public strictfp class HeadQuarters {
                         && (round > 1 || carriersProduced < 2) && possibleSpawningLocations >= 3) {
                     rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                     carriersProduced++;
-                    thisCarriers++;
                     if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                     carrierCooldown = 50;
                 } else if (optimalSpawningLocation != null && possibleSpawningLocations >= 2) {
