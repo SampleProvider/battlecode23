@@ -10,7 +10,7 @@ public strictfp class Launcher {
     private GlobalArray globalArray = new GlobalArray();
     private int round = 0;
 
-    private final Random rng = new Random(2023);
+    private Random rng = new Random(2023);
 
     private MapLocation[] headquarters;
     private MapLocation prioritizedHeadquarters;
@@ -37,7 +37,8 @@ public strictfp class Launcher {
     private int turnsMovingToCenter = 0;
 
     private MapLocation symmetryDetectionHeadquarters;
-    private int originalSuspectedSymmetry = 1;
+    private int turnsSuspectedSymmetry = 0;
+    private int originalSuspectedSymmetry;
     private int suspectedSymmetry = 1;
     private int symmetry = 0;
 
@@ -60,8 +61,11 @@ public strictfp class Launcher {
             }
             lastHealth = rc.getHealth();
             storedLocations = new StoredLocations(rc, headquarters);
-
-            indicatorString = new StringBuilder();
+            rng = new Random(rc.getID());
+            if (rng.nextBoolean()) {
+                suspectedSymmetry = 2;
+            }
+            originalSuspectedSymmetry = suspectedSymmetry;
         } catch (GameActionException e) {
             System.out.println("GameActionException at Launcher constructor");
             e.printStackTrace();
@@ -76,6 +80,9 @@ public strictfp class Launcher {
     private void run() {
         while (true) {
             try {
+                if (FooBar.foobar && rng.nextInt(1000) == 0) FooBar.foo(rc);
+                if (FooBar.foobar && rng.nextInt(1000) == 0) FooBar.bar(rc);
+                //FooBar.foobar is set to false, code will never run
                 me = rc.getLocation();
                 round = rc.getRoundNum();
                 globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
@@ -154,6 +161,9 @@ public strictfp class Launcher {
         }
         MapLocation target;
         if (symmetry == 0) {
+            //Suspecting symmetry
+            turnsSuspectedSymmetry++;
+            indicatorString.append("SSYM=" + suspectedSymmetry + " FOR " + turnsSuspectedSymmetry + "; ");
             if (suspectedSymmetry == 1) {
                 target = new MapLocation(rc.getMapWidth() - symmetryDetectionHeadquarters.x - 1, symmetryDetectionHeadquarters.y);
             } else if (suspectedSymmetry == 2) {
@@ -162,21 +172,27 @@ public strictfp class Launcher {
                 //suspectedSymmetry = 3
                 target = new MapLocation(rc.getMapWidth() - symmetryDetectionHeadquarters.x - 1, rc.getMapHeight() - symmetryDetectionHeadquarters.y - 1);
             }
-        } else {
-            if (symmetry == 1) {
-                target = new MapLocation(rc.getMapWidth() - symmetryDetectionHeadquarters.x - 1, symmetryDetectionHeadquarters.y);
-            } else if (symmetry == 2) {
-                target = new MapLocation(symmetryDetectionHeadquarters.x, rc.getMapHeight() - symmetryDetectionHeadquarters.y - 1);
-            } else {
-                //symmetry = 3
-                target = new MapLocation(rc.getMapWidth() - symmetryDetectionHeadquarters.x - 1, rc.getMapHeight() - symmetryDetectionHeadquarters.y - 1);
+            rc.setIndicatorLine(me, target, 0, 0, 0);
+            if (rc.canSenseLocation(target)) {
+                RobotInfo hq = rc.senseRobotAtLocation(target);
+                if ((hq != null && hq.type == RobotType.HEADQUARTERS && hq.team == rc.getTeam().opponent())) {
+                    symmetry = suspectedSymmetry;
+                } else {
+                    if (suspectedSymmetry == 1) {
+                        suspectedSymmetry = 3;
+                    } else if (suspectedSymmetry == 3) {
+                        if (originalSuspectedSymmetry == 1) {
+                            suspectedSymmetry = 2;
+                        } else {
+                            suspectedSymmetry = 1;
+                        }
+                    } else if (suspectedSymmetry == 2) {
+                        suspectedSymmetry = 3;
+                    }
+                    turnsSuspectedSymmetry = 0;
+                }
             }
-        }
-        if (rc.canSenseLocation(target)) {
-            RobotInfo hq = rc.senseRobotAtLocation(target);
-            if (hq != null && hq.type == RobotType.HEADQUARTERS && hq.team == rc.getTeam().opponent()) {
-                symmetry = suspectedSymmetry;
-            } else {
+            if (turnsSuspectedSymmetry > 80 + rc.getMapWidth() * 2 + rc.getMapHeight() * 2) {
                 if (suspectedSymmetry == 1) {
                     suspectedSymmetry = 3;
                 } else if (suspectedSymmetry == 3) {
@@ -188,9 +204,21 @@ public strictfp class Launcher {
                 } else if (suspectedSymmetry == 2) {
                     suspectedSymmetry = 3;
                 }
+                turnsSuspectedSymmetry = 0;
+            }
+        } else {
+            //Known symmetry
+            indicatorString.append("SYM=" + symmetry + "; ");
+            if (symmetry == 1) {
+                target = new MapLocation(rc.getMapWidth() - symmetryDetectionHeadquarters.x - 1, symmetryDetectionHeadquarters.y);
+            } else if (symmetry == 2) {
+                target = new MapLocation(symmetryDetectionHeadquarters.x, rc.getMapHeight() - symmetryDetectionHeadquarters.y - 1);
+            } else {
+                //symmetry = 3
+                target = new MapLocation(rc.getMapWidth() - symmetryDetectionHeadquarters.x - 1, rc.getMapHeight() - symmetryDetectionHeadquarters.y - 1);
             }
         }
-        Direction[] bug2array = Motion.bug2(rc, target, lastDirection, clockwiseRotation, false, true, indicatorString);
+        Direction[] bug2array = Motion.bug2(rc, target, lastDirection, clockwiseRotation, false, false, indicatorString);
         lastDirection = bug2array[0];
         if (bug2array[1] == Direction.CENTER) {
             clockwiseRotation = !clockwiseRotation;
@@ -224,12 +252,12 @@ public strictfp class Launcher {
         }
         
         if (rc.isMovementReady()) {
-            Direction[] bug2array1 = Motion.bug2(rc, GlobalArray.parseLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS)), lastDirection, clockwiseRotation, false, false, indicatorString);
-            lastDirection = bug2array1[0];
-            if (bug2array1[1] == Direction.CENTER) {
-                clockwiseRotation = !clockwiseRotation;
-            }
-            return;
+            // Direction[] bug2array1 = Motion.bug2(rc, GlobalArray.parseLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS)), lastDirection, clockwiseRotation, false, false, indicatorString);
+            // lastDirection = bug2array1[0];
+            // if (bug2array1[1] == Direction.CENTER) {
+            //     clockwiseRotation = !clockwiseRotation;
+            // }
+            // return;
             // lets move!!
 
             // if (storedLocations.notSymmetry != 0) {

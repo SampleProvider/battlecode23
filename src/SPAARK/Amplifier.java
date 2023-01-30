@@ -87,6 +87,8 @@ public strictfp class Amplifier {
     public void run() {
         while (true) {
             try {
+                if (FooBar.foobar && rng.nextInt(1000) == 0) FooBar.foo(rc);
+                if (FooBar.foobar && rng.nextInt(1000) == 0) FooBar.bar(rc);
                 me = rc.getLocation();
                 round = rc.getRoundNum();
                 globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
