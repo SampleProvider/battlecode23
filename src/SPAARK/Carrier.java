@@ -196,6 +196,11 @@ public strictfp class Carrier {
                 runState();
                 
                 updatePrioritizedHeadquarters();
+                
+                if (rc.getAnchor() == null) {
+                    RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+                    Attack.attack(rc, new MapLocation(0, 0), robotInfo, false, indicatorString);
+                }
                 // if (rc.getAnchor() == null) {
                 //     RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
                 //     RobotInfo robot = Attack.attack(rc, new MapLocation(0, 0), robotInfo, false, indicatorString);
@@ -284,10 +289,11 @@ public strictfp class Carrier {
             else if (adamantiumAmount + manaAmount + elixirAmount >= resourceCollectAmount) {
                 state = 3;
             }
-            me = rc.getLocation();
             if (GlobalArray.DEBUG_INFO >= 4) {
+                me = rc.getLocation();
                 rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
             } else if (GlobalArray.DEBUG_INFO > 0) {
+                me = rc.getLocation();
                 rc.setIndicatorDot(me, 255, 75, 75);
             }
         } else if (state == 2) {
@@ -300,10 +306,11 @@ public strictfp class Carrier {
             if (rc.canCollectResource(prioritizedWell, -1) && adamantiumAmount + manaAmount + elixirAmount < resourceCollectAmount) {
                 rc.collectResource(prioritizedWell, -1);
                 // Motion.circleAroundTarget(rc, me, prioritizedWell);
-                me = rc.getLocation();
                 if (GlobalArray.DEBUG_INFO >= 3) {
+                    me = rc.getLocation();
                     rc.setIndicatorLine(me, prioritizedWell, 255, 75, 75);
                 } else if (GlobalArray.DEBUG_INFO > 0) {
+                    me = rc.getLocation();
                     rc.setIndicatorDot(me, 255, 75, 75);
                 }
             } else {
@@ -327,10 +334,11 @@ public strictfp class Carrier {
             if (prioritizedHeadquarters.distanceSquaredTo(me) <= rc.getType().visionRadiusSquared) {
                 attemptTransfer();
             }
-            me = rc.getLocation();
             if (GlobalArray.DEBUG_INFO >= 4) {
+                me = rc.getLocation();
                 rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 25, 255);
             } else if (GlobalArray.DEBUG_INFO > 0) {
+                me = rc.getLocation();
                 rc.setIndicatorDot(me, 125, 25, 255);
             }
             if (adamantiumAmount + manaAmount + elixirAmount == 0 && !returningToStorePOI && rc.getAnchor() == null) {
@@ -374,10 +382,11 @@ public strictfp class Carrier {
                 attemptTransfer();
                 state = 0;
             }
-            me = rc.getLocation();
             if (GlobalArray.DEBUG_INFO >= 4) {
+                me = rc.getLocation();
                 rc.setIndicatorLine(me, prioritizedHeadquarters, 125, 255, 0);
             } else if (GlobalArray.DEBUG_INFO > 0) {
+                me = rc.getLocation();
                 rc.setIndicatorDot(me, 125, 255, 0);
             }
         } else if (state == 6) {
