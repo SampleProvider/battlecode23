@@ -162,8 +162,10 @@ public strictfp class Carrier {
                 }
                 lastHealth = rc.getHealth();
 
-                RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                Attack.attack(rc, new MapLocation(0, 0), robotInfo, false, indicatorString);
+                if (rc.getAnchor() == null) {
+                    RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+                    Attack.attack(rc, new MapLocation(0, 0), robotInfo, false, indicatorString);
+                }
 
                 // if (rc.getAnchor() == null) {
                 //     RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
