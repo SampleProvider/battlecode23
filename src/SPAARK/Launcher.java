@@ -153,15 +153,18 @@ public strictfp class Launcher {
                 }
             }
         }
-        Direction[] bug2array = Motion.bug2(rc, target, lastDirection, clockwiseRotation, false, false, indicatorString);
-        lastDirection = bug2array[0];
-        if (bug2array[1] == Direction.CENTER) {
-            clockwiseRotation = !clockwiseRotation;
-        }
-        me = rc.getLocation();
-
         if (rc.canSenseLocation(target) && robot == null) {
             storedLocations.arrivedAtWell = true;
+        }
+        if (me.distanceSquaredTo(target) <= 16) {
+            clockwiseRotation = Motion.circleAroundTarget(rc, target, 10, clockwiseRotation, false, false);
+        }
+        else {
+            Direction[] bug2array = Motion.bug2(rc, target, lastDirection, clockwiseRotation, false, false, indicatorString);
+            lastDirection = bug2array[0];
+            if (bug2array[1] == Direction.CENTER) {
+                clockwiseRotation = !clockwiseRotation;
+            }
         }
     
         if (robot != null) {

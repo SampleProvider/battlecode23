@@ -26,6 +26,7 @@ public strictfp class HeadQuarters {
     private int amplifiers = 0;
     private int nearbyCarriers = 0;
     private int nearbyLaunchers = 0;
+    private boolean attemptBreakout = false;
     protected boolean tooManyBots = false;
     protected boolean unsafe = false;
 
@@ -163,9 +164,10 @@ public strictfp class HeadQuarters {
                     nearbyLaunchers = 0;
                     RobotInfo[] nearbyBots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
                     for (RobotInfo r : nearbyBots) {
-                        if (r.getType() == RobotType.LAUNCHER)
+                        RobotType type = r.getType();
+                        if (type == RobotType.LAUNCHER)
                             nearbyLaunchers++;
-                        else if (r.getType() == RobotType.CARRIER)
+                        else if (type == RobotType.CARRIER)
                             nearbyCarriers++;
                     }
                     tooManyBots = nearbyCarriers + nearbyLaunchers >= 30;
@@ -184,6 +186,16 @@ public strictfp class HeadQuarters {
                         rc.writeSharedArray(GlobalArray.CARRIERCOUNT, 0);
                         rc.writeSharedArray(GlobalArray.LAUNCHERCOUNT, 0);
                         rc.writeSharedArray(GlobalArray.AMPLIFIERCOUNT, rc.readSharedArray(GlobalArray.AMPLIFIERCOUNT) & 0b1111111100000000);
+                    }
+                }
+
+                //unsafe
+                if (unsafe) {
+                    if (mana > RobotType.LAUNCHER.buildCostMana * 10) {
+                        attemptBreakout = true;
+                    }
+                    if (mana < RobotType.LAUNCHER.buildCostMana) {
+                        attemptBreakout = false;
                     }
                 }
 
@@ -325,7 +337,7 @@ public strictfp class HeadQuarters {
             }
         } else {
             while (rc.isActionReady()) {
-                if ((round > 1 || carriersProduced < 2) && possibleSpawningLocations >= 3
+                if ((round > 1 || carriersProduced < 2) && possibleSpawningLocations >= 3 && !unsafe
                         && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0)
                         && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)) {
                     rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
@@ -334,7 +346,8 @@ public strictfp class HeadQuarters {
                     carrierCooldown = 50;
                 } else {
                     if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
-                            && (nearbyCarriers < 5 || (mana > RobotType.LAUNCHER.buildCostMana*(unsafe ? 5 : 2) && possibleSpawningLocations >= 2))) {
+                            && (attemptBreakout || (!unsafe && (mana > RobotType.LAUNCHER.buildCostMana * 2)
+                            && possibleSpawningLocations >= (unsafe ? 5 : 2)))) {
                         while (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                             launchersProduced++;
