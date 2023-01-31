@@ -585,30 +585,32 @@ public class Motion {
 
     private static boolean canMove(RobotController rc, Direction direction, boolean avoidClouds, boolean avoidWells) throws GameActionException {
         MapLocation m = rc.getLocation().add(direction);
-        for (RobotInfo r : robotInfo) {
-            if (r.getType() == RobotType.HEADQUARTERS) {
-                rc.setIndicatorLine(m, r.getLocation(), 255, 0, 0);
-                if (r.getLocation().distanceSquaredTo(m) <= RobotType.HEADQUARTERS.actionRadiusSquared) {
-                    if (r.getLocation().distanceSquaredTo(rc.getLocation()) >= r.getLocation().distanceSquaredTo(m)) {
-                        return false;
+        if (rc.getType() == RobotType.LAUNCHER) {
+            for (RobotInfo r : robotInfo) {
+                if (r.getType() == RobotType.HEADQUARTERS) {
+                    rc.setIndicatorLine(m, r.getLocation(), 255, 0, 0);
+                    if (r.getLocation().distanceSquaredTo(m) <= RobotType.HEADQUARTERS.actionRadiusSquared) {
+                        if (r.getLocation().distanceSquaredTo(rc.getLocation()) >= r.getLocation().distanceSquaredTo(m)) {
+                            return false;
+                        }
                     }
                 }
             }
-        }
-        for (MapLocation h : headquarters) {
-            MapLocation rH = h;
-            if (symmetry == 0) {
-                rH = new MapLocation(rc.getMapWidth() - 1 - h.x, h.y);
-            }
-            else if (symmetry == 1) {
-                rH = new MapLocation(h.x, rc.getMapHeight() - 1 - h.y);
-            }
-            else {
-                rH = new MapLocation(rc.getMapWidth() - 1 - h.x, rc.getMapHeight() - 1 - h.y);
-            }
-            if (rH.distanceSquaredTo(m) <= RobotType.HEADQUARTERS.actionRadiusSquared) {
-                if (rH.distanceSquaredTo(rc.getLocation()) >= rH.distanceSquaredTo(m)) {
-                    return false;
+            for (MapLocation h : headquarters) {
+                MapLocation rH = h;
+                if (symmetry == 0) {
+                    rH = new MapLocation(rc.getMapWidth() - 1 - h.x, h.y);
+                }
+                else if (symmetry == 1) {
+                    rH = new MapLocation(h.x, rc.getMapHeight() - 1 - h.y);
+                }
+                else {
+                    rH = new MapLocation(rc.getMapWidth() - 1 - h.x, rc.getMapHeight() - 1 - h.y);
+                }
+                if (rH.distanceSquaredTo(m) <= RobotType.HEADQUARTERS.actionRadiusSquared) {
+                    if (rH.distanceSquaredTo(rc.getLocation()) >= rH.distanceSquaredTo(m)) {
+                        return false;
+                    }
                 }
             }
         }
