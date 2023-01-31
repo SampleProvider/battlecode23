@@ -162,27 +162,30 @@ public strictfp class Carrier {
                 }
                 lastHealth = rc.getHealth();
 
-                if (rc.getAnchor() == null) {
-                    RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                    RobotInfo robot = Attack.attack(rc, new MapLocation(0, 0), robotInfo, false, indicatorString);
-                    if (robot == null) {
-                        robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
-                        robot = Attack.senseOpponent(rc, robotInfo);
-                    }
-                    if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
-                        // storedLocations.storeOpponentLocation(robot.getLocation());
-                        // if (state != 4) {
-                        //     state = 5;
-                        // }
-                    }
-                }
-                else {
-                    RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
-                    RobotInfo robot = Attack.senseOpponent(rc, robotInfo);
-                    if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
-                        // storedLocations.storeOpponentLocation(robot.getLocation());
-                    }
-                }
+                RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+                Attack.attack(rc, new MapLocation(0, 0), robotInfo, false, indicatorString);
+
+                // if (rc.getAnchor() == null) {
+                //     RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+                //     RobotInfo robot = Attack.attack(rc, new MapLocation(0, 0), robotInfo, false, indicatorString);
+                //     if (robot == null) {
+                //         robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+                //         robot = Attack.senseOpponent(rc, robotInfo);
+                //     }
+                //     if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
+                //         // storedLocations.storeOpponentLocation(robot.getLocation());
+                //         // if (state != 4) {
+                //         //     state = 5;
+                //         // }
+                //     }
+                // }
+                // else {
+                //     RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+                //     RobotInfo robot = Attack.senseOpponent(rc, robotInfo);
+                //     if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
+                //         // storedLocations.storeOpponentLocation(robot.getLocation());
+                //     }
+                // }
 
                 if (state != 3) {
                     headquarterAttemptTime = 0;
@@ -191,27 +194,27 @@ public strictfp class Carrier {
                 runState();
                 
                 updatePrioritizedHeadquarters();
-                if (rc.getAnchor() == null) {
-                    RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                    RobotInfo robot = Attack.attack(rc, new MapLocation(0, 0), robotInfo, false, indicatorString);
-                    if (robot == null) {
-                        robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
-                        robot = Attack.senseOpponent(rc, robotInfo);
-                    }
-                    if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
-                        // storedLocations.storeOpponentLocation(robot.getLocation());
-                        // if (state != 4) {
-                        //     state = 5;
-                        // }
-                    }
-                }
-                else {
-                    RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
-                    RobotInfo robot = Attack.senseOpponent(rc, robotInfo);
-                    if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
-                        // storedLocations.storeOpponentLocation(robot.getLocation());
-                    }
-                }
+                // if (rc.getAnchor() == null) {
+                //     RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+                //     RobotInfo robot = Attack.attack(rc, new MapLocation(0, 0), robotInfo, false, indicatorString);
+                //     if (robot == null) {
+                //         robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+                //         robot = Attack.senseOpponent(rc, robotInfo);
+                //     }
+                //     if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
+                //         // storedLocations.storeOpponentLocation(robot.getLocation());
+                //         // if (state != 4) {
+                //         //     state = 5;
+                //         // }
+                //     }
+                // }
+                // else {
+                //     RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+                //     RobotInfo robot = Attack.senseOpponent(rc, robotInfo);
+                //     if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
+                //         // storedLocations.storeOpponentLocation(robot.getLocation());
+                //     }
+                // }
             } catch (GameActionException e) {
                 System.out.println("GameActionException at Carrier");
                 e.printStackTrace();
