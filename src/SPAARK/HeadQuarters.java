@@ -302,8 +302,8 @@ public strictfp class HeadQuarters {
                         while (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                             launchersProduced++;
-                            optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
                             if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                            optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
                         }
                     } else if (mana > Anchor.STANDARD.manaCost + RobotType.LAUNCHER.buildCostMana) {
                         //round >= 1000
@@ -338,8 +338,8 @@ public strictfp class HeadQuarters {
                         while (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                             launchersProduced++;
-                            optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
                             if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                            optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
                         }
                     } else if (amplifiers < 4 && launchers > 5 && carriers > 5 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)) {
                         rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
