@@ -223,8 +223,7 @@ public strictfp class Launcher {
             indicatorString.append("PROT; ");
             if (GlobalArray.DEBUG_INFO >= 3) {
                 rc.setIndicatorLine(me, prioritizedOpponentLocation, 75, 255, 75);
-            }
-            else if (GlobalArray.DEBUG_INFO >= 2) {
+            } else if (GlobalArray.DEBUG_INFO > 0) {
                 rc.setIndicatorDot(me, 75, 255, 75);
             }
             if (storedLocations.removedOpponents[prioritizedOpponentLocationIndex] == true) {

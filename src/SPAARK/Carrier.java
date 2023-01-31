@@ -1,7 +1,6 @@
 package SPAARK;
 
 import battlecode.common.*;
-import javafx.scene.media.Media;
 
 import java.util.Random;
 
