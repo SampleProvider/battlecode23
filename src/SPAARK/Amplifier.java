@@ -312,12 +312,16 @@ public strictfp class Amplifier {
             if (rc.getLocation() == me) {
                 opponent = null;
                 state = 0;
+                randomExploreLocation = null;
+                updateRandomExploreLocation();
                 return;
             }
             if (rc.getLocation().distanceSquaredTo(opponent) > RobotType.AMPLIFIER.visionRadiusSquared) {
                 // i'm far enough, lets stop
                 opponent = null;
                 state = 0;
+                randomExploreLocation = null;
+                updateRandomExploreLocation();
                 return;
             }
             // updatePrioritizedHeadquarters();
