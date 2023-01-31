@@ -140,16 +140,17 @@ public strictfp class Launcher {
                 y += w.getLocation().y - me.y;
             }
             if (surroundingLaunchers > 0) {
-                rc.setIndicatorLine(me, me.translate(x / surroundingLaunchers, y / surroundingLaunchers), 255, 0, 0);
-                Direction[] bug2array = Motion.bug2(rc, me.translate(x / surroundingLaunchers, y / surroundingLaunchers), lastDirection, clockwiseRotation, false, false, indicatorString);
-                lastDirection = bug2array[0];
-                if (bug2array[1] == Direction.CENTER) {
-                    clockwiseRotation = !clockwiseRotation;
+                if (!me.translate(x / surroundingLaunchers, y / surroundingLaunchers).equals(me)) {
+                    Direction[] bug2array = Motion.bug2(rc, me.translate(x / surroundingLaunchers, y / surroundingLaunchers), lastDirection, clockwiseRotation, false, false, indicatorString);
+                    lastDirection = bug2array[0];
+                    if (bug2array[1] == Direction.CENTER) {
+                        clockwiseRotation = !clockwiseRotation;
+                    }
+                    if (robot != null) {
+                        opponent = robot;
+                    }
+                    return;
                 }
-                if (robot != null) {
-                    opponent = robot;
-                }
-                return;
             }
         }
         Direction[] bug2array = Motion.bug2(rc, target, lastDirection, clockwiseRotation, false, false, indicatorString);
