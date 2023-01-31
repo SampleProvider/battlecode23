@@ -27,7 +27,7 @@ public class Attack {
         new MapLocation(3, -1),
     };
 
-    protected static RobotInfo attack(RobotController rc, MapLocation prioritizedHeadquarters, RobotInfo[] robotInfo, boolean attackAll, StringBuilder indicatorString) throws GameActionException {
+    protected static RobotInfo attack(RobotController rc, MapLocation opponentHeadquarters, RobotInfo[] robotInfo, boolean attackAll, StringBuilder indicatorString) throws GameActionException {
         if (robotInfo.length > 0) {
             RobotInfo prioritizedRobotInfo = null;
             for (RobotInfo w : robotInfo) {
@@ -58,7 +58,7 @@ public class Attack {
                         if (prioritizedMapLocation == null) {
                             prioritizedMapLocation = rc.getLocation().translate(m.x, m.y);
                         }
-                        else if (prioritizedHeadquarters.distanceSquaredTo(rc.getLocation().translate(m.x, m.y)) > prioritizedHeadquarters.distanceSquaredTo(prioritizedMapLocation)) {
+                        else if (opponentHeadquarters.distanceSquaredTo(rc.getLocation().translate(m.x, m.y)) < opponentHeadquarters.distanceSquaredTo(prioritizedMapLocation)) {
                             prioritizedMapLocation = rc.getLocation().translate(m.x, m.y);
                         }
                     }
@@ -76,7 +76,7 @@ public class Attack {
                         if (prioritizedMapLocation == null) {
                             prioritizedMapLocation = m;
                         }
-                        else if (prioritizedHeadquarters.distanceSquaredTo(m) > prioritizedHeadquarters.distanceSquaredTo(prioritizedMapLocation)) {
+                        else if (opponentHeadquarters.distanceSquaredTo(m) < opponentHeadquarters.distanceSquaredTo(prioritizedMapLocation)) {
                             prioritizedMapLocation = m;
                         }
                     }

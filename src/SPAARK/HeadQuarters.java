@@ -172,13 +172,16 @@ public strictfp class HeadQuarters {
                             nearbyCarriers++;
                     }
                     tooManyBots = nearbyCarriers >= 30;
-                    RobotInfo[] opponentBots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
+                    RobotInfo[] opponentBots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                     int nearbyOpponents = 0;
                     for (RobotInfo r : opponentBots) {
-                        if (Attack.prioritizedRobot(r.getType()) >= 3)
+                        if (Attack.prioritizedRobot(r.getType()) >= 3) {
                             nearbyOpponents++;
+                        }
                     }
-                    tooManyBots = nearbyOpponents >= 2;
+                    unsafe = nearbyOpponents >= 2;
+                    indicatorString.append(unsafe);
+                    indicatorString.append(nearbyOpponents);
                     indicatorString.append("C-L-A-NC-NL[" + carriers + ", " + launchers + ", " + amplifiers + ", " + nearbyCarriers + ", " + nearbyLaunchers + "]; ");
                 }
                 if (isPrimaryHQ) {
@@ -195,7 +198,7 @@ public strictfp class HeadQuarters {
                 GlobalArray.storeHeadquarters(this);
 
                 // prioritized resources
-                double deviation = ((mana + adamantium) != 0) ? (mana - (adamantium * 10.0)) / (mana + (adamantium * 10.0)) : 0;
+                double deviation = ((mana + adamantium) != 0) ? (mana - (adamantium * 4.0)) / (mana + (adamantium * 4.0)) : 0;
                 if (Math.abs(deviation) < 0.1) {
                     indicatorString.append("PR=NO; ");
                     prioritizedResourceType = ResourceType.NO_RESOURCE;
@@ -335,7 +338,7 @@ public strictfp class HeadQuarters {
                     carrierCooldown = 50;
                 } else {
                     if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
-                            && (nearbyCarriers < 5 || (mana > RobotType.LAUNCHER.buildCostMana*2 && possibleSpawningLocations >= 2))) {
+                            && (nearbyCarriers < 5 || (mana > RobotType.LAUNCHER.buildCostMana*(unsafe ? 5 : 2) && possibleSpawningLocations >= 2))) {
                         while (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                             launchersProduced++;

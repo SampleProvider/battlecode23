@@ -83,7 +83,7 @@ public strictfp class GlobalArray {
     }
 
     public static void storeHeadquarters(HeadQuarters hq) throws GameActionException {
-        hq.rc.writeSharedArray(hq.hqIndex, (hq.unsafe ? 0b10000000000000 : 0) | (hq.tooManyBots ? 0b1000000000000 : 0) | intifyLocation(hq.me));
+        hq.rc.writeSharedArray(hq.hqIndex, (hq.unsafe ? 0b100000000000000 : 0) | (hq.tooManyBots ? 0b10000000000000 : 0) | intifyLocation(hq.me));
     }
 
     public static boolean hasTooManyBots(int n) {

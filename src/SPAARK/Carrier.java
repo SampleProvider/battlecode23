@@ -1,6 +1,8 @@
 package SPAARK;
 
 import battlecode.common.*;
+import javafx.scene.media.Media;
+
 import java.util.Random;
 
 public strictfp class Carrier {
@@ -161,7 +163,7 @@ public strictfp class Carrier {
 
                 if (rc.getAnchor() == null) {
                     RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                    RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, false, indicatorString);
+                    RobotInfo robot = Attack.attack(rc, new MapLocation(0, 0), robotInfo, false, indicatorString);
                     if (robot == null) {
                         robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                         robot = Attack.senseOpponent(rc, robotInfo);
@@ -190,7 +192,7 @@ public strictfp class Carrier {
                 updatePrioritizedHeadquarters();
                 if (rc.getAnchor() == null) {
                     RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                    RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, false, indicatorString);
+                    RobotInfo robot = Attack.attack(rc, new MapLocation(0, 0), robotInfo, false, indicatorString);
                     if (robot == null) {
                         robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                         robot = Attack.senseOpponent(rc, robotInfo);
@@ -495,27 +497,37 @@ public strictfp class Carrier {
     private void updatePrioritizedHeadquarters() throws GameActionException {
         prioritizedHeadquarters = headquarters[0];
         MapLocation prioritizedHeadquarters2 = headquarters[0];
+        boolean unsafeHQ0 = GlobalArray.isUnsafe(rc.readSharedArray(GlobalArray.HEADQUARTERS));
         int prioritizedHeadquarterIndex2 = 0;
         for (int i = 0; i < headquarters.length; i++) {
             if (headquarters[i] != null) {
                 if (GlobalArray.isUnsafe(rc.readSharedArray(GlobalArray.HEADQUARTERS + i))) {
+                    indicatorString.append("HQ " + i + " UNSAFE; ");
                     continue;
                 }
-                if (prioritizedHeadquarters.distanceSquaredTo(me) > headquarters[i].distanceSquaredTo(me)) {
+                indicatorString.append(rc.readSharedArray(GlobalArray.HEADQUARTERS + i));
+                if (unsafeHQ0 || prioritizedHeadquarters.distanceSquaredTo(me) > headquarters[i].distanceSquaredTo(me)) {
                     prioritizedHeadquarters2 = prioritizedHeadquarters;
                     prioritizedHeadquarterIndex2 = prioritizedHeadquarterIndex;
                     prioritizedHeadquarters = headquarters[i];
                     prioritizedHeadquarterIndex = i;
+                    unsafeHQ0 = false;
                 }
             }
         }
         if (headquarterAttemptTime >= 100) {
+            if (GlobalArray.isUnsafe(rc.readSharedArray(GlobalArray.HEADQUARTERS + prioritizedHeadquarterIndex2))) {
+                headquarterAttemptTime = 0;
+                rc.setIndicatorLine(me, prioritizedHeadquarters, 0, 255, 255);
+                return;
+            }
             prioritizedHeadquarters = prioritizedHeadquarters2;
             prioritizedHeadquarterIndex = prioritizedHeadquarterIndex2;
         }
         if (headquarterAttemptTime >= 200) {
             headquarterAttemptTime = 0;
         }
+        rc.setIndicatorLine(me, prioritizedHeadquarters, 255, 255, 255);
     }
 
     private void updatePrioritizedWell() throws GameActionException {
