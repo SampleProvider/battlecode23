@@ -320,7 +320,7 @@ public class Motion {
                         if (rng.nextBoolean()) {
                             clockwiseRotation = !clockwiseRotation;
                         }
-                        return new Direction[] { Direction.CENTER, null };
+                        return new Direction[] { d, null };
                     }
                 }
             }
@@ -341,9 +341,6 @@ public class Motion {
                 if (touchingTheWallBefore) {
                     clockwiseRotation = !clockwiseRotation;
                 }
-                if (rng.nextBoolean()) {
-                    clockwiseRotation = !clockwiseRotation;
-                }
                 continue;
             }
             
@@ -358,6 +355,9 @@ public class Motion {
                     rc.move(direction);
                     lastDirection = direction;
                     moved = true;
+                    if (i >= 4) {
+                        clockwiseRotation = !clockwiseRotation;
+                    }
                     break;
                 }
             }
@@ -375,6 +375,9 @@ public class Motion {
                         rc.move(direction);
                         lastDirection = direction;
                         moved = true;
+                        if (i >= 4) {
+                            clockwiseRotation = !clockwiseRotation;
+                        }
                         break;
                     } else if (!rc.onTheMap(me.add(direction))) {
                         lastDirection = Direction.CENTER;
@@ -533,9 +536,6 @@ public class Motion {
                 if (touchingTheWallBefore) {
                     clockwiseRotation = !clockwiseRotation;
                 }
-                if (rng.nextBoolean()) {
-                    clockwiseRotation = !clockwiseRotation;
-                }
                 continue;
             }
             for (int i = 0; i < 7; i++) {
@@ -549,6 +549,9 @@ public class Motion {
                     rc.move(direction);
                     lastDirection = direction;
                     moved = true;
+                    if (i >= 4) {
+                        clockwiseRotation = !clockwiseRotation;
+                    }
                     break;
                 }
             }
@@ -571,6 +574,9 @@ public class Motion {
                         rc.move(direction);
                         lastDirection = direction;
                         moved = true;
+                        if (i >= 4) {
+                            clockwiseRotation = !clockwiseRotation;
+                        }
                         break;
                     } else if (!rc.onTheMap(me.add(direction))) {
                         lastDirection = Direction.CENTER;
