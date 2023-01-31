@@ -31,6 +31,8 @@ public strictfp class Carrier {
     private boolean clockwiseRotation = true;
     private Direction lastDirection = Direction.CENTER;
 
+    private int headquarterAttemptTime = 0;
+
     private MapLocation randomExploreLocation;
     private int randomExploreTime = 0;
     private final int randomExploreMinKnownWellDistSquared = 81;
@@ -67,6 +69,7 @@ public strictfp class Carrier {
             for (int i = 0; i < hqCount; i++) {
                 headquarters[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.HEADQUARTERS));
             }
+            Motion.headquarters = headquarters;
             lastHealth = rc.getHealth();
             storedLocations = new StoredLocations(rc, headquarters);
             rng = new Random(rc.getID());
@@ -103,8 +106,11 @@ public strictfp class Carrier {
                 globalArray.incrementCount(rc);
                 storedLocations.updateFullWells();
                 storedLocations.detectIslandLocations();
-                storedLocations.detectSymmetry(globalArray.mapSymmetry());
+                storedLocations.detectSymmetry();
+                storedLocations.updateMapSymmetry(globalArray.mapSymmetry());
                 if (storedLocations.writeToGlobalArray()) returningToStorePOI = false;
+
+                Motion.symmetry = storedLocations.getMapSymmetry();
 
                 updatePrioritizedHeadquarters();
                 if (state != 2) {
@@ -173,6 +179,10 @@ public strictfp class Carrier {
                     if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
                         // storedLocations.storeOpponentLocation(robot.getLocation());
                     }
+                }
+
+                if (state != 3) {
+                    headquarterAttemptTime = 0;
                 }
 
                 runState();
@@ -299,6 +309,7 @@ public strictfp class Carrier {
                     // stop going and do attacky stuff
                 }
             }
+            headquarterAttemptTime++;
             indicatorString.append("PATH->HQ; ");
             Direction[] bug2array = Motion.bug2(rc, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, true, indicatorString);
             lastDirection = bug2array[0];
@@ -483,13 +494,27 @@ public strictfp class Carrier {
 
     private void updatePrioritizedHeadquarters() throws GameActionException {
         prioritizedHeadquarters = headquarters[0];
+        MapLocation prioritizedHeadquarters2 = headquarters[0];
+        int prioritizedHeadquarterIndex2 = 0;
         for (int i = 0; i < headquarters.length; i++) {
             if (headquarters[i] != null) {
+                if (GlobalArray.isUnsafe(rc.readSharedArray(GlobalArray.HEADQUARTERS + i))) {
+                    continue;
+                }
                 if (prioritizedHeadquarters.distanceSquaredTo(me) > headquarters[i].distanceSquaredTo(me)) {
+                    prioritizedHeadquarters2 = prioritizedHeadquarters;
+                    prioritizedHeadquarterIndex2 = prioritizedHeadquarterIndex;
                     prioritizedHeadquarters = headquarters[i];
                     prioritizedHeadquarterIndex = i;
                 }
             }
+        }
+        if (headquarterAttemptTime >= 100) {
+            prioritizedHeadquarters = prioritizedHeadquarters2;
+            prioritizedHeadquarterIndex = prioritizedHeadquarterIndex2;
+        }
+        if (headquarterAttemptTime >= 200) {
+            headquarterAttemptTime = 0;
         }
     }
 

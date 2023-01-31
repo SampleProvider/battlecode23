@@ -27,6 +27,7 @@ public strictfp class HeadQuarters {
     private int nearbyCarriers = 0;
     private int nearbyLaunchers = 0;
     protected boolean tooManyBots = false;
+    protected boolean unsafe = false;
 
     private int possibleSpawningLocations = 0;
 
@@ -34,8 +35,6 @@ public strictfp class HeadQuarters {
     private StoredLocations storedLocations;
 
     private boolean isPrimaryHQ = false;
-    // private ArrayList<MapLocation> centerHeadquarters = new ArrayList<MapLocation>();
-    private MapLocation[] centerHeadquarters;
     private boolean setTargetElixirWell = false;
     protected int adamantium = 0;
     protected int mana = 0;
@@ -116,6 +115,8 @@ public strictfp class HeadQuarters {
                 storedLocations.detectWells();
                 storedLocations.detectOpponentLocations();
                 storedLocations.detectIslandLocations();
+                storedLocations.detectSymmetry();
+                storedLocations.updateMapSymmetry(globalArray.mapSymmetry());
                 storedLocations.writeToGlobalArray();
 
                 if (GlobalArray.DEBUG_INFO >= 1 && isPrimaryHQ) {
@@ -170,7 +171,14 @@ public strictfp class HeadQuarters {
                         else if (r.getType() == RobotType.CARRIER)
                             nearbyCarriers++;
                     }
-                    tooManyBots = nearbyCarriers > 30;
+                    tooManyBots = nearbyCarriers >= 30;
+                    RobotInfo[] opponentBots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
+                    int nearbyOpponents = 0;
+                    for (RobotInfo r : opponentBots) {
+                        if (Attack.prioritizedRobot(r.getType()) >= 3)
+                            nearbyOpponents++;
+                    }
+                    tooManyBots = nearbyOpponents >= 2;
                     indicatorString.append("C-L-A-NC-NL[" + carriers + ", " + launchers + ", " + amplifiers + ", " + nearbyCarriers + ", " + nearbyLaunchers + "]; ");
                 }
                 if (isPrimaryHQ) {
@@ -212,11 +220,6 @@ public strictfp class HeadQuarters {
                         }
                         storedLocations.setHeadquarters(headquarters);
                         mapSizeFactor = (rc.getMapWidth() * rc.getMapHeight()) / 400;
-                        centerHeadquarters = Arrays.copyOf(headquarters, hqCount);
-                        MapLocationDistanceToCenterComparator distCompare = new MapLocationDistanceToCenterComparator();
-                        distCompare.setCenter(center);
-                        Arrays.sort(centerHeadquarters, distCompare);
-                        System.out.println(Arrays.toString(centerHeadquarters));
                         globalArray.setMapSymmetry(7);
                     }
                     // set upgrade wells if resources adequate
@@ -234,45 +237,28 @@ public strictfp class HeadQuarters {
                         setTargetElixirWell();
                     }
                     if (round >= 2) {
-                        int headquarterID = rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS) >> 13;
-                        MapLocation targetHeadquarters = centerHeadquarters[headquarterID];
-                        indicatorString.append(headquarterID);
-                        int symmetry = (globalArray.mapSymmetry() & 0b1) + ((globalArray.mapSymmetry() >> 1) & 0b1) + ((globalArray.mapSymmetry() >> 2) & 0b1);
-                        if (symmetry == 1) {
-                            if ((globalArray.mapSymmetry() & 0b1) == 1) {
-                                indicatorString.append("SYM VER; ");
-                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, targetHeadquarters.y)));
-                            }
-                            else if (((globalArray.mapSymmetry() >> 1) & 0b1) == 1) {
-                                indicatorString.append("SYM HOR; ");
-                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
-                            }
-                            else {
-                                indicatorString.append("SYM ROT; ");
-                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
+                        int manaWells = 0;
+                        for (int i = 0; i < GlobalArray.MANA_WELLS_LENGTH; i++) {
+                            if (GlobalArray.hasLocation(rc.readSharedArray(i + GlobalArray.MANA_WELLS))) {
+                                manaWells++;
                             }
                         }
-                        else if (symmetry == 2) {
-                            if ((globalArray.mapSymmetry() & 0b1) != 1) {
-                                indicatorString.append("SYM !VER; ");
-                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
+                        if (manaWells > 0) {
+                            MapLocation wells[] = new MapLocation[manaWells];
+                            int index = 0;
+                            for (int i = 0; i < GlobalArray.MANA_WELLS_LENGTH; i++) {
+                                if (GlobalArray.hasLocation(rc.readSharedArray(i + GlobalArray.MANA_WELLS))) {
+                                    wells[index] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.MANA_WELLS));
+                                    index++;
+                                }
                             }
-                            else if (((globalArray.mapSymmetry() >> 1) & 0b1) != 1) {
-                                indicatorString.append("SYM !HOR; ");
-                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, targetHeadquarters.y)));
-                            }
-                            // else {
-                            //     indicatorString.append("SYM !ROT; ");
-                            //     rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
-                            // }
-                        }
-                        else if (round >= 2) {
-                            if (mapSizeFactor >= 4) {
-                                indicatorString.append("SYM M ROT; ");
-                                rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (headquarterID << 13) | GlobalArray.intifyLocation(new MapLocation(rc.getMapWidth() - 1 - targetHeadquarters.x, rc.getMapHeight() - 1 - targetHeadquarters.y)));
-                            }
+                            MapLocationDistanceToCenterComparator distCompare = new MapLocationDistanceToCenterComparator();
+                            distCompare.setCenter(center);
+                            Arrays.sort(wells, distCompare);
+                            rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS + 1, GlobalArray.intifyLocation(wells[0]));
                         }
                     }
+                    indicatorString.append(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS));
                     indicatorString.append("SYM " + globalArray.mapSymmetry() + "; ");
                 }
                 // save game state
