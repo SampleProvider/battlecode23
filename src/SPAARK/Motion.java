@@ -303,6 +303,7 @@ public class Motion {
             if (me.equals(dest)) {
                 return new Direction[] { Direction.CENTER, null };
             }
+            robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
             int moveableTiles = 0;
             for (Direction d : DIRECTIONS) {
                 if (canMove(rc, d, false, false)) {
@@ -325,7 +326,6 @@ public class Motion {
             }
             Direction direction = me.directionTo(dest);
             boolean moved = false;
-            robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
             if (canMove(rc, direction, avoidClouds, avoidWells) && lastDirection != direction.opposite()) {
                 rc.move(direction);
                 boolean touchingTheWallBefore = false;
