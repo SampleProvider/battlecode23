@@ -129,31 +129,38 @@ public strictfp class Launcher {
 
         if (round % 3 == 0 && friendlyRobotInfo.length > 0 && rc.isMovementReady()) {
             int surroundingLaunchers = 0;
-            MapLocation centerOfMass = me;
+            int x = 0;
+            int y = 0;
             for (RobotInfo w : friendlyRobotInfo) {
                 if (w.getType() != RobotType.LAUNCHER) {
                     continue;
                 }
                 surroundingLaunchers += 1;
-                centerOfMass.translate(w.getLocation().x - me.x, w.getLocation().y - me.y);
+                x += w.getLocation().x - me.x;
+                y += w.getLocation().y - me.y;
             }
-            Direction[] bug2array = Motion.bug2(rc, centerOfMass, lastDirection, clockwiseRotation, false, false, indicatorString);
-            lastDirection = bug2array[0];
-            if (bug2array[1] == Direction.CENTER) {
-                clockwiseRotation = !clockwiseRotation;
+            if (surroundingLaunchers > 0) {
+                rc.setIndicatorLine(me, me.translate(x / surroundingLaunchers, y / surroundingLaunchers), 255, 0, 0);
+                Direction[] bug2array = Motion.bug2(rc, me.translate(x / surroundingLaunchers, y / surroundingLaunchers), lastDirection, clockwiseRotation, false, false, indicatorString);
+                lastDirection = bug2array[0];
+                if (bug2array[1] == Direction.CENTER) {
+                    clockwiseRotation = !clockwiseRotation;
+                }
+                if (robot != null) {
+                    opponent = robot;
+                }
+                return;
             }
         }
-        else {
-            Direction[] bug2array = Motion.bug2(rc, target, lastDirection, clockwiseRotation, false, false, indicatorString);
-            lastDirection = bug2array[0];
-            if (bug2array[1] == Direction.CENTER) {
-                clockwiseRotation = !clockwiseRotation;
-            }
-            me = rc.getLocation();
-    
-            if (rc.canSenseLocation(target) && robot == null) {
-                storedLocations.arrivedAtWell = true;
-            }
+        Direction[] bug2array = Motion.bug2(rc, target, lastDirection, clockwiseRotation, false, false, indicatorString);
+        lastDirection = bug2array[0];
+        if (bug2array[1] == Direction.CENTER) {
+            clockwiseRotation = !clockwiseRotation;
+        }
+        me = rc.getLocation();
+
+        if (rc.canSenseLocation(target) && robot == null) {
+            storedLocations.arrivedAtWell = true;
         }
     
         if (robot != null) {

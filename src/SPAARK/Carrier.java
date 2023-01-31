@@ -516,7 +516,6 @@ public strictfp class Carrier {
         if (headquarterAttemptTime >= 100) {
             if (GlobalArray.isUnsafe(rc.readSharedArray(GlobalArray.HEADQUARTERS + prioritizedHeadquarterIndex2))) {
                 headquarterAttemptTime = 0;
-                rc.setIndicatorLine(me, prioritizedHeadquarters, 0, 255, 255);
                 return;
             }
             prioritizedHeadquarters = prioritizedHeadquarters2;
@@ -525,7 +524,6 @@ public strictfp class Carrier {
         if (headquarterAttemptTime >= 200) {
             headquarterAttemptTime = 0;
         }
-        rc.setIndicatorLine(me, prioritizedHeadquarters, 255, 255, 255);
     }
 
     private void updatePrioritizedWell() throws GameActionException {
