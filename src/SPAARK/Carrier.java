@@ -38,7 +38,7 @@ public strictfp class Carrier {
     private MapLocation randomExploreLocation;
     private int randomExploreTime = 0;
     private final int randomExploreMinKnownWellDistSquared = 81;
-    private final int randomExploreMinKnownHQDistSquared = 400;
+    private final int randomExploreMinKnownHQDistSquared = 144;
     private boolean returningToStorePOI = false;
 
     private int lastHealth = 0;
@@ -389,11 +389,9 @@ public strictfp class Carrier {
             }
             updatePrioritizedWell();
             if (prioritizedWell != null) {
-                if (storedManaWells >= 0 || prioritizedWellType == ResourceType.MANA) {
-                    state = 1;
-                    runState();
-                    return;
-                }
+                state = 1;
+                runState();
+                return;
             }
             if (round > 100) {
                 MapLocation centerHeadquarters = headquarters[0];
@@ -516,7 +514,6 @@ public strictfp class Carrier {
         if (headquarterAttemptTime >= 100) {
             if (GlobalArray.isUnsafe(rc.readSharedArray(GlobalArray.HEADQUARTERS + prioritizedHeadquarterIndex2))) {
                 headquarterAttemptTime = 0;
-                rc.setIndicatorLine(me, prioritizedHeadquarters, 0, 255, 255);
                 return;
             }
             prioritizedHeadquarters = prioritizedHeadquarters2;
@@ -525,7 +522,6 @@ public strictfp class Carrier {
         if (headquarterAttemptTime >= 200) {
             headquarterAttemptTime = 0;
         }
-        rc.setIndicatorLine(me, prioritizedHeadquarters, 255, 255, 255);
     }
 
     private void updatePrioritizedWell() throws GameActionException {
@@ -683,6 +679,7 @@ public strictfp class Carrier {
         int iteration = 0;
         search: while (randomExploreLocation == null && iteration < 16) {
             randomExploreLocation = new MapLocation(rng.nextInt(rc.getMapWidth()), rng.nextInt(rc.getMapHeight()));
+            iteration++;
             for (MapLocation well : knownWells) {
                 if (well != null && well.distanceSquaredTo(randomExploreLocation) < randomExploreMinKnownWellDistSquared) {
                     randomExploreLocation = null;
@@ -695,7 +692,6 @@ public strictfp class Carrier {
                     continue search;
                 }
             }
-            iteration++;
         }
     }
 }

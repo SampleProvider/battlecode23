@@ -313,8 +313,8 @@ public strictfp class HeadQuarters {
                         while (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                             launchersProduced++;
-                            optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
                             if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                            optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
                         }
                     } else if (mana > Anchor.STANDARD.manaCost + RobotType.LAUNCHER.buildCostMana) {
                         //round >= 1000
@@ -344,16 +344,21 @@ public strictfp class HeadQuarters {
                     if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
                     carrierCooldown = 50;
                 } else {
+<<<<<<< HEAD
                     if (rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
                             && (attemptBreakout || (!unsafe && (mana > RobotType.LAUNCHER.buildCostMana * 2)
                             && possibleSpawningLocations >= (unsafe ? 5 : 2)))) {
+=======
+                    if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)
+                            && (nearbyCarriers < 5 || (mana > RobotType.LAUNCHER.buildCostMana*(unsafe ? 5 : 2) && possibleSpawningLocations >= 2))) {
+>>>>>>> refs/remotes/origin/main
                         while (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
                             launchersProduced++;
-                            optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
                             if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
+                            optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
                         }
-                    } else if (amplifiers < 4 && launchers > 5 && carriers > 5 && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)) {
+                    } else if (amplifiers < 4 && launchers > 5 && carriers > 5 && optimalSpawningLocation != null && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)) {
                         rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                     } else break;
                 }

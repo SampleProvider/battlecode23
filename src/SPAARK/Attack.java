@@ -55,6 +55,9 @@ public class Attack {
                 if (rc.senseCloud(rc.getLocation())) {
                     MapLocation prioritizedMapLocation = null;
                     for (MapLocation m : launcherAttackLocations) {
+                        if (m.equals(opponentHeadquarters)) {
+                            continue;
+                        }
                         if (prioritizedMapLocation == null) {
                             prioritizedMapLocation = rc.getLocation().translate(m.x, m.y);
                         }
@@ -73,6 +76,9 @@ public class Attack {
                     }
                     MapLocation prioritizedMapLocation = null;
                     for (MapLocation m : mapInfo) {
+                        if (m.equals(opponentHeadquarters)) {
+                            continue;
+                        }
                         if (prioritizedMapLocation == null) {
                             prioritizedMapLocation = m;
                         }
