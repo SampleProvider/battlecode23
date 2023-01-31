@@ -103,10 +103,14 @@ public strictfp class Carrier {
                 indicatorString.append("PR=" + (prioritizedResourceType == ResourceType.MANA ? "MN" : prioritizedResourceType.toString().substring(0, 2)) + "; ");
 
                 globalArray.incrementCount(rc);
-                storedLocations.updateFullWells();
-                storedLocations.detectIslandLocations();
-                storedLocations.detectSymmetry();
-                storedLocations.updateMapSymmetry(globalArray.mapSymmetry());
+                if (round % 2 == 0) {
+                    storedLocations.detectWells();
+                    storedLocations.detectOpponentLocations();
+                } else {
+                    storedLocations.detectIslandLocations();
+                    storedLocations.detectSymmetry();
+                    storedLocations.updateMapSymmetry(globalArray.mapSymmetry());
+                }
                 if (storedLocations.writeToGlobalArray()) returningToStorePOI = false;
 
                 Motion.symmetry = storedLocations.getMapSymmetry();

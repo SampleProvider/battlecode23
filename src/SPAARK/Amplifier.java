@@ -97,11 +97,14 @@ public strictfp class Amplifier {
                 indicatorString = new StringBuilder();
 
                 globalArray.incrementCount(rc);
-                storedLocations.detectWells();
-                storedLocations.detectOpponentLocations();
-                storedLocations.detectIslandLocations();
-                storedLocations.detectSymmetry();
-                storedLocations.updateMapSymmetry(globalArray.mapSymmetry());
+                if (round % 2 == 0) {
+                    storedLocations.detectWells();
+                    storedLocations.detectOpponentLocations();
+                } else {
+                    storedLocations.detectIslandLocations();
+                    storedLocations.detectSymmetry();
+                    storedLocations.updateMapSymmetry(globalArray.mapSymmetry());
+                }
                 storedLocations.writeToGlobalArray();
                 
                 Motion.symmetry = storedLocations.getMapSymmetry();
