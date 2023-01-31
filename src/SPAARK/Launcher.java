@@ -60,9 +60,6 @@ public strictfp class Launcher {
     private void run() {
         while (true) {
             try {
-                if (FooBar.foobar && rng.nextInt(1000) == 0) FooBar.foo(rc);
-                if (FooBar.foobar && rng.nextInt(1000) == 0) FooBar.bar(rc);
-                //FooBar.foobar is set to false, code will never run
                 me = rc.getLocation();
                 round = rc.getRoundNum();
                 globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
@@ -136,7 +133,6 @@ public strictfp class Launcher {
         if (bug2array[1] == Direction.CENTER) {
             clockwiseRotation = !clockwiseRotation;
         }
-        me = rc.getLocation();
 
         if (rc.canSenseLocation(target) && robot == null) {
             storedLocations.arrivedAtWell = true;
