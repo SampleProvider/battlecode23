@@ -96,9 +96,6 @@ public strictfp class HeadQuarters {
     private void run() {
         while (true) {
             try {
-                if (FooBar.foobar && rng.nextInt(1000) == 0) FooBar.foo(rc);
-                if (FooBar.foobar && rng.nextInt(1000) == 0) FooBar.bar(rc);
-                me = rc.getLocation();
                 round = rc.getRoundNum();
                 globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
                 adamantium = rc.getResourceAmount(ResourceType.ADAMANTIUM);
@@ -171,7 +168,7 @@ public strictfp class HeadQuarters {
                         else if (r.getType() == RobotType.CARRIER)
                             nearbyCarriers++;
                     }
-                    tooManyBots = nearbyCarriers >= 30;
+                    tooManyBots = nearbyCarriers + nearbyLaunchers >= 30;
                     RobotInfo[] opponentBots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
                     int nearbyOpponents = 0;
                     for (RobotInfo r : opponentBots) {
@@ -180,8 +177,6 @@ public strictfp class HeadQuarters {
                         }
                     }
                     unsafe = nearbyOpponents >= 2;
-                    indicatorString.append(unsafe);
-                    indicatorString.append(nearbyOpponents);
                     indicatorString.append("C-L-A-NC-NL[" + carriers + ", " + launchers + ", " + amplifiers + ", " + nearbyCarriers + ", " + nearbyLaunchers + "]; ");
                 }
                 if (isPrimaryHQ) {
@@ -290,7 +285,7 @@ public strictfp class HeadQuarters {
         updatePrioritizedWell();
         MapLocation optimalSpawningLocationWell = optimalSpawnLocation(true);
         MapLocation optimalSpawningLocation = optimalSpawnLocation(false);
-        if (anchorCooldown <= 0 && rc.getNumAnchors(Anchor.STANDARD) == 0 && canProduceAnchor && nearbyCarriers > 3) {
+        if (anchorCooldown <= 0 && canProduceAnchor && nearbyCarriers > 3 && rc.getNumAnchors(Anchor.STANDARD) == 0) {
             if (adamantium >= Anchor.STANDARD.adamantiumCost && mana >= Anchor.STANDARD.manaCost) {
                 rc.buildAnchor(Anchor.STANDARD);
                 indicatorString.append("P ANC; ");
@@ -302,7 +297,7 @@ public strictfp class HeadQuarters {
                 indicatorString.append("TP ANC; ");
             }
             while (rc.isActionReady()) {
-                if (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation) && possibleSpawningLocations >= 3) {
+                if (optimalSpawningLocation != null && possibleSpawningLocations >= 3 && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
                     if (round < 1000) {
                         while (optimalSpawningLocation != null && rc.canBuildRobot(RobotType.LAUNCHER, optimalSpawningLocation)) {
                             rc.buildRobot(RobotType.LAUNCHER, optimalSpawningLocation);
@@ -317,8 +312,9 @@ public strictfp class HeadQuarters {
                         if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                     }
                     else break;
-                } else if (adamantium > Anchor.STANDARD.adamantiumCost + RobotType.CARRIER.buildCostAdamantium && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
-                        && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0) && possibleSpawningLocations >= 4) {
+                } else if (optimalSpawningLocationWell != null && adamantium > Anchor.STANDARD.adamantiumCost + RobotType.CARRIER.buildCostAdamantium && possibleSpawningLocations >= 4
+                        && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0)
+                        && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)) {
                     rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                     carriersProduced++;
                     if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
@@ -329,9 +325,9 @@ public strictfp class HeadQuarters {
             }
         } else {
             while (rc.isActionReady()) {
-                if (optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)
+                if ((round > 1 || carriersProduced < 2) && possibleSpawningLocations >= 3
                         && ((deltaResources < 0 && nearbyCarriers < 10) || carriers < 10 * hqCount || carrierCooldown <= 0)
-                        && (round > 1 || carriersProduced < 2) && possibleSpawningLocations >= 3) {
+                        && optimalSpawningLocationWell != null && rc.canBuildRobot(RobotType.CARRIER, optimalSpawningLocationWell)) {
                     rc.buildRobot(RobotType.CARRIER, optimalSpawningLocationWell);
                     carriersProduced++;
                     if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocationWell, 125, 125, 125);
@@ -345,7 +341,7 @@ public strictfp class HeadQuarters {
                             optimalSpawningLocation = updateOptimalSpawnLocation(optimalSpawningLocation, false);
                             if (GlobalArray.DEBUG_INFO >= 1) rc.setIndicatorLine(me, optimalSpawningLocation, 125, 125, 125);
                         }
-                    } else if (rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation) && amplifiers < 4) {
+                    } else if (amplifiers < 4 && launchers > 5 && carriers > 5 && rc.canBuildRobot(RobotType.AMPLIFIER, optimalSpawningLocation)) {
                         rc.buildRobot(RobotType.AMPLIFIER, optimalSpawningLocation);
                     } else break;
                 }
@@ -430,7 +426,6 @@ public strictfp class HeadQuarters {
                 }
             }
         } else {
-            MapLocation center = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
             for (MapLocation m : spawningLocations) {
                 if (rc.sensePassability(m) == false || rc.isLocationOccupied(m)) {
                     continue;
