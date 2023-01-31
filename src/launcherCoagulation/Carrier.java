@@ -672,6 +672,7 @@ public strictfp class Carrier {
         MapLocation[] knownWells = GlobalArray.getKnownWellLocations(rc);
         int iteration = 0;
         search: while (randomExploreLocation == null && iteration < 16) {
+            iteration++;
             randomExploreLocation = new MapLocation(rng.nextInt(rc.getMapWidth()), rng.nextInt(rc.getMapHeight()));
             for (MapLocation well : knownWells) {
                 if (well != null && well.distanceSquaredTo(randomExploreLocation) < randomExploreMinKnownWellDistSquared) {
@@ -685,7 +686,6 @@ public strictfp class Carrier {
                     continue search;
                 }
             }
-            iteration++;
         }
     }
 }
