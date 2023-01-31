@@ -2,6 +2,7 @@ package SPAARK;
 
 import battlecode.common.*;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 
 public strictfp class StoredLocations {
@@ -22,13 +23,17 @@ public strictfp class StoredLocations {
 
     protected boolean[] storedIslands = new boolean[36];
 
-    private ArrayList<MapLocation> centerHeadquarters = new ArrayList<MapLocation>();
-    private int[] headquartersIndex;
+    private MapLocation[] centerHeadquarters;
 
-    protected int symmetry = 0;
-    protected int notSymmetry = 0;
-
-    protected int noRobotTime = 0;
+    protected int[] symmetry = new int[3];
+    protected boolean arrivedAtWell = false;
+    
+    protected boolean allLeft = true;
+    protected boolean allRight = true;
+    protected boolean allTop = true;
+    protected boolean allBottom = true;
+    protected boolean allDiagonal1 = true;
+    protected boolean allDiagonal2 = true;
 
     protected MapLocation[] fullWells = new MapLocation[GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH];
     protected int[] fullWellTimer = new int[GlobalArray.ADAMANTIUM_WELLS_LENGTH + GlobalArray.MANA_WELLS_LENGTH];
@@ -39,32 +44,38 @@ public strictfp class StoredLocations {
     // general location/data parsing/writing
     public StoredLocations(RobotController rc, MapLocation[] headquarters) {
         this.rc = rc;
+        center = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
         if (headquarters.length > 0) {
-            this.headquarters = headquarters;
-            headquartersIndex = new int[headquarters.length];
-            center = new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2);
-            centerHeadquarters.add(headquarters[0]);
-            headquartersIndex[0] = 0;
-            for (int i = 1; i < headquarters.length; i++) {
-                for (int j = 0;j < centerHeadquarters.size();j++) {
-                    if (centerHeadquarters.get(j).distanceSquaredTo(center) > headquarters[i].distanceSquaredTo(center)) {
-                        centerHeadquarters.add(j, headquarters[i]);
-                        break;
-                    }
-                }
-            }
-            for (int i = 1; i < headquarters.length; i++) {
-                for (int j = 0;j < centerHeadquarters.size();j++) {
-                    if (headquarters[i].equals(centerHeadquarters.get(j))) {
-                        headquartersIndex[i] = j;
-                    }
-                }
-            }
+            setHeadquarters(headquarters);
         }
     }
 
     public void setHeadquarters(MapLocation[] headquarters) {
         this.headquarters = headquarters;
+        for (int i = 0;i < headquarters.length;i++) {
+            if (headquarters[i].x > center.x) {
+                allLeft = false;
+            }
+            if (headquarters[i].x < center.x) {
+                allRight = false;
+            }
+            if (headquarters[i].y < center.y) {
+                allTop = false;
+            }
+            if (headquarters[i].y > center.y) {
+                allBottom = false;
+            }
+            if (headquarters[i].x < center.x == headquarters[i].y < center.y) {
+                allDiagonal2 = false;
+            }
+            if (headquarters[i].x > center.x == headquarters[i].y > center.y) {
+                allDiagonal1 = false;
+            }
+        }
+        centerHeadquarters = Arrays.copyOf(headquarters, headquarters.length);
+        MapLocationDistanceToCenterComparator distCompare = new MapLocationDistanceToCenterComparator();
+        distCompare.setCenter(center);
+        Arrays.sort(centerHeadquarters, distCompare);
     }
 
     public boolean writeToGlobalArray() throws GameActionException {
@@ -101,26 +112,27 @@ public strictfp class StoredLocations {
                 }
             }
         }
-        if (symmetry != 0) {
-            GlobalArray globalArray = new GlobalArray();
-            globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
-            globalArray.setMapSymmetry(GlobalArray.setBit(0, symmetry - 1, 1));
-            rc.writeSharedArray(GlobalArray.GAMESTATE, globalArray.getGameStateNumber());
-            symmetry = 0;
-        }
-        if (notSymmetry != 0) {
-            GlobalArray globalArray = new GlobalArray();
-            globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
-            globalArray.setMapSymmetry(GlobalArray.setBit(globalArray.mapSymmetry(), notSymmetry - 1, 0));
-            rc.writeSharedArray(GlobalArray.GAMESTATE, globalArray.getGameStateNumber());
-            notSymmetry = 0;
+        GlobalArray globalArray = new GlobalArray();
+        globalArray.parseGameState(rc.readSharedArray(GlobalArray.GAMESTATE));
+        for (int i = 0; i < 3; i++) {
+            if (symmetry[i] == 1) {
+                globalArray.setMapSymmetry(GlobalArray.setBit(0, i, 1));
+                rc.writeSharedArray(GlobalArray.GAMESTATE, globalArray.getGameStateNumber());
+                break;
+            }
+            else if (symmetry[i] == -1) {
+                globalArray.setMapSymmetry(GlobalArray.setBit(globalArray.mapSymmetry(), i, 0));
+                rc.writeSharedArray(GlobalArray.GAMESTATE, globalArray.getGameStateNumber());
+            }
         }
         return true;
     }
 
     public boolean foundNewLocations() throws GameActionException {
-        if (symmetry != 0 || notSymmetry != 0) {
-            return true;
+        for (int i = 0; i < 3; i++) {
+            if (symmetry[i] != 0) {
+                return true;
+            }
         }
         MapLocation[] wellLocations = GlobalArray.getKnownWellLocations(rc);
         for (MapLocation m : wellLocations) {
@@ -285,85 +297,148 @@ public strictfp class StoredLocations {
         }
     }
 
-    public void detectSymmetry(int storedSymmetry) throws GameActionException {
-        boolean allHQ = true;
-        if (rc.getType() == RobotType.AMPLIFIER) {
-            RobotInfo[] robotInfo = rc.senseNearbyRobots(RobotType.AMPLIFIER.visionRadiusSquared, rc.getTeam().opponent());
-            for (RobotInfo r : robotInfo) {
-                if (r.getType() != RobotType.HEADQUARTERS) {
-                    allHQ = false;
-                    noRobotTime = 0;
-                }
-            }
-        }
-        boolean noRobots = false;
+    public void detectSymmetry() throws GameActionException {
         for (int i = 0; i < headquarters.length; i++) {
-            if (rc.canSenseLocation(new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, headquarters[i].y))) {
-                RobotInfo robot = rc.senseRobotAtLocation(new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, headquarters[i].y));
-                if (robot != null && robot.getType() == RobotType.HEADQUARTERS && robot.getTeam() == rc.getTeam().opponent()) {
-                    if ((storedSymmetry & 0b1) == 1) {
-                        symmetry = 1;
-                        rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, headquarters[i].y), 0, 0, 0);
-                    }
-
-                    if (rc.getType() == RobotType.AMPLIFIER && allHQ && GlobalArray.hasLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS))) {
-                        noRobots = true;
-                    }
+            for (int j = 0;j < 3;j++) {
+                if (inReflectionLine(headquarters[i]) != -1 && inReflectionLine(headquarters[i]) != j) {
+                    continue;
                 }
-                else {
-                    if ((storedSymmetry & 0b1) == 1) {
-                        notSymmetry = 1;
-                        rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, headquarters[i].y), 0, 0, 0);
+                if (rc.canSenseLocation(reflectTarget(headquarters[i], j))) {
+                    RobotInfo robot = rc.senseRobotAtLocation(reflectTarget(headquarters[i], j));
+                    if (robot != null && robot.getType() == RobotType.HEADQUARTERS && robot.getTeam() == rc.getTeam().opponent()) {
+                        symmetry[j] = 1;
                     }
-                }
-            }
-            if (rc.canSenseLocation(new MapLocation(headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y))) {
-                RobotInfo robot = rc.senseRobotAtLocation(new MapLocation(headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y));
-                if (robot != null && robot.getType() == RobotType.HEADQUARTERS && robot.getTeam() == rc.getTeam().opponent()) {
-                    if ((storedSymmetry & 0b10) == 2) {
-                        symmetry = 2;
-                        rc.setIndicatorLine(rc.getLocation(), new MapLocation(headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y), 0, 0, 0);
-                    }
-
-                    if (rc.getType() == RobotType.AMPLIFIER && allHQ && GlobalArray.hasLocation(rc.readSharedArray(headquartersIndex[i] + GlobalArray.OPPONENT_HEADQUARTERS))) {
-                        noRobots = true;
-                    }
-                }
-                else {
-                    if ((storedSymmetry & 0b10) == 2) {
-                        notSymmetry = 2;
-                        rc.setIndicatorLine(rc.getLocation(), new MapLocation(headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y), 0, 0, 0);
-                    }
-                }
-            }
-            if (rc.canSenseLocation(new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y))) {
-                RobotInfo robot = rc.senseRobotAtLocation(new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y));
-                if (robot != null && robot.getType() == RobotType.HEADQUARTERS && robot.getTeam() == rc.getTeam().opponent()) {
-                    if ((storedSymmetry & 0b100) == 4) {
-                        symmetry = 3;
-                        rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y), 0, 0, 0);
-                    }
-                    
-                    if (rc.getType() == RobotType.AMPLIFIER && allHQ && GlobalArray.hasLocation(rc.readSharedArray(headquartersIndex[i] + GlobalArray.OPPONENT_HEADQUARTERS))) {
-                        noRobots = true;
-                    }
-                }
-                else {
-                    if ((storedSymmetry & 0b100) == 4) {
-                        notSymmetry = 3;
-                        rc.setIndicatorLine(rc.getLocation(), new MapLocation(rc.getMapWidth() - 1 - headquarters[i].x, rc.getMapHeight() - 1 - headquarters[i].y), 0, 0, 0);
+                    else {
+                        symmetry[j] = -1;
                     }
                 }
             }
         }
-        if (noRobots) {
-            noRobotTime++;
+        for (int i = 0; i < GlobalArray.MANA_WELLS_LENGTH + GlobalArray.ADAMANTIUM_WELLS_LENGTH; i++) {
+            int array = rc.readSharedArray(GlobalArray.MANA_WELLS + i);
+            if (!GlobalArray.hasLocation(array)) {
+                continue;
+            }
+            MapLocation target = GlobalArray.parseLocation(array);
+            for (int j = 0;j < 3;j++) {
+                if (inReflectionLine(target) != -1 && inReflectionLine(target) != j) {
+                    continue;
+                }
+                if (rc.canSenseLocation(reflectTarget(target, j))) {
+                    WellInfo well = rc.senseWell(reflectTarget(target, j));
+                    if (well != null && well.getResourceType() == (i < GlobalArray.MANA_WELLS_LENGTH ? ResourceType.MANA : ResourceType.ADAMANTIUM)) {
+                        symmetry[j] = 1;
+                    }
+                    else {
+                        symmetry[j] = -1;
+                    }
+                }
+            }
         }
-        if (noRobotTime >= 60) {
-            int opponentHeadquarters = rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS);
-            int headquarterID = opponentHeadquarters >> 13;
-            rc.writeSharedArray(GlobalArray.OPPONENT_HEADQUARTERS, (opponentHeadquarters & 0b1111111111111) | ((headquarterID + 1) % headquarters.length) << 13);
-            noRobotTime = 0;
+    }
+
+    public void updateMapSymmetry(int storedSymmetry) {
+        if ((storedSymmetry & 0b1) == 0) {
+            symmetry[0] = -1;
+        }
+        if ((storedSymmetry & 0b10) == 0) {
+            symmetry[1] = -1;
+        }
+        if ((storedSymmetry & 0b100) == 0) {
+            symmetry[2] = -1;
+        }
+        if (symmetry[0] + symmetry[1] == -2) {
+            symmetry[2] = 1;
+        }
+        if (symmetry[1] + symmetry[2] == -2) {
+            symmetry[0] = 1;
+        }
+        if (symmetry[0] + symmetry[2] == -2) {
+            symmetry[1] = 1;
+        }
+    }
+
+    public int getMapSymmetry() {
+        for (int i = 0;i < 3;i++) {
+            if (symmetry[i] == 1) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public MapLocation getTarget() throws GameActionException {
+        MapLocation target;
+        if (arrivedAtWell) {
+            int array = rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS);
+            if ((array & 0b100) == 4) {
+                target = centerHeadquarters[rc.getID() % (headquarters.length)];
+            }
+            else {
+                target = centerHeadquarters[array & 0b11];
+            }
+        }
+        else {
+            int array = rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS + 1);
+            if (!GlobalArray.hasLocation(array)) {
+                return center;
+            }
+            target = GlobalArray.parseLocation(array);
+        }
+        for (int i = 0;i < 3;i++) {
+            if (symmetry[i] == 1) {
+                return reflectTarget(target, i);
+            }
+        }
+        for (int i = 0;i < 3;i++) {
+            if (symmetry[i] == -1) {
+                if (i != 0) {
+                    return reflectTarget(target, 0);
+                }
+                else if (i != 1) {
+                    return reflectTarget(target, 1);
+                }
+            }
+        }
+        if ((allLeft || allRight) && !(allTop || allBottom)) {
+            return reflectTarget(target, 0);
+        }
+        if ((allTop || allBottom) && !(allLeft || allRight)) {
+            return reflectTarget(target, 2);
+        }
+        if ((allDiagonal1 || allDiagonal2)) {
+            return reflectTarget(target, 1);
+        }
+        return reflectTarget(target, 0);
+    }
+
+    public MapLocation reflectTarget(MapLocation target, int symmetry) {
+        if (symmetry == 0) {
+            return new MapLocation(rc.getMapWidth() - 1 - target.x, target.y);
+        }
+        else if (symmetry == 1) {
+            return new MapLocation(target.x, rc.getMapHeight() - 1 - target.y);
+        }
+        else {
+            return new MapLocation(rc.getMapWidth() - 1 - target.x, rc.getMapHeight() - 1 - target.y);
+        }
+    }
+    public int inReflectionLine(MapLocation m) {
+        if (m.x == rc.getMapWidth() / 2) {
+            if (m.y == rc.getMapHeight() / 2) {
+                return 2;
+            }
+            else {
+                return 0;
+            }
+        }
+        else {
+            if (m.y == rc.getMapHeight() / 2) {
+                return 1;
+            }
+            else {
+                return -1;
+            }
         }
     }
 }

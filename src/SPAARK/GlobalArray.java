@@ -53,6 +53,7 @@ public strictfp class GlobalArray {
      * Bit 12       presence marker
      * Headquarters:
      *  Bit 13      adequate materials
+     *  Bit 14      unsafe hq
      * Wells:
      *  Bits 13-14  resource type
      *  Bit 15      upgraded marker
@@ -82,11 +83,15 @@ public strictfp class GlobalArray {
     }
 
     public static void storeHeadquarters(HeadQuarters hq) throws GameActionException {
-        hq.rc.writeSharedArray(hq.hqIndex, (hq.tooManyBots ? 0b1000000000000 : 0) | intifyLocation(hq.me));
+        hq.rc.writeSharedArray(hq.hqIndex, (hq.unsafe ? 0b10000000000000 : 0) | (hq.tooManyBots ? 0b1000000000000 : 0) | intifyLocation(hq.me));
     }
 
     public static boolean hasTooManyBots(int n) {
         return n >> 13 == 1;
+    }
+
+    public static boolean isUnsafe(int n) {
+        return n >> 14 == 1;
     }
 
     public static MapLocation[] getKnownHeadQuarterLocations(RobotController rc) throws GameActionException {

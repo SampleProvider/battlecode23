@@ -30,6 +30,9 @@ public class Motion {
 
     private static RobotInfo[] robotInfo;
 
+    protected static int symmetry = 0;
+    protected static MapLocation[] headquarters;
+
     protected static void moveRandomly(RobotController rc) throws GameActionException {
         while (rc.isMovementReady()) {
             Direction direction = DIRECTIONS[rng.nextInt(DIRECTIONS.length)];
@@ -300,9 +303,29 @@ public class Motion {
             if (me.equals(dest)) {
                 return new Direction[] { Direction.CENTER, null };
             }
+            robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
+            int moveableTiles = 0;
+            for (Direction d : DIRECTIONS) {
+                if (canMove(rc, d, false, false)) {
+                    moveableTiles += 1;
+                }
+            }
+            if (moveableTiles == 0) {
+                return new Direction[] { Direction.CENTER, null };
+            }
+            if (moveableTiles == 1) {
+                for (Direction d : DIRECTIONS) {
+                    if (canMove(rc, d, false, false)) {
+                        rc.move(d);
+                        if (rng.nextBoolean()) {
+                            clockwiseRotation = !clockwiseRotation;
+                        }
+                        return new Direction[] { Direction.CENTER, null };
+                    }
+                }
+            }
             Direction direction = me.directionTo(dest);
             boolean moved = false;
-            robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
             if (canMove(rc, direction, avoidClouds, avoidWells) && lastDirection != direction.opposite()) {
                 rc.move(direction);
                 boolean touchingTheWallBefore = false;
@@ -316,6 +339,9 @@ public class Motion {
                 }
                 lastDirection = direction;
                 if (touchingTheWallBefore) {
+                    clockwiseRotation = !clockwiseRotation;
+                }
+                if (rng.nextBoolean()) {
                     clockwiseRotation = !clockwiseRotation;
                 }
                 continue;
@@ -507,6 +533,9 @@ public class Motion {
                 if (touchingTheWallBefore) {
                     clockwiseRotation = !clockwiseRotation;
                 }
+                if (rng.nextBoolean()) {
+                    clockwiseRotation = !clockwiseRotation;
+                }
                 continue;
             }
             for (int i = 0; i < 7; i++) {
@@ -580,10 +609,21 @@ public class Motion {
                 }
             }
         }
-        MapLocation hqLocation = GlobalArray.parseLocation(rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS));
-        if (hqLocation.distanceSquaredTo(m) <= RobotType.HEADQUARTERS.actionRadiusSquared) {
-            if (hqLocation.distanceSquaredTo(rc.getLocation()) >= hqLocation.distanceSquaredTo(m)) {
-                return false;
+        for (MapLocation h : headquarters) {
+            MapLocation rH = h;
+            if (symmetry == 0) {
+                rH = new MapLocation(rc.getMapWidth() - 1 - h.x, h.y);
+            }
+            else if (symmetry == 1) {
+                rH = new MapLocation(h.x, rc.getMapHeight() - 1 - h.y);
+            }
+            else {
+                rH = new MapLocation(rc.getMapWidth() - 1 - h.x, rc.getMapHeight() - 1 - h.y);
+            }
+            if (rH.distanceSquaredTo(m) <= RobotType.HEADQUARTERS.actionRadiusSquared) {
+                if (rH.distanceSquaredTo(rc.getLocation()) >= rH.distanceSquaredTo(m)) {
+                    return false;
+                }
             }
         }
         if (rc.onTheMap(m)) {
