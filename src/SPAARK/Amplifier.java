@@ -138,7 +138,6 @@ public strictfp class Amplifier {
 
     private void runState() throws GameActionException {
         if (state == 0) {
-
             int[] islands = rc.senseNearbyIslands();
             MapLocation prioritizedIslandLocation = null;
             for (int id : islands) {
@@ -170,12 +169,20 @@ public strictfp class Amplifier {
                 indicatorString.append("ATK OPP HQ; ");
                 MapLocation target = storedLocations.getTarget();
                 if (rc.canSenseLocation(target)) {
+                    RobotInfo[] friendlyRobotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
+                    int surroundingLaunchers = 0;
+                    for (RobotInfo w : friendlyRobotInfo) {
+                        if (w.getType() != RobotType.LAUNCHER) {
+                            continue;
+                        }
+                        surroundingLaunchers += 1;
+                    }
                     noRobotTime++;
                     if (noRobotTime >= 30) {
                         if (!storedLocations.arrivedAtWell) {
                             storedLocations.arrivedAtWell = true;
                         }
-                        else {
+                        else if (surroundingLaunchers >= 5) {
                             int opponentHeadquarters = rc.readSharedArray(GlobalArray.OPPONENT_HEADQUARTERS);
                             int headquarterID = opponentHeadquarters & 0b11;
                             if (headquarterID + 1 == headquarters.length) {
@@ -305,12 +312,16 @@ public strictfp class Amplifier {
             if (rc.getLocation() == me) {
                 opponent = null;
                 state = 0;
+                randomExploreLocation = null;
+                updateRandomExploreLocation();
                 return;
             }
             if (rc.getLocation().distanceSquaredTo(opponent) > RobotType.AMPLIFIER.visionRadiusSquared) {
                 // i'm far enough, lets stop
                 opponent = null;
                 state = 0;
+                randomExploreLocation = null;
+                updateRandomExploreLocation();
                 return;
             }
             // updatePrioritizedHeadquarters();

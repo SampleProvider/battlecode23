@@ -392,11 +392,32 @@ public strictfp class StoredLocations {
         }
         for (int i = 0;i < 3;i++) {
             if (symmetry[i] == -1) {
-                if (i != 0) {
-                    return reflectTarget(target, 0);
+                if (i == 0) {
+                    if ((allTop || allBottom) && !(allLeft || allRight)) {
+                        return reflectTarget(target, 2);
+                    }
+                    if ((allDiagonal1 || allDiagonal2)) {
+                        return reflectTarget(target, 1);
+                    }
+                    return reflectTarget(target, 2);
                 }
-                else if (i != 1) {
-                    return reflectTarget(target, 1);
+                else if (i == 1) {
+                    if ((allTop || allBottom) && !(allLeft || allRight)) {
+                        return reflectTarget(target, 2);
+                    }
+                    if ((allLeft || allRight) && !(allTop || allBottom)) {
+                        return reflectTarget(target, 0);
+                    }
+                    return reflectTarget(target, 2);
+                }
+                else if (i == 2) {
+                    if ((allLeft || allRight) && !(allTop || allBottom)) {
+                        return reflectTarget(target, 0);
+                    }
+                    if ((allDiagonal1 || allDiagonal2)) {
+                        return reflectTarget(target, 1);
+                    }
+                    return reflectTarget(target, 0);
                 }
             }
         }

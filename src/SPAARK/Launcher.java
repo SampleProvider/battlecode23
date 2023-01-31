@@ -77,10 +77,9 @@ public strictfp class Launcher {
 
                 runState();
 
-                updatePrioritizedHeadquarters();
-
+                MapLocation target = storedLocations.getTarget();
                 RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-                RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, true, indicatorString);
+                RobotInfo robot = Attack.attack(rc, target, robotInfo, true, indicatorString);
                 robotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam().opponent());
         
                 if (robot == null) {
@@ -106,14 +105,14 @@ public strictfp class Launcher {
     }
 
     private void runState() throws GameActionException {
-        updatePrioritizedHeadquarters();
+        MapLocation target = storedLocations.getTarget();
         RobotInfo[] friendlyRobotInfo = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
         RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-        RobotInfo robot = Attack.attack(rc, prioritizedHeadquarters, robotInfo, true, indicatorString);
+        RobotInfo robot = Attack.attack(rc, target, robotInfo, true, indicatorString);
         if (robot != null && Attack.prioritizedRobot(robot.getType()) >= 3) {
             indicatorString.append("RET; ");
             if (rc.isMovementReady()) {
-                Direction[] bug2array = Motion.bug2retreat(rc, robotInfo, friendlyRobotInfo, prioritizedHeadquarters, lastDirection, clockwiseRotation, false, true, indicatorString);
+                Direction[] bug2array = Motion.bug2retreat(rc, robotInfo, friendlyRobotInfo, target, lastDirection, clockwiseRotation, false, true, indicatorString);
                 lastDirection = bug2array[0];
                 if (bug2array[1] == Direction.CENTER) {
                     clockwiseRotation = !clockwiseRotation;
@@ -127,17 +126,44 @@ public strictfp class Launcher {
         if (robot == null) {
             robot = Attack.senseOpponent(rc, robotInfo);
         }
-        MapLocation target = storedLocations.getTarget();
+
+        if (round % 3 == 0 && friendlyRobotInfo.length > 0 && rc.isMovementReady()) {
+            int surroundingLaunchers = 0;
+            int x = 0;
+            int y = 0;
+            for (RobotInfo w : friendlyRobotInfo) {
+                if (w.getType() != RobotType.LAUNCHER) {
+                    continue;
+                }
+                surroundingLaunchers += 1;
+                x += w.getLocation().x - me.x;
+                y += w.getLocation().y - me.y;
+            }
+            if (surroundingLaunchers > 0) {
+                if (!me.translate(x / surroundingLaunchers, y / surroundingLaunchers).equals(me)) {
+                    Direction[] bug2array = Motion.bug2(rc, me.translate(x / surroundingLaunchers, y / surroundingLaunchers), lastDirection, clockwiseRotation, false, false, indicatorString);
+                    lastDirection = bug2array[0];
+                    if (bug2array[1] == Direction.CENTER) {
+                        clockwiseRotation = !clockwiseRotation;
+                    }
+                    if (robot != null) {
+                        opponent = robot;
+                    }
+                    return;
+                }
+            }
+        }
         Direction[] bug2array = Motion.bug2(rc, target, lastDirection, clockwiseRotation, false, false, indicatorString);
         lastDirection = bug2array[0];
         if (bug2array[1] == Direction.CENTER) {
             clockwiseRotation = !clockwiseRotation;
         }
+        me = rc.getLocation();
 
         if (rc.canSenseLocation(target) && robot == null) {
             storedLocations.arrivedAtWell = true;
         }
-
+    
         if (robot != null) {
             opponent = robot;
         }
