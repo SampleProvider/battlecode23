@@ -171,14 +171,14 @@ public strictfp class HeadQuarters {
                         else if (r.getType() == RobotType.CARRIER)
                             nearbyCarriers++;
                     }
-                    tooManyBots = nearbyCarriers >= 30;
+                    tooManyBots = nearbyCarriers + nearbyLaunchers >= 30;
                     RobotInfo[] opponentBots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
                     int nearbyOpponents = 0;
                     for (RobotInfo r : opponentBots) {
                         if (Attack.prioritizedRobot(r.getType()) >= 3)
                             nearbyOpponents++;
                     }
-                    tooManyBots = nearbyOpponents >= 2;
+                    unsafe = nearbyOpponents >= 2;
                     indicatorString.append("C-L-A-NC-NL[" + carriers + ", " + launchers + ", " + amplifiers + ", " + nearbyCarriers + ", " + nearbyLaunchers + "]; ");
                 }
                 if (isPrimaryHQ) {

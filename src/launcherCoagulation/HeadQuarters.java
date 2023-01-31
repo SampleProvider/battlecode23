@@ -171,14 +171,14 @@ public strictfp class HeadQuarters {
                         else if (r.getType() == RobotType.CARRIER)
                             nearbyCarriers++;
                     }
-                    tooManyBots = nearbyCarriers >= 30;
+                    tooManyBots = nearbyCarriers + nearbyLaunchers >= 30;
                     RobotInfo[] opponentBots = rc.senseNearbyRobots(rc.getType().visionRadiusSquared, rc.getTeam());
                     int nearbyOpponents = 0;
                     for (RobotInfo r : opponentBots) {
                         if (Attack.prioritizedRobot(r.getType()) >= 3)
                             nearbyOpponents++;
                     }
-                    tooManyBots = nearbyOpponents >= 2;
+                    unsafe = nearbyOpponents >= 2;
                     indicatorString.append("C-L-A-NC-NL[" + carriers + ", " + launchers + ", " + amplifiers + ", " + nearbyCarriers + ", " + nearbyLaunchers + "]; ");
                 }
                 if (isPrimaryHQ) {
@@ -245,12 +245,8 @@ public strictfp class HeadQuarters {
                         }
                         if (manaWells > 0) {
                             MapLocation wells[] = new MapLocation[manaWells];
-                            int index = 0;
-                            for (int i = 0; i < GlobalArray.MANA_WELLS_LENGTH; i++) {
-                                if (GlobalArray.hasLocation(rc.readSharedArray(i + GlobalArray.MANA_WELLS))) {
-                                    wells[index] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.MANA_WELLS));
-                                    index++;
-                                }
+                            for (int i = 0; i < manaWells; i++) {
+                                wells[i] = GlobalArray.parseLocation(rc.readSharedArray(i + GlobalArray.MANA_WELLS));
                             }
                             MapLocationDistanceToCenterComparator distCompare = new MapLocationDistanceToCenterComparator();
                             distCompare.setCenter(center);
