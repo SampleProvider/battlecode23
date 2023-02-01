@@ -196,7 +196,7 @@ public strictfp class Carrier {
                 runState();
                 
                 updatePrioritizedHeadquarters();
-                
+
                 if (rc.getAnchor() == null) {
                     RobotInfo[] robotInfo = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
                     Attack.attack(rc, new MapLocation(0, 0), robotInfo, false, indicatorString);
@@ -518,7 +518,6 @@ public strictfp class Carrier {
                     indicatorString.append("HQ " + i + " UNSAFE; ");
                     continue;
                 }
-                indicatorString.append(rc.readSharedArray(GlobalArray.HEADQUARTERS + i));
                 if (unsafeHQ0 || prioritizedHeadquarters.distanceSquaredTo(me) > headquarters[i].distanceSquaredTo(me)) {
                     prioritizedHeadquarters2 = prioritizedHeadquarters;
                     prioritizedHeadquarterIndex2 = prioritizedHeadquarterIndex;
