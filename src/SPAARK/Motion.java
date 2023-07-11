@@ -335,9 +335,9 @@ public class Motion {
                     rc.move(direction);
                     lastDirection = direction;
                     moved = true;
-                    if (i >= 4) {
-                        clockwiseRotation = !clockwiseRotation;
-                    }
+                    // if (i >= 4) {
+                    //     clockwiseRotation = !clockwiseRotation;
+                    // }
                     break;
                 }
             }
